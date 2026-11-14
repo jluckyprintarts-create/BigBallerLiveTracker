@@ -1,0 +1,25 @@
+databases:
+  - name: monopoly-tracker-db
+    databaseName: monopoly_tracker
+    user: monopoly_tracker
+    plan: free
+
+services:
+  - type: web
+    name: monopoly-big-baller-tracker
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+      - key: DATABASE_URL
+        fromDatabase:
+          name: monopoly-tracker-db
+          property: connectionString
+
+      - key: POLL_INTERVAL_MS
+        value: "30000"
