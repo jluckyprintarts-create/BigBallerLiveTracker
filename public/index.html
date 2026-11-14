@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MONOPOLY Big Baller Live Tracker</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 15px;
+      background: #0b1020;
+      color: #ffffff;
+      font-family: Arial, sans-serif;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: auto;
+    }
+
+    header {
+      background: #151d32;
+      padding: 20px;
+      border-radius: 14px;
+      margin-bottom: 15px;
+      border: 1px solid #293653;
+    }
+
+    h1 {
+      font-size: 23px;
+      margin: 0 0 10px;
+      color: #f5c542;
+    }
+
+    .status {
+      font-size: 13px;
+      color: #9caac5;
+    }
+
+    .online {
+      color: #35d48a;
+    }
+
+    .offline {
+      color: #ff6464;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 15px;
+    }
+
+    .card {
+      background: #151d32;
+      border: 1px solid #293653;
+      border-radius: 14px;
+      padding: 17px;
+    }
+
+    .card h3 {
+      margin: 0 0 12px;
+      font-size: 14px;
+      color: #aab7d0;
+    }
+
+    .number {
+      font-size: 30px;
+      font-weight: bold;
+    }
+
+    .yellow {
+      color: #f5c542;
+    }
+
+    .green {
+      color: #35d48a;
+    }
+
+    .red {
+      color: #ff6464;
+    }
+
+    .section-title {
+      margin: 22px 0 12px;
+      font-size: 18px;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    button {
+      background: #263653;
+      color: white;
+      border: 1px solid #405477;
+      padding: 10px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    button.active {
+      background: #d5a91f;
+      color: #111827;
+      font-weight: bold;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 600px;
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #293653;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    th {
+      color: #f5c542;
+    }
+
+    .empty {
+      color: #9caac5;
+      text-align: center;
+      padding: 25px;
+    }
+
+    .note {
+      margin-top: 18px;
+      color: #8e9bb4;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    @media (min-width: 700px) {
+      .cards {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <header>
+    <h1>🎩 MONOPOLY BIG BALLER</h1>
+
+    <div class="status">
+      Tracker Status:
+      <strong id="connection" class="offline">Connecting...</strong>
+    </div>
+
+    <div class="status" style="margin-top:8px">
+      Last Update:
+      <span id="lastUpdate">Waiting...</span>
+    </div>
+  </header>
+
+  <div class="cards">
+
+    <div class="card">
+      <h3>Total Records</h3>
+      <div class="number yellow" id="totalRecords">0</div>
+    </div>
+
+    <div class="card">
+      <h3>3 Rolls</h3>
+      <div class="number green" id="threeRolls">0</div>
+    </div>
+
+    <div class="card">
+      <h3>5 Rolls</h3>
+      <div class="number yellow" id="fiveRolls">0</div>
+    </div>
+
+    <div class="card">
+      <h3>Big Wins 100x+</h3>
+      <div class="number red" id="bigWins">0</div>
+    </div>
+
+  </div>
+
+  <section class="card">
+
+    <h2 class="section-title">📊 Historical Records</h2>
+
+    <div class="controls">
+
+      <button class="active" data-type="all">
+        All
+      </button>
+
+      <button data-type="3">
+        3 Rolls
+      </button>
+
+      <button data-type="5">
+        5 Rolls
+      </button>
+
+      <button data-type="bigwin">
+        Big Wins
+      </button>
+
+      <button id="refreshButton">
+        🔄 Refresh
+      </button>
+
+    </div>
+
+    <div class="table-wrap">
+
+      <table>
+
+        <thead>
+          <tr>
+            <th>Event ID</th>
+            <th>Event Type</th>
+            <th>Multiplier</th>
+            <th>Settled Time</th>
+            <th>Adjusted Time</th>
+          </tr>
+        </thead>
+
+        <tbody id="records">
+
+          <tr>
+            <td colspan="5" class="empty">
+              Loading records...
+            </td>
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </section>
+
+  <section class="card">
+
+    <h2 class="section-title">
+      🕒 Hourly Statistics
+    </h2>
+
+    <div id="hourlyStats" class="empty">
+      Loading statistics...
+    </div>
+
+  </section>
+
+  <div class="note">
+    Automatic refresh: Every 30 seconds.<br>
+    All displayed times use Philippine time (Asia/Manila).<br>
+    Adjusted times are historical display calculations only,
+    not predictions of future results.
+  </div>
+
+</div>
+
+<script>
+
+let currentType = 'all';
+
+function formatTime(value) {
+
+  if (!value) return '-';
+
+  return new Date(value).toLocaleString('en-PH', {
+    timeZone: 'Asia/Manila',
+    hour12: true
+  });
+
+}
+
+async function loadStats() {
+
+  try {
+
+    const response = await fetch('/api/stats');
+
+    if (!response.ok) {
+      throw new Error('Stats request failed');
+    }
+
+    const data = await response.json();
+
+    document.getElementById('totalRecords').textContent =
+      data.totals.total_records;
+
+    document.getElementById('threeRolls').textContent =
+      data.totals.three_rolls;
+
+    document.getElementById('fiveRolls').textContent =
+      data.totals.five_rolls;
+
+    document.getElementById('bigWins').textContent =
+      data.totals.big_wins;
+
+    const hourly = data.hourlyAsiaManila || [];
+
+    document.getElementById('hourlyStats').innerHTML =
+      hourly.length
+        ? hourly.map(item => `
+          <div style="
+            padding:10px;
+            border-bottom:1px solid #293653;
+            text-align:left;
+          ">
+            ${String(item.hour).padStart(2, '0')}:00 —
+            Total: ${item.total} |
+            3 Rolls: ${item.three_rolls} |
+            5 Rolls: ${item.five_rolls} |
+            Big Wins: ${item.big_wins}
+          </div>
+        `).join('')
+        : 'No historical statistics yet.';
+
+  } catch (error) {
+
+    console.error(error);
+
+  }
+
+}
+
+async function loadRecords() {
+
+  const tbody = document.getElementById('records');
+
+  tbody.innerHTML = `
+    <tr>
+      <td colspan="5" class="empty">Loading...</td>
+    </tr>
+  `;
+
+  try {
+
+    const response = await fetch(
+      `/api/history?type=${currentType}&limit=200`
+    );
+
+    if (!response.ok) {
+      throw new Error('Records request failed');
+    }
+
+    const data = await response.json();
+
+    if (!data.records || data.records.length === 0) {
+
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="5" class="empty">
+            No records found.
+          </td>
+        </tr>
+      `;
+
+      return;
+
+    }
+
+    tbody.innerHTML = data.records.map(record => {
+
+      const types = [];
+
+      if (record.is_three_rolls) types.push('3 Rolls');
+      if (record.is_five_rolls) types.push('5 Rolls');
+      if (record.is_big_win) types.push('Big Win');
+
+      return `
+        <tr>
+          <td>${escapeHTML(record.event_id)}</td>
+          <td>${types.join(', ') || '-'}</td>
+          <td>
+            ${
+              record.big_win_multiplier !== null
+                ? Number(record.big_win_multiplier).toFixed(2) + 'x'
+                : '-'
+            }
+          </td>
+          <td>${formatTime(record.settled_at)}</td>
+          <td>${formatTime(record.adjusted_at)}</td>
+        </tr>
+      `;
+
+    }).join('');
+
+  } catch (error) {
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="5" class="empty">
+          Unable to load records.
+        </td>
+      </tr>
+    `;
+
+    console.error(error);
+
+  }
+
+}
+
+function escapeHTML(value) {
+
+  return String(value).replace(/[&<>"']/g, char => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  })[char]);
+
+}
+
+async function checkConnection() {
+
+  const status = document.getElementById('connection');
+
+  try {
+
+    const response = await fetch('/health');
+
+    if (!response.ok) {
+      throw new Error('Server unavailable');
+    }
+
+    const data = await response.json();
+
+    status.textContent =
+      data.database === 'ok'
+        ? 'ONLINE'
+        : 'DATABASE ERROR';
+
+    status.className =
+      data.database === 'ok'
+        ? 'online'
+        : 'offline';
+
+    document.getElementById('lastUpdate').textContent =
+      data.lastSuccessAt
+        ? formatTime(data.lastSuccessAt)
+        : 'Waiting for first successful poll';
+
+  } catch (error) {
+
+    status.textContent = 'OFFLINE';
+    status.className = 'offline';
+
+  }
+
+}
+
+async function refreshDashboard() {
+
+  await Promise.all([
+    loadStats(),
+    loadRecords(),
+    checkConnection()
+  ]);
+
+}
+
+document.querySelectorAll('[data-type]').forEach(button => {
+
+  button.addEventListener('click', () => {
+
+    document.querySelectorAll('[data-type]').forEach(item => {
+      item.classList.remove('active');
+    });
+
+    button.classList.add('active');
+
+    currentType = button.dataset.type;
+
+    loadRecords();
+
+  });
+
+});
+
+document.getElementById('refreshButton')
+  .addEventListener('click', refreshDashboard);
+
+refreshDashboard();
+
+setInterval(refreshDashboard, 30000);
+
+</script>
+
+</body>
+</html>
