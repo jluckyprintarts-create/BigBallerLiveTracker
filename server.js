@@ -161,8 +161,7 @@ function extractRows(payload) {
 // NORMALIZE EVENT
 // ----------------------------------
 
-function normalizeEvent(raw) {
-
+  function normalizeEvent(raw) {
   if (!raw || typeof raw !== 'object') return null;
 
   const data = raw.data || {};
@@ -187,18 +186,100 @@ function normalizeEvent(raw) {
 
   if (!eventId || !settledAt) return null;
 
-  const isThreeRolls = Boolean(
+  /*
+   * Keep the original flag detection.
+   */
+  let isThreeRolls = Boolean(
     result.isThreeRolls ||
     data.isThreeRolls ||
     raw.isThreeRolls
   );
 
-  const isFiveRolls = Boolean(
+  let isFiveRolls = Boolean(
     result.isFiveRolls ||
     data.isFiveRolls ||
     raw.isFiveRolls
   );
 
+  /*
+   * Additional detection for APIs where the roll type
+   * is stored inside bonusRounds/gameMode/mode.
+   */
+  const bonusRounds = [];
+
+  function collectBonusRounds(value) {
+    if (!value || typeof value !== 'object') return;
+
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        collectBonusRounds(item);
+      }
+      return;
+    }
+
+    for (const [key, value] of Object.entries(value)) {
+      if (/bonusRounds/i.test(key) && Array.isArray(value)) {
+        for (const round of value) {
+          bonusRounds.push(round);
+        }
+      } else if (value && typeof value === 'object') {
+        collectBonusRounds(value);
+      }
+    }
+  }
+
+  collectBonusRounds(raw);
+
+  for (const round of bonusRounds) {
+    if (!round || typeof round !== 'object') continue;
+
+    const mode = String(
+      round.gameMode ||
+      round.mode ||
+      round.gameType ||
+      round.type ||
+      ''
+    );
+
+    if (/three.?roll/i.test(mode)) {
+      isThreeRolls = true;
+    }
+
+    if (/five.?roll/i.test(mode)) {
+      isFiveRolls = true;
+    }
+  }
+
+  /*
+   * Also check common game-mode fields directly.
+   */
+  const directModes = [
+    raw.gameMode,
+    raw.mode,
+    raw.gameType,
+    data.gameMode,
+    data.mode,
+    data.gameType,
+    result.gameMode,
+    result.mode,
+    result.gameType
+  ];
+
+  for (const value of directModes) {
+    const mode = String(value || '');
+
+    if (/three.?roll/i.test(mode)) {
+      isThreeRolls = true;
+    }
+
+    if (/five.?roll/i.test(mode)) {
+      isFiveRolls = true;
+    }
+  }
+
+  /*
+   * Original multiplier detection is preserved.
+   */
   const multipliers = findMultipliers(raw);
 
   const bigWinMultiplier = multipliers.length
@@ -217,9 +298,13 @@ function normalizeEvent(raw) {
     return null;
   }
 
-  // Display/analysis adjustment only.
-  // This is not a prediction.
-
+  /*
+   * Time adjustment:
+   * 3 Rolls = -2 minutes
+   * 5 Rolls = -4 minutes
+   *
+   * If an event is marked as both, 5 Rolls takes precedence.
+   */
   let adjustment = 0;
 
   if (isThreeRolls) {
@@ -240,7 +325,6 @@ function normalizeEvent(raw) {
     {};
 
   return {
-
     eventId: String(eventId),
 
     settledAt,
@@ -261,11 +345,8 @@ function normalizeEvent(raw) {
       null,
 
     raw
-
   };
-
-}
-
+  }
 // ----------------------------------
 // SAVE EVENT
 // ----------------------------------
