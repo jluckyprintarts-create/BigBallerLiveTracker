@@ -308,7 +308,7 @@ function extractRows(payload) {
   let adjustment = 0;
 
   if (isThreeRolls) {
-    adjustment = 2;
+    adjustment = 3;
   }
 
   if (isFiveRolls) {
