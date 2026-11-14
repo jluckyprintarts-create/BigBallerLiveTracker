@@ -207,26 +207,26 @@ function extractRows(payload) {
    */
   const bonusRounds = [];
 
-  function collectBonusRounds(value) {
-    if (!value || typeof value !== 'object') return;
+  function collectBonusRounds(node) {
+  if (!node || typeof node !== 'object') return;
 
-    if (Array.isArray(value)) {
-      for (const item of value) {
-        collectBonusRounds(item);
-      }
-      return;
+  if (Array.isArray(node)) {
+    for (const item of node) {
+      collectBonusRounds(item);
     }
+    return;
+  }
 
-    for (const [key, value] of Object.entries(value)) {
-      if (/bonusRounds/i.test(key) && Array.isArray(value)) {
-        for (const round of value) {
-          bonusRounds.push(round);
-        }
-      } else if (value && typeof value === 'object') {
-        collectBonusRounds(value);
+  for (const [key, child] of Object.entries(node)) {
+    if (/bonusRounds/i.test(key) && Array.isArray(child)) {
+      for (const round of child) {
+        bonusRounds.push(round);
       }
+    } else if (child && typeof child === 'object') {
+      collectBonusRounds(child);
     }
   }
+}
 
   collectBonusRounds(raw);
 
