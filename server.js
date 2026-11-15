@@ -682,7 +682,12 @@ app.get('/api/history', async (req, res) => {
 
     else if (type === 'all') {
 
-      where = '';
+      where = `
+        WHERE (
+          is_three_rolls = TRUE
+          OR is_five_rolls = TRUE
+        )
+      `;
 
     }
 
