@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>MONOPOLY Big Baller Live Tracker</title>
 
   <style>
@@ -12,184 +13,269 @@
 
     body {
       margin: 0;
-      padding: 15px;
-      background: #0b1020;
+      padding: 14px;
+      background: #0b1120;
       color: #ffffff;
       font-family: Arial, sans-serif;
     }
 
     .container {
-      max-width: 1100px;
+      width: 100%;
+      max-width: 1200px;
       margin: auto;
     }
 
     header {
-      background: #151d32;
-      padding: 20px;
-      border-radius: 14px;
-      margin-bottom: 15px;
-      border: 1px solid #293653;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 20px;
     }
 
     h1 {
-      font-size: 23px;
-      margin: 0 0 10px;
-      color: #f5c542;
+      font-size: 20px;
+      margin: 0;
+      color: #facc15;
     }
 
-    .status {
-      font-size: 13px;
-      color: #9caac5;
+    .subtitle {
+      color: #94a3b8;
+      font-size: 12px;
+      margin-top: 6px;
     }
 
-    .online {
-      color: #35d48a;
+    button {
+      cursor: pointer;
+      border: none;
+      border-radius: 7px;
+      padding: 9px 13px;
+      font-size: 12px;
+      font-weight: bold;
     }
 
-    .offline {
-      color: #ff6464;
+    .refresh-btn {
+      background: #eab308;
+      color: #111827;
     }
 
     .cards {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-      margin-bottom: 15px;
+      gap: 10px;
+      margin-bottom: 20px;
     }
 
     .card {
-      background: #151d32;
-      border: 1px solid #293653;
-      border-radius: 14px;
-      padding: 17px;
+      background: #172033;
+      border: 1px solid #263449;
+      border-radius: 10px;
+      padding: 14px;
+      min-width: 0;
     }
 
-    .card h3 {
-      margin: 0 0 12px;
-      font-size: 14px;
-      color: #aab7d0;
+    .card-title {
+      color: #94a3b8;
+      font-size: 11px;
+      margin-bottom: 8px;
     }
 
-    .number {
-      font-size: 30px;
+    .card-value {
+      font-size: 24px;
       font-weight: bold;
+      color: #ffffff;
     }
 
-    .yellow {
-      color: #f5c542;
+    .section {
+      background: #111b2e;
+      border: 1px solid #263449;
+      border-radius: 10px;
+      padding: 13px;
+      margin-bottom: 18px;
+      min-width: 0;
     }
 
-    .green {
-      color: #35d48a;
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 14px;
     }
 
-    .red {
-      color: #ff6464;
+    h2 {
+      font-size: 16px;
+      margin: 0;
     }
 
-    .section-title {
-      margin: 22px 0 12px;
-      font-size: 18px;
-    }
-
-    .controls {
+    .filters {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 12px;
+      gap: 6px;
+      margin-bottom: 14px;
     }
 
-    button {
-      background: #263653;
-      color: white;
-      border: 1px solid #405477;
-      padding: 10px 15px;
-      border-radius: 8px;
-      cursor: pointer;
+    .filter-btn {
+      background: #263449;
+      color: #cbd5e1;
+      padding: 8px 11px;
     }
 
-    button.active {
-      background: #d5a91f;
+    .filter-btn.active {
+      background: #eab308;
       color: #111827;
-      font-weight: bold;
     }
 
     .table-wrap {
-      overflow-x: auto;
+      width: 100%;
+      overflow: hidden;
     }
 
     table {
-  width: 100%;
-  min-width: 0;
-  table-layout: fixed;
-  border-collapse: collapse;
-}
+      width: 100%;
+      min-width: 0;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
 
-th, td {
-  padding: 8px 3px;
-  border-bottom: 1px solid #293653;
-  text-align: center;
-  font-size: 10px;
-  line-height: 1.4;
-  overflow-wrap: anywhere;
-  word-break: normal;
-}
-
-th {
-  font-size: 9px;
-  font-weight: 600;
-}
-
-td {
-  font-size: 10px;
-}
+    th,
+    td {
+      padding: 9px 4px;
+      text-align: left;
+      border-bottom: 1px solid #263449;
+      font-size: 10px;
+      line-height: 1.4;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
 
     th {
-      color: #f5c542;
+      color: #94a3b8;
+      font-weight: bold;
+      background: #172033;
+    }
+
+    td {
+      color: #e2e8f0;
     }
 
     .empty {
-      color: #9caac5;
       text-align: center;
-      padding: 25px;
+      color: #94a3b8;
+      padding: 22px 5px;
     }
 
-    .note {
+    .type-badge {
+      display: inline-block;
+      padding: 4px 5px;
+      border-radius: 5px;
+      font-size: 9px;
+      font-weight: bold;
+      background: #334155;
+      color: #ffffff;
+    }
+
+    .badge-three {
+      background: #1d4ed8;
+    }
+
+    .badge-five {
+      background: #7c3aed;
+    }
+
+    .badge-big {
+      background: #b45309;
+      color: #fff7ed;
+    }
+
+    .multiplier {
+      color: #facc15;
+      font-weight: bold;
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
       margin-top: 18px;
-      color: #8e9bb4;
+    }
+
+    .pagination button {
+      padding: 8px 12px;
       font-size: 12px;
-      line-height: 1.5;
+      min-width: 36px;
+      background: #263449;
+      color: #ffffff;
+    }
+
+    .pagination button.active {
+      background: #eab308;
+      color: #111827;
+    }
+
+    .pagination button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .hourly-list {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .hour-item {
+      background: #172033;
+      border: 1px solid #263449;
+      border-radius: 7px;
+      padding: 10px;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 11px;
+    }
+
+    .hour-label {
+      color: #94a3b8;
+    }
+
+    .hour-count {
+      color: #facc15;
+      font-weight: bold;
+    }
+
+    .status {
+      color: #94a3b8;
+      font-size: 11px;
+      margin-top: 12px;
+      text-align: center;
     }
 
     @media (min-width: 700px) {
+      body {
+        padding: 24px;
+      }
 
-.pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 18px;
-}
-
-.pagination button {
-  padding: 8px 12px;
-  font-size: 12px;
-  min-width: 36px;
-}
-
-.pagination button.active {
-  background: #d5a91f;
-  color: #111827;
-  font-weight: bold;
-}
-
-.pagination button:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-      
       .cards {
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      th,
+      td {
+        font-size: 13px;
+        padding: 12px 10px;
+      }
+
+      .type-badge {
+        font-size: 11px;
+        padding: 5px 8px;
+      }
+
+      .hourly-list {
         grid-template-columns: repeat(4, 1fr);
       }
     }
@@ -201,67 +287,66 @@ td {
 <div class="container">
 
   <header>
-    <h1>🎩 MONOPOLY BIG BALLER</h1>
-
-    <div class="status">
-      Tracker Status:
-      <strong id="connection" class="offline">Connecting...</strong>
+    <div>
+      <h1>MONOPOLY BIG BALLER</h1>
+      <div class="subtitle">LIVE RESULTS TRACKER</div>
     </div>
 
-    <div class="status" style="margin-top:8px">
-      Last Update:
-      <span id="lastUpdate">Waiting...</span>
-    </div>
+    <button class="refresh-btn" onclick="loadRecords()">
+      ↻ Refresh
+    </button>
   </header>
+
+  <!-- SUMMARY CARDS -->
 
   <div class="cards">
 
     <div class="card">
-      <h3>Total Records</h3>
-      <div class="number yellow" id="totalRecords">0</div>
+      <div class="card-title">TOTAL RECORDS</div>
+      <div class="card-value" id="totalRecords">0</div>
     </div>
 
     <div class="card">
-      <h3>3 Rolls</h3>
-      <div class="number green" id="threeRolls">0</div>
+      <div class="card-title">3 ROLLS</div>
+      <div class="card-value" id="threeRolls">0</div>
     </div>
 
     <div class="card">
-      <h3>5 Rolls</h3>
-      <div class="number yellow" id="fiveRolls">0</div>
+      <div class="card-title">5 ROLLS</div>
+      <div class="card-value" id="fiveRolls">0</div>
     </div>
 
     <div class="card">
-      <h3>Big Wins 100x+</h3>
-      <div class="number red" id="bigWins">0</div>
+      <div class="card-title">BIG WINS 100x+</div>
+      <div class="card-value" id="bigWins">0</div>
     </div>
 
   </div>
 
-  <section class="card">
+  <!-- HISTORICAL RECORDS -->
 
-    <h2 class="section-title">📊 Historical Records</h2>
+  <div class="section">
 
-    <div class="controls">
+    <div class="section-header">
+      <h2>Historical Records</h2>
+    </div>
 
-      <button class="active" data-type="all">
+    <div class="filters">
+
+      <button class="filter-btn active" data-type="all">
         All
       </button>
 
-      <button data-type="3">
+      <button class="filter-btn" data-type="three">
         3 Rolls
       </button>
 
-      <button data-type="5">
+      <button class="filter-btn" data-type="five">
         5 Rolls
       </button>
 
-      <button data-type="bigwin">
+      <button class="filter-btn" data-type="bigwins">
         Big Wins
-      </button>
-
-      <button id="refreshButton">
-        🔄 Refresh
       </button>
 
     </div>
@@ -271,20 +356,19 @@ td {
       <table>
 
         <thead>
-  <tr>
-    
-    <th>Event Type</th>
-    <th>Host</th>
-    <th>Multiplier</th>
-    <th>Settled Time</th>
-    <th>Adjusted Time</th>
-  </tr>
-</thead>
+          <tr>
+            <th>Event Type</th>
+            <th>Host</th>
+            <th>Multiplier</th>
+            <th>Settled Time</th>
+            <th>Adjusted Time</th>
+          </tr>
+        </thead>
 
         <tbody id="records">
 
           <tr>
-            <td colspan="6" class="empty">
+            <td colspan="5" class="empty">
               Loading records...
             </td>
           </tr>
@@ -294,107 +378,191 @@ td {
       </table>
 
     </div>
-<div id="pagination" class="pagination"></div>
-  </section>
 
-  <section class="card">
+    <div id="pagination" class="pagination"></div>
 
-    <h2 class="section-title">
-      🕒 Hourly Statistics
-    </h2>
-
-    <div id="hourlyStats" class="empty">
-      Loading statistics...
+    <div class="status" id="recordStatus">
+      Waiting for data...
     </div>
 
-  </section>
+  </div>
 
-  <div class="note">
-    Automatic refresh: Every 30 seconds.<br>
-    All displayed times use Philippine time (Asia/Manila).<br>
-    Adjusted times are historical display calculations only,
-    not predictions of future results.
+  <!-- HOURLY STATISTICS -->
+
+  <div class="section">
+
+    <div class="section-header">
+      <h2>Hourly Statistics</h2>
+    </div>
+
+    <div class="hourly-list" id="hourlyStats">
+      <div class="empty">Loading statistics...</div>
+    </div>
+
   </div>
 
 </div>
 
 <script>
 
+'use strict';
+
 let currentType = 'all';
 let currentPage = 1;
+
 const recordsPerPage = 20;
+
 let allRecords = [];
 
-function formatTime(value) {
+
+// SAFE TEXT
+
+function escapeHTML(value) {
+  return String(value ?? '').replace(/[&<>"']/g, function(char) {
+    return {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    }[char];
+  });
+}
+
+
+// DATE FORMAT
+
+function formatDate(value) {
 
   if (!value) return '-';
 
-  return new Date(value).toLocaleString('en-PH', {
-    timeZone: 'Asia/Manila',
+  const date = new Date(value);
+
+  if (isNaN(date.getTime())) return '-';
+
+  return date.toLocaleString('en-PH', {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
     hour12: true
   });
 
 }
 
-async function loadStats() {
 
-  try {
+// GET MULTIPLIER
 
-    const response = await fetch('/api/stats');
+function getMultiplier(record) {
 
-    if (!response.ok) {
-      throw new Error('Stats request failed');
-    }
+  const value =
+    record.big_win_multiplier ??
+    record.multiplier ??
+    record.three_multiplier ??
+    record.five_multiplier;
 
-    const data = await response.json();
-
-    document.getElementById('totalRecords').textContent =
-      data.totals.total_records;
-
-    document.getElementById('threeRolls').textContent =
-      data.totals.three_rolls;
-
-    document.getElementById('fiveRolls').textContent =
-      data.totals.five_rolls;
-
-    document.getElementById('bigWins').textContent =
-      data.totals.big_wins;
-
-    const hourly = data.hourlyAsiaManila || [];
-
-    document.getElementById('hourlyStats').innerHTML =
-      hourly.length
-        ? hourly.map(item => `
-          <div style="
-            padding:10px;
-            border-bottom:1px solid #293653;
-            text-align:left;
-          ">
-            ${String(item.hour).padStart(2, '0')}:00 —
-            Total: ${item.total} |
-            3 Rolls: ${item.three_rolls} |
-            5 Rolls: ${item.five_rolls} |
-            Big Wins: ${item.big_wins}
-          </div>
-        `).join('')
-        : 'No historical statistics yet.';
-
-  } catch (error) {
-
-    console.error(error);
-
+  if (value === null || value === undefined || value === '') {
+    return '-';
   }
+
+  const number = Number(value);
+
+  if (Number.isNaN(number)) {
+    return escapeHTML(value);
+  }
+
+  return number + 'x';
 
 }
 
-async function renderRecords() {
+
+// GET EVENT TYPE
+
+function getEventType(record) {
+
+  if (record.is_three_rolls) {
+    return {
+      label: '3 Rolls',
+      badge: 'badge-three'
+    };
+  }
+
+  if (record.is_five_rolls) {
+    return {
+      label: '5 Rolls',
+      badge: 'badge-five'
+    };
+  }
+
+  const multiplier = Number(
+    record.big_win_multiplier ??
+    record.multiplier ??
+    0
+  );
+
+  if (record.is_big_win || multiplier >= 100) {
+    return {
+      label: 'Big Win',
+      badge: 'badge-big'
+    };
+  }
+
+  return {
+    label: record.roll_type || 'Other',
+    badge: ''
+  };
+
+}
+
+
+// SUMMARY CARDS
+
+function updateCards(records) {
+
+  const three = records.filter(
+    record => record.is_three_rolls
+  ).length;
+
+  const five = records.filter(
+    record => record.is_five_rolls
+  ).length;
+
+  const big = records.filter(record => {
+
+    const multiplier = Number(
+      record.big_win_multiplier ??
+      record.multiplier ??
+      0
+    );
+
+    return record.is_big_win || multiplier >= 100;
+
+  }).length;
+
+  document.getElementById('totalRecords').textContent =
+    records.length;
+
+  document.getElementById('threeRolls').textContent =
+    three;
+
+  document.getElementById('fiveRolls').textContent =
+    five;
+
+  document.getElementById('bigWins').textContent =
+    big;
+
+}
+
+
+// RENDER RECORDS
+
+function renderRecords() {
 
   const tbody = document.getElementById('records');
+
   const pagination = document.getElementById('pagination');
 
-  const totalPages = Math.ceil(allRecords.length / recordsPerPage);
-
-  if (allRecords.length === 0) {
+  if (!allRecords.length) {
 
     tbody.innerHTML = `
       <tr>
@@ -405,85 +573,119 @@ async function renderRecords() {
     `;
 
     pagination.innerHTML = '';
+
     return;
   }
+
+  const totalPages = Math.ceil(
+    allRecords.length / recordsPerPage
+  );
 
   if (currentPage > totalPages) {
     currentPage = totalPages;
   }
 
   const start = (currentPage - 1) * recordsPerPage;
-  const end = start + recordsPerPage;
 
-  const pageRecords = allRecords.slice(start, end);
+  const pageRecords = allRecords.slice(
+    start,
+    start + recordsPerPage
+  );
 
   tbody.innerHTML = pageRecords.map(record => {
 
-    const types = [];
+    const event = getEventType(record);
 
-    if (record.is_three_rolls) types.push('3 Rolls');
-    if (record.is_five_rolls) types.push('5 Rolls');
-    if (record.is_big_win) types.push('Big Win');
+    const host =
+      record.dealer_name ||
+      record.host_name ||
+      '-';
+
+    const settled =
+      formatDate(record.settled_at);
+
+    const adjusted =
+      formatDate(record.adjusted_at);
 
     return `
       <tr>
-        <td>${types.join(', ') || '-'}</td>
-
-        <td>${escapeHTML(record.dealer_name || 'Unknown')}</td>
 
         <td>
-          ${
-            record.big_win_multiplier !== null
-              ? Number(record.big_win_multiplier).toFixed(2) + 'x'
-              : '-'
-          }
+          <span class="type-badge ${event.badge}">
+            ${escapeHTML(event.label)}
+          </span>
         </td>
 
-        <td>${formatTime(record.settled_at)}</td>
+        <td>${escapeHTML(host)}</td>
 
-        <td>${formatTime(record.adjusted_at)}</td>
+        <td class="multiplier">
+          ${escapeHTML(getMultiplier(record))}
+        </td>
+
+        <td>${escapeHTML(settled)}</td>
+
+        <td>${escapeHTML(adjusted)}</td>
+
       </tr>
     `;
 
   }).join('');
 
+
+  // PAGINATION BUTTONS
+
   let buttons = '';
 
   buttons += `
-    <button ${currentPage === 1 ? 'disabled' : ''}
-      onclick="changePage(${currentPage - 1})">
-      Prev
+    <button
+      onclick="changePage(${currentPage - 1})"
+      ${currentPage === 1 ? 'disabled' : ''}
+    >
+      Previous
     </button>
   `;
 
-  for (let i = 1; i <= totalPages; i++) {
+  for (let page = 1; page <= totalPages; page++) {
 
     buttons += `
       <button
-        class="${i === currentPage ? 'active' : ''}"
-        onclick="changePage(${i})">
-        ${i}
+        class="${page === currentPage ? 'active' : ''}"
+        onclick="changePage(${page})"
+      >
+        ${page}
       </button>
     `;
 
   }
 
   buttons += `
-    <button ${currentPage === totalPages ? 'disabled' : ''}
-      onclick="changePage(${currentPage + 1})">
+    <button
+      onclick="changePage(${currentPage + 1})"
+      ${currentPage === totalPages ? 'disabled' : ''}
+    >
       Next
     </button>
   `;
 
   pagination.innerHTML = buttons;
 
+  document.getElementById('recordStatus').textContent =
+    `Showing ${start + 1}-${Math.min(start + recordsPerPage, allRecords.length)} of ${allRecords.length} records | Page ${currentPage} of ${totalPages}`;
+
 }
+
+
+// CHANGE PAGE
 
 function changePage(page) {
 
-  const totalPages = Math.ceil(allRecords.length / recordsPerPage);
+  const totalPages = Math.ceil(
+    allRecords.length / recordsPerPage
+  );
 
-  if (page < 1 || page > totalPages) return;
+  if (page < 1 || page > totalPages) {
+    return;
+  }
 
   currentPage = page;
 
@@ -491,13 +693,66 @@ function changePage(page) {
 
 }
 
+
+// HOURLY STATISTICS
+
+function renderHourlyStats(records) {
+
+  const container = document.getElementById('hourlyStats');
+
+  const hours = {};
+
+  for (let i = 0; i < 24; i++) {
+
+    const label = String(i).padStart(2, '0') + ':00';
+
+    hours[label] = 0;
+
+  }
+
+  records.forEach(record => {
+
+    if (!record.settled_at) return;
+
+    const date = new Date(record.settled_at);
+
+    if (isNaN(date.getTime())) return;
+
+    const hour = String(date.getHours()).padStart(2, '0') + ':00';
+
+    hours[hour]++;
+
+  });
+
+  container.innerHTML = Object.entries(hours).map(
+    ([hour, count]) => {
+
+      return `
+        <div class="hour-item">
+          <span class="hour-label">${hour}</span>
+          <span class="hour-count">${count}</span>
+        </div>
+      `;
+
+    }
+  ).join('');
+
+}
+
+
+// LOAD RECORDS
+
 async function loadRecords() {
 
   const tbody = document.getElementById('records');
 
+  const pagination = document.getElementById('pagination');
+
   tbody.innerHTML = `
     <tr>
-      <td colspan="5" class="empty">Loading...</td>
+      <td colspan="5" class="empty">
+        Loading records...
+      </td>
     </tr>
   `;
 
@@ -515,8 +770,12 @@ async function loadRecords() {
 
     allRecords = data.records || [];
 
+    updateCards(allRecords);
+
     renderRecords();
 
+    renderHourlyStats(allRecords);
+
   } catch (error) {
 
     tbody.innerHTML = `
@@ -527,86 +786,19 @@ async function loadRecords() {
       </tr>
     `;
 
-    document.getElementById('pagination').innerHTML = '';
+    pagination.innerHTML = '';
 
-    console.error(error);
+    document.getElementById('recordStatus').textContent =
+      'Connection error. Please refresh.';
 
-  }
-
-                         }
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="5" class="empty">
-          Unable to load records.
-        </td>
-      </tr>
-    `;
-
-    console.error(error);
+    console.error('Load Records Error:', error);
 
   }
 
 }
 
-function escapeHTML(value) {
 
-  return String(value).replace(/[&<>"']/g, char => ({
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '"': '&quot;',
-    "'": '&#039;'
-  })[char]);
-
-}
-
-async function checkConnection() {
-
-  const status = document.getElementById('connection');
-
-  try {
-
-    const response = await fetch('/health');
-
-    if (!response.ok) {
-      throw new Error('Server unavailable');
-    }
-
-    const data = await response.json();
-
-    status.textContent =
-      data.database === 'ok'
-        ? 'ONLINE'
-        : 'DATABASE ERROR';
-
-    status.className =
-      data.database === 'ok'
-        ? 'online'
-        : 'offline';
-
-    document.getElementById('lastUpdate').textContent =
-      data.lastSuccessAt
-        ? formatTime(data.lastSuccessAt)
-        : 'Waiting for first successful poll';
-
-  } catch (error) {
-
-    status.textContent = 'OFFLINE';
-    status.className = 'offline';
-
-  }
-
-}
-
-async function refreshDashboard() {
-
-  await Promise.all([
-    loadStats(),
-    loadRecords(),
-    checkConnection()
-  ]);
-
-}
+// FILTER BUTTONS
 
 document.querySelectorAll('[data-type]').forEach(button => {
 
@@ -620,24 +812,29 @@ document.querySelectorAll('[data-type]').forEach(button => {
 
     currentType = button.dataset.type;
 
-currentPage = 1;
+    currentPage = 1;
 
-loadRecords();
+    loadRecords();
 
   });
 
 });
 
-document.getElementById('refreshButton')
-  .addEventListener('click', refreshDashboard);
 
-refreshDashboard();
+// INITIAL LOAD
 
-setInterval(refreshDashboard, 30000);
+loadRecords();
+
+
+// AUTO REFRESH EVERY 30 SECONDS
+
+setInterval(() => {
+
+  loadRecords();
+
+}, 30000);
 
 </script>
-
-<script src="/analytics.js"></script>
 
 </body>
 </html>
