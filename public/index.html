@@ -250,7 +250,7 @@
       text-align: center;
     }
 
-    /* BONUS ACTIVITY MONITOR - ADDITION */
+    /* BONUS ACTIVITY MONITOR */
 
     .bonus-monitor {
       display: grid;
@@ -396,7 +396,7 @@
 
   </div>
 
-  <!-- BONUS ACTIVITY MONITOR - NEW -->
+  <!-- BONUS ACTIVITY MONITOR -->
 
   <div class="section">
 
@@ -406,8 +406,6 @@
     </div>
 
     <div class="bonus-monitor">
-
-      <!-- THREE ROLLS -->
 
       <div class="bonus-card three">
 
@@ -439,8 +437,6 @@
         </div>
 
       </div>
-
-      <!-- FIVE ROLLS -->
 
       <div class="bonus-card five">
 
@@ -567,17 +563,15 @@ let currentPage = 1;
 const recordsPerPage = 20;
 
 let allRecords = [];
-
-
-// BONUS ACTIVITY MONITOR DATA
-
 let bonusRecords = [];
 
 
 // SAFE TEXT
 
 function escapeHTML(value) {
+
   return String(value ?? '').replace(/[&<>"']/g, function(char) {
+
     return {
       '&': '&amp;',
       '<': '&lt;',
@@ -585,7 +579,9 @@ function escapeHTML(value) {
       '"': '&quot;',
       "'": '&#039;'
     }[char];
+
   });
+
 }
 
 
@@ -606,6 +602,19 @@ function formatDate(value) {
     minute: '2-digit',
     hour12: true
   });
+
+}
+
+
+// GET ADJUSTED DATE
+
+function getAdjustedDate(record) {
+
+  const value = record.adjusted_at || record.settled_at;
+
+  const date = new Date(value);
+
+  return isNaN(date.getTime()) ? null : date;
 
 }
 
@@ -633,6 +642,7 @@ function getMultiplier(record) {
     return value !== null && value !== undefined
       ? Number(value) + 'x'
       : '-';
+
   }
 
   if (record.is_five_rolls) {
@@ -649,6 +659,7 @@ function getMultiplier(record) {
     return value !== null && value !== undefined
       ? Number(value) + 'x'
       : '-';
+
   }
 
   return '-';
@@ -661,17 +672,21 @@ function getMultiplier(record) {
 function getEventType(record) {
 
   if (record.is_three_rolls) {
+
     return {
       label: '3 Rolls',
       badge: 'badge-three'
     };
+
   }
 
   if (record.is_five_rolls) {
+
     return {
       label: '5 Rolls',
       badge: 'badge-five'
     };
+
   }
 
   return {
@@ -726,7 +741,11 @@ function renderRecords() {
 
     pagination.innerHTML = '';
 
+    document.getElementById('recordStatus').textContent =
+      'No records available';
+
     return;
+
   }
 
   const totalPages = Math.ceil(
@@ -753,12 +772,6 @@ function renderRecords() {
       record.host_name ||
       '-';
 
-    const settled =
-      formatDate(record.settled_at);
-
-    const adjusted =
-      formatDate(record.adjusted_at);
-
     return `
       <tr>
 
@@ -774,9 +787,9 @@ function renderRecords() {
           ${escapeHTML(getMultiplier(record))}
         </td>
 
-        <td>${escapeHTML(settled)}</td>
+        <td>${escapeHTML(formatDate(record.settled_at))}</td>
 
-        <td>${escapeHTML(adjusted)}</td>
+        <td>${escapeHTML(formatDate(record.adjusted_at))}</td>
 
       </tr>
     `;
@@ -784,7 +797,7 @@ function renderRecords() {
   }).join('');
 
 
-  // PAGINATION BUTTONS
+  // PAGINATION
 
   let buttons = '';
 
@@ -870,7 +883,8 @@ function renderHourlyStats(records) {
 
     if (isNaN(date.getTime())) return;
 
-    const hour = String(date.getHours()).padStart(2, '0') + ':00';
+    const hour =
+      String(date.getHours()).padStart(2, '0') + ':00';
 
     hours[hour]++;
 
@@ -893,11 +907,11 @@ function renderHourlyStats(records) {
 
 
 // ===================================
-// BONUS ACTIVITY MONITOR FUNCTIONS
+// BONUS ACTIVITY MONITOR
 // ===================================
 
 
-// GET BONUS MULTIPLIER
+// BONUS MULTIPLIER
 
 function getBonusMultiplier(record, type) {
 
@@ -930,9 +944,7 @@ function getBonusMultiplier(record, type) {
 
 function formatElapsed(milliseconds) {
 
-  if (milliseconds < 0) {
-    milliseconds = 0;
-  }
+  milliseconds = Math.max(0, milliseconds);
 
   const totalSeconds = Math.floor(milliseconds / 1000);
 
@@ -953,22 +965,7 @@ function formatElapsed(milliseconds) {
 }
 
 
-// AVERAGE INTERVAL
-
-// GET ADJUSTED DATE
-
-function getAdjustedDate(record) {
-
-  const value = record.adjusted_at || record.settled_at;
-
-  const date = new Date(value);
-
-  return isNaN(date.getTime()) ? null : date;
-
-}
-
-
-// AVERAGE INTERVAL - BASED ON ADJUSTED TIME
+// AVERAGE INTERVAL - ADJUSTED TIME
 
 function averageInterval(records) {
 
@@ -984,7 +981,9 @@ function averageInterval(records) {
   let total = 0;
 
   for (let i = 1; i < dates.length; i++) {
+
     total += dates[i] - dates[i - 1];
+
   }
 
   const average = total / (dates.length - 1);
@@ -992,92 +991,9 @@ function averageInterval(records) {
   const minutes = Math.round(average / 60000);
 
   if (minutes < 60) {
+
     return minutes + ' min';
-  }
 
-  return Math.floor(minutes / 60) +
-    'h ' + (minutes % 60) + 'm';
-
-}
-}
-
-
-// UPDATE BONUS MONITOR
-
-function updateBonusMonitor() {
-// UPDATE BONUS MONITOR
-
-function updateBonusMonitor() {
-
-  const now = Date.now();
-
-  ['three', 'five'].forEach(type => {
-
-    const isThree = type === 'three';
-
-    const filtered = bonusRecords
-      .filter(record =>
-        isThree
-          ? record.is_three_rolls
-          : record.is_five_rolls
-      )
-      .sort((a, b) => {
-
-        const dateA = getAdjustedDate(a);
-        const dateB = getAdjustedDate(b);
-
-        return (dateB?.getTime() || 0) -
-               (dateA?.getTime() || 0);
-
-      });
-
-    const prefix = isThree ? 'three' : 'five';
-
-    const last = filtered[0];
-
-// ===================================
-// BONUS ACTIVITY MONITOR FUNCTIONS
-// ===================================
-
-
-// GET ADJUSTED DATE
-
-function getAdjustedDate(record) {
-
-  const value = record.adjusted_at || record.settled_at;
-
-  const date = new Date(value);
-
-  return isNaN(date.getTime()) ? null : date;
-
-}
-
-
-// AVERAGE INTERVAL - BASED ON ADJUSTED TIME
-
-function averageInterval(records) {
-
-  const dates = records
-    .map(record => getAdjustedDate(record))
-    .filter(date => date !== null)
-    .sort((a, b) => a - b);
-
-  if (dates.length < 2) {
-    return '-';
-  }
-
-  let total = 0;
-
-  for (let i = 1; i < dates.length; i++) {
-    total += dates[i] - dates[i - 1];
-  }
-
-  const average = total / (dates.length - 1);
-
-  const minutes = Math.round(average / 60000);
-
-  if (minutes < 60) {
-    return minutes + ' min';
   }
 
   return Math.floor(minutes / 60) +
@@ -1089,8 +1005,6 @@ function averageInterval(records) {
 // UPDATE BONUS MONITOR
 
 function updateBonusMonitor() {
-
-  const now = Date.now();
 
   ['three', 'five'].forEach(type => {
 
@@ -1134,19 +1048,19 @@ function updateBonusMonitor() {
         '-';
 
       return;
+
     }
 
     // USE ADJUSTED TIME
 
     const lastDate = getAdjustedDate(last);
 
-    if (!lastDate) {
-      return;
-    }
+    if (!lastDate) return;
 
     // TIMER BASED ON ADJUSTED TIME
+    // Walang additional 3 or 4 minutes na ibabawas.
 
-    const elapsed = now - lastDate.getTime();
+    const elapsed = Date.now() - lastDate.getTime();
 
     document.getElementById(prefix + 'Timer').textContent =
       formatElapsed(elapsed);
@@ -1154,7 +1068,7 @@ function updateBonusMonitor() {
     document.getElementById(prefix + 'Elapsed').textContent =
       'TIME SINCE LAST BONUS';
 
-    // LAST APPEARED
+    // LAST APPEARED - ADJUSTED TIME
 
     document.getElementById(prefix + 'LastTime').textContent =
       formatDate(last.adjusted_at || last.settled_at);
@@ -1164,7 +1078,7 @@ function updateBonusMonitor() {
     document.getElementById(prefix + 'LastMultiplier').textContent =
       getBonusMultiplier(last, type);
 
-    // AVERAGE INTERVAL
+    // AVERAGE INTERVAL - ADJUSTED TIME
 
     document.getElementById(prefix + 'Average').textContent =
       averageInterval(filtered);
@@ -1172,6 +1086,7 @@ function updateBonusMonitor() {
   });
 
 }
+
 
 // LOAD BONUS MONITOR DATA
 
@@ -1184,7 +1099,11 @@ async function loadBonusMonitor() {
     );
 
     if (!response.ok) {
-      throw new Error('Bonus monitor request failed');
+
+      throw new Error(
+        'Bonus monitor request failed: ' + response.status
+      );
+
     }
 
     const data = await response.json();
@@ -1225,7 +1144,11 @@ async function loadRecords() {
     );
 
     if (!response.ok) {
-      throw new Error('Records request failed');
+
+      throw new Error(
+        'Records request failed: ' + response.status
+      );
+
     }
 
     const data = await response.json();
@@ -1238,7 +1161,8 @@ async function loadRecords() {
 
     renderHourlyStats(allRecords);
 
-    // BONUS MONITOR UPDATE
+    // LOAD BONUS MONITOR INDEPENDENTLY
+
     loadBonusMonitor();
 
   } catch (error) {
@@ -1270,7 +1194,9 @@ document.querySelectorAll('[data-type]').forEach(button => {
   button.addEventListener('click', () => {
 
     document.querySelectorAll('[data-type]').forEach(item => {
+
       item.classList.remove('active');
+
     });
 
     button.classList.add('active');
