@@ -965,9 +965,9 @@ function formatElapsed(milliseconds) {
 }
 
 
-// AVERAGE INTERVAL - ADJUSTED TIME
+// AVERAGE INTERVAL - WITH 3/4 MINUTE ADJUSTMENT
 
-function averageInterval(records) {
+function averageInterval(records, type) {
 
   const dates = records
     .map(record => getAdjustedDate(record))
@@ -988,7 +988,14 @@ function averageInterval(records) {
 
   const average = total / (dates.length - 1);
 
-  const minutes = Math.round(average / 60000);
+  // THREE ROLLS: MINUS 3 MINUTES
+  // FIVE ROLLS: MINUS 4 MINUTES
+
+  const deduction = (type === 'three' ? 3 : 4) * 60000;
+
+  const adjustedAverage = Math.max(0, average - deduction);
+
+  const minutes = Math.round(adjustedAverage / 60000);
 
   if (minutes < 60) {
 
@@ -1058,7 +1065,6 @@ function updateBonusMonitor() {
     if (!lastDate) return;
 
     // TIMER BASED ON ADJUSTED TIME
-    // Walang additional 3 or 4 minutes na ibabawas.
 
     const elapsed = Date.now() - lastDate.getTime();
 
@@ -1078,10 +1084,10 @@ function updateBonusMonitor() {
     document.getElementById(prefix + 'LastMultiplier').textContent =
       getBonusMultiplier(last, type);
 
-    // AVERAGE INTERVAL - ADJUSTED TIME
+    // AVERAGE INTERVAL - WITH TYPE-SPECIFIC DEDUCTION
 
     document.getElementById(prefix + 'Average').textContent =
-      averageInterval(filtered);
+      averageInterval(filtered, type);
 
   });
 
