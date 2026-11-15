@@ -44,7 +44,6 @@ let lastPollError = null;
 let lastFetchedCount = 0;
 let lastSavedCount = 0;
 
-// SMART ANALYSIS STATUS
 let analysisInProgress = false;
 
 let analysisCache = {
@@ -128,6 +127,52 @@ async function initializeDatabase() {
   await pool.query(`
     CREATE INDEX IF NOT EXISTS idx_game_history_settled
     ON game_history(settled_at DESC)
+  `);
+
+
+  // ----------------------------------
+  // AI FORECAST PERFORMANCE TABLE
+  // ----------------------------------
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS ai_forecast_performance (
+
+      id BIGSERIAL PRIMARY KEY,
+
+      game_type TEXT NOT NULL,
+
+      generated_at TIMESTAMPTZ NOT NULL,
+
+      reference_last_bonus_at TIMESTAMPTZ NOT NULL,
+
+      central_center_at TIMESTAMPTZ NOT NULL,
+
+      central_window_start TIMESTAMPTZ NOT NULL,
+
+      central_window_end TIMESTAMPTZ NOT NULL,
+
+      candidate_windows JSONB NOT NULL,
+
+      status TEXT DEFAULT 'pending',
+
+      actual_bonus_at TIMESTAMPTZ,
+
+      error_minutes NUMERIC,
+
+      central_hit BOOLEAN,
+
+      candidate_hit BOOLEAN,
+
+      evaluated_at TIMESTAMPTZ,
+
+      UNIQUE (game_type, generated_at)
+
+    )
+  `);
+
+  await pool.query(`
+    CREATE INDEX IF NOT EXISTS idx_ai_performance_pending
+    ON ai_forecast_performance(game_type, status)
   `);
 
 }
@@ -522,6 +567,134 @@ async function saveEvent(event) {
 
 
 // ----------------------------------
+// AI FORECAST PERFORMANCE
+// ----------------------------------
+
+// SAVE FORECAST SNAPSHOT
+
+async function saveForecastSnapshot(
+  gameType,
+  forecast,
+  generatedAt
+) {
+
+  if (
+    !forecast ||
+    !forecast.lastBonusAt ||
+    !Array.isArray(forecast.estimatedWindows) ||
+    forecast.estimatedWindows.length !== 5
+  ) {
+    return;
+  }
+
+  const central = forecast.estimatedWindows.find(
+    window => window.rank === 3
+  );
+
+  if (!central) return;
+
+  await pool.query(`
+
+    INSERT INTO ai_forecast_performance
+    (
+      game_type,
+      generated_at,
+      reference_last_bonus_at,
+      central_center_at,
+      central_window_start,
+      central_window_end,
+      candidate_windows
+    )
+
+    VALUES ($1,$2,$3,$4,$5,$6,$7::jsonb)
+
+    ON CONFLICT (game_type, generated_at)
+    DO NOTHING
+
+  `, [
+
+    gameType,
+    generatedAt,
+    forecast.lastBonusAt,
+    central.centerAt,
+    central.windowStart,
+    central.windowEnd,
+    JSON.stringify(forecast.estimatedWindows)
+
+  ]);
+
+}
+
+
+// EVALUATE ACTUAL BONUS
+
+async function evaluateActualBonus(
+  gameType,
+  actualBonusAt
+) {
+
+  await pool.query(`
+
+    UPDATE ai_forecast_performance
+
+    SET
+
+      status = 'evaluated',
+
+      actual_bonus_at = $2,
+
+      error_minutes = EXTRACT(
+        EPOCH FROM (
+          $2::timestamptz - central_center_at
+        )
+      ) / 60,
+
+      central_hit = (
+        $2::timestamptz
+        BETWEEN central_window_start
+        AND central_window_end
+      ),
+
+      candidate_hit = EXISTS (
+
+        SELECT 1
+
+        FROM jsonb_array_elements(candidate_windows) AS w
+
+        WHERE
+
+          $2::timestamptz
+          BETWEEN
+            (w->>'windowStart')::timestamptz
+
+          AND
+            (w->>'windowEnd')::timestamptz
+
+      ),
+
+      evaluated_at = NOW()
+
+    WHERE
+
+      game_type = $1
+
+      AND status = 'pending'
+
+      AND generated_at < $2::timestamptz
+
+      AND reference_last_bonus_at < $2::timestamptz
+
+  `, [
+
+    gameType,
+    actualBonusAt
+
+  ]);
+
+}
+
+
+// ----------------------------------
 // LIVE MONITOR
 // ----------------------------------
 
@@ -568,8 +741,34 @@ async function pollUpstream() {
 
       if (!event) continue;
 
-      if (await saveEvent(event)) {
+      const inserted = await saveEvent(event);
+
+      if (inserted) {
+
         saved++;
+
+        // THREE ROLLS PERFORMANCE EVALUATION
+
+        if (event.isThreeRolls) {
+
+          await evaluateActualBonus(
+            'three_rolls',
+            event.adjustedAt
+          );
+
+        }
+
+        // FIVE ROLLS PERFORMANCE EVALUATION
+
+        if (event.isFiveRolls) {
+
+          await evaluateActualBonus(
+            'five_rolls',
+            event.adjustedAt
+          );
+
+        }
+
       }
 
     }
@@ -614,8 +813,6 @@ async function runAutomaticAnalysis() {
 
   try {
 
-    // HOURLY ANALYSIS
-
     const hourly = await pool.query(`
 
       SELECT
@@ -646,8 +843,6 @@ async function runAutomaticAnalysis() {
     `);
 
 
-    // DAILY ANALYSIS
-
     const daily = await pool.query(`
 
       SELECT
@@ -677,8 +872,6 @@ async function runAutomaticAnalysis() {
 
     `);
 
-
-    // TOTAL RECORDS
 
     const totals = await pool.query(`
 
@@ -715,8 +908,6 @@ async function runAutomaticAnalysis() {
     ];
 
 
-    // GET TOP HOURS
-
     function topHours(rows, type) {
 
       return rows
@@ -737,8 +928,6 @@ async function runAutomaticAnalysis() {
 
     }
 
-
-    // GET TOP DAYS
 
     function topDays(rows, type) {
 
@@ -762,8 +951,6 @@ async function runAutomaticAnalysis() {
 
     }
 
-
-    // SAVE ANALYSIS RESULTS
 
     analysisCache = {
 
@@ -937,8 +1124,6 @@ function estimateWithModel(values, model) {
 
   if (model === 'weighted') {
 
-    // Recent intervals receive more weight.
-    // The newest interval has weight 1.
     let weightedTotal = 0;
     let totalWeight = 0;
 
@@ -983,8 +1168,6 @@ function runIntervalBacktest(intervals) {
     const errors = [];
     const signedErrors = [];
 
-    // Each test only uses intervals that came before it.
-    // Start after five historical intervals are available.
     for (let index = 5; index < intervals.length; index++) {
 
       const training = intervals.slice(0, index);
@@ -1019,7 +1202,6 @@ function runIntervalBacktest(intervals) {
 
   }
 
-  // Do not select a model based on too few test cases.
   const eligible = models
     .filter(model => results[model].samples >= 5)
     .sort((a, b) =>
@@ -1110,8 +1292,6 @@ function buildBonusForecast(timestampValues) {
       timestamps[index - 1].getTime()
     ) / 60000;
 
-    // Ignore zero or negative gaps caused by duplicate timestamps
-    // or inconsistent source ordering.
     if (minutes > 0 && Number.isFinite(minutes)) {
       intervals.push(minutes);
     }
@@ -1159,8 +1339,8 @@ function buildBonusForecast(timestampValues) {
 
   result.backtestSamples = backtest.selected.samples;
 
-  // Current elapsed time since the latest adjusted bonus timestamp.
   const lastTimestamp = timestamps[timestamps.length - 1];
+
   const currentGap = Math.max(
     0,
     (Date.now() - lastTimestamp.getTime()) / 60000
@@ -1168,7 +1348,6 @@ function buildBonusForecast(timestampValues) {
 
   result.currentGapMinutes = roundNumber(currentGap);
 
-  // Robust anomaly check using median absolute deviation.
   const absoluteDeviations = intervals.map(
     value => Math.abs(value - med)
   );
@@ -1193,9 +1372,8 @@ function buildBonusForecast(timestampValues) {
 
   }
 
-  // Confidence describes the stability of the interval estimate,
-  // NOT the probability that a bonus will happen.
   const mae = backtest.selected.maeMinutes;
+
   const relativeMae = (
     mae !== null && med > 0
   ) ? mae / med : null;
@@ -1210,6 +1388,7 @@ function buildBonusForecast(timestampValues) {
   ) {
 
     result.confidence = 'Higher';
+
     result.confidenceReason =
       'Large interval sample with relatively consistent gaps and measurable backtest error. This is not a chance-of-bonus percentage.';
 
@@ -1223,19 +1402,19 @@ function buildBonusForecast(timestampValues) {
   ) {
 
     result.confidence = 'Moderate';
+
     result.confidenceReason =
       'Some historical consistency is present, but timing uncertainty remains substantial. This is not a chance-of-bonus percentage.';
 
   } else {
 
     result.confidence = 'Low';
+
     result.confidenceReason =
       'Historical intervals are limited or variable, so estimated timing is uncertain. This is not a chance-of-bonus percentage.';
 
   }
 
-  // Generate five alternative timing windows from bootstrap
-  // resampling of observed intervals. This does not simulate game outcomes.
   const bootstrap = createBootstrapEstimates(
     intervals,
     selectedModel,
@@ -1254,9 +1433,8 @@ function buildBonusForecast(timestampValues) {
     { label: 'LATER RANGE', value: 0.90 }
   ];
 
-  // Window width reflects historical dispersion, with a small
-  // minimum so the UI does not display a false exact minute.
   const intervalSpread = mad > 0 ? mad : deviation;
+
   const halfWindow = Math.max(
     3,
     Math.min(20, intervalSpread * 0.25)
@@ -1316,8 +1494,6 @@ async function runBonusIntelligenceAnalysis() {
 
   try {
 
-    // Read ALL stored bonus timestamps, not just the latest
-    // 200 records shown by the frontend.
     const result = await pool.query(`
 
       SELECT
@@ -1370,6 +1546,24 @@ async function runBonusIntelligenceAnalysis() {
 
     };
 
+
+    // ----------------------------------
+    // SAVE FORECAST PERFORMANCE SNAPSHOTS
+    // ----------------------------------
+
+    await saveForecastSnapshot(
+      'three_rolls',
+      intelligenceCache.threeRolls,
+      intelligenceCache.lastAnalysisAt
+    );
+
+    await saveForecastSnapshot(
+      'five_rolls',
+      intelligenceCache.fiveRolls,
+      intelligenceCache.lastAnalysisAt
+    );
+
+
     console.log(
       'BONUS INTELLIGENCE UPDATED:',
       intelligenceCache.lastAnalysisAt
@@ -1411,6 +1605,216 @@ app.get('/api/analysis', (req, res) => {
 app.get('/api/intelligence', (req, res) => {
 
   res.json(intelligenceCache);
+
+});
+
+
+// ----------------------------------
+// AI PERFORMANCE API
+// ----------------------------------
+
+app.get('/api/performance', async (req, res) => {
+
+  try {
+
+    const summary = await pool.query(`
+
+      SELECT
+
+        game_type,
+
+        COUNT(*) FILTER (
+          WHERE status = 'evaluated'
+        )::int AS total_evaluated,
+
+        COUNT(*) FILTER (
+          WHERE status = 'pending'
+        )::int AS total_pending,
+
+        ROUND(
+          AVG(ABS(error_minutes)) FILTER (
+            WHERE status = 'evaluated'
+          ),
+          1
+        ) AS average_error_minutes,
+
+        ROUND(
+          AVG(error_minutes) FILTER (
+            WHERE status = 'evaluated'
+          ),
+          1
+        ) AS average_signed_error_minutes,
+
+        COUNT(*) FILTER (
+          WHERE central_hit = TRUE
+        )::int AS central_hits,
+
+        COUNT(*) FILTER (
+          WHERE candidate_hit = TRUE
+        )::int AS candidate_hits,
+
+        ROUND(
+          100.0 * COUNT(*) FILTER (
+            WHERE central_hit = TRUE
+          ) /
+          NULLIF(
+            COUNT(*) FILTER (
+              WHERE status = 'evaluated'
+            ),
+            0
+          ),
+          1
+        ) AS central_hit_rate,
+
+        ROUND(
+          100.0 * COUNT(*) FILTER (
+            WHERE candidate_hit = TRUE
+          ) /
+          NULLIF(
+            COUNT(*) FILTER (
+              WHERE status = 'evaluated'
+            ),
+            0
+          ),
+          1
+        ) AS candidate_hit_rate
+
+      FROM ai_forecast_performance
+
+      GROUP BY game_type
+
+    `);
+
+
+    const recent = await pool.query(`
+
+      SELECT
+
+        id,
+
+        game_type,
+
+        generated_at,
+
+        reference_last_bonus_at,
+
+        central_center_at,
+
+        actual_bonus_at,
+
+        error_minutes,
+
+        central_hit,
+
+        candidate_hit,
+
+        status,
+
+        evaluated_at
+
+      FROM ai_forecast_performance
+
+      ORDER BY generated_at DESC
+
+      LIMIT 50
+
+    `);
+
+
+    function getTypeSummary(type) {
+
+      const row = summary.rows.find(
+        item => item.game_type === type
+      );
+
+      if (!row) {
+
+        return {
+
+          totalEvaluated: 0,
+
+          totalPending: 0,
+
+          averageErrorMinutes: null,
+
+          averageSignedErrorMinutes: null,
+
+          centralHits: 0,
+
+          candidateHits: 0,
+
+          centralHitRate: null,
+
+          candidateHitRate: null
+
+        };
+
+      }
+
+      return {
+
+        totalEvaluated: Number(row.total_evaluated),
+
+        totalPending: Number(row.total_pending),
+
+        averageErrorMinutes:
+          row.average_error_minutes === null
+            ? null
+            : Number(row.average_error_minutes),
+
+        averageSignedErrorMinutes:
+          row.average_signed_error_minutes === null
+            ? null
+            : Number(row.average_signed_error_minutes),
+
+        centralHits: Number(row.central_hits),
+
+        candidateHits: Number(row.candidate_hits),
+
+        centralHitRate:
+          row.central_hit_rate === null
+            ? null
+            : Number(row.central_hit_rate),
+
+        candidateHitRate:
+          row.candidate_hit_rate === null
+            ? null
+            : Number(row.candidate_hit_rate)
+
+      };
+
+    }
+
+
+    res.json({
+
+      lastUpdated: new Date().toISOString(),
+
+      threeRolls: getTypeSummary('three_rolls'),
+
+      fiveRolls: getTypeSummary('five_rolls'),
+
+      recent: recent.rows,
+
+      note:
+        'Performance is measured against saved historical forecast snapshots. Multiple snapshots may be evaluated against the same later bonus. These statistics do not represent winning probability or guarantee future outcomes.'
+
+    });
+
+  } catch (error) {
+
+    console.error(
+      'PERFORMANCE API ERROR:',
+      error.message
+    );
+
+    res.status(500).json({
+
+      error: error.message
+
+    });
+
+  }
 
 });
 
@@ -1752,29 +2156,28 @@ async function start() {
       `Bonus intelligence every ${ANALYSIS_INTERVAL_MS}ms`
     );
 
+    console.log(
+      'AI Performance Monitor enabled'
+    );
+
   });
 
   await pollUpstream();
 
-  // FIRST ANALYSIS ON STARTUP
   await runAutomaticAnalysis();
 
-  // FIRST BONUS INTELLIGENCE ANALYSIS
   await runBonusIntelligenceAnalysis();
 
-  // DATA COLLECTION
   setInterval(
     pollUpstream,
     POLL_INTERVAL_MS
   );
 
-  // SMART ANALYSIS EVERY 5 MINUTES
   setInterval(
     runAutomaticAnalysis,
     ANALYSIS_INTERVAL_MS
   );
 
-  // BONUS INTELLIGENCE EVERY 5 MINUTES
   setInterval(
     runBonusIntelligenceAnalysis,
     ANALYSIS_INTERVAL_MS
