@@ -396,7 +396,7 @@
 
     .analysis-stat {
       background: #172033;
-      border: 1px solid #334155;
+      border: 1px solid #263449;
       border-radius: 7px;
       padding: 9px;
       min-width: 0;
@@ -434,9 +434,229 @@
       padding: 5px 0;
     }
 
+    /* ===================================
+       BONUS INTELLIGENCE DASHBOARD
+    =================================== */
+
+    .intelligence-header-status {
+      font-size: 9px;
+      color: #22c55e;
+    }
+
+    .intelligence-intro {
+      color: #94a3b8;
+      font-size: 10px;
+      line-height: 1.6;
+      margin-bottom: 13px;
+    }
+
+    .intelligence-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .intelligence-card {
+      background: #172033;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 11px;
+      min-width: 0;
+    }
+
+    .intelligence-card.three {
+      border-top: 3px solid #3b82f6;
+    }
+
+    .intelligence-card.five {
+      border-top: 3px solid #a78bfa;
+    }
+
+    .intelligence-title {
+      font-size: 12px;
+      font-weight: bold;
+      margin-bottom: 12px;
+      color: #ffffff;
+    }
+
+    .intelligence-main {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 11px;
+      margin-bottom: 10px;
+    }
+
+    .intelligence-main-label {
+      color: #94a3b8;
+      font-size: 9px;
+    }
+
+    .intelligence-main-value {
+      color: #facc15;
+      font-size: 23px;
+      font-weight: bold;
+      margin-top: 5px;
+    }
+
+    .intelligence-main-sub {
+      color: #cbd5e1;
+      font-size: 10px;
+      margin-top: 5px;
+      line-height: 1.5;
+    }
+
+    .confidence-badge {
+      display: inline-block;
+      padding: 5px 8px;
+      border-radius: 5px;
+      font-size: 10px;
+      font-weight: bold;
+      margin-top: 7px;
+      background: #475569;
+      color: #ffffff;
+    }
+
+    .confidence-Low {
+      background: #7f1d1d;
+      color: #fecaca;
+    }
+
+    .confidence-Moderate {
+      background: #854d0e;
+      color: #fef08a;
+    }
+
+    .confidence-Higher {
+      background: #14532d;
+      color: #bbf7d0;
+    }
+
+    .intelligence-stats {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 7px;
+      margin-bottom: 11px;
+    }
+
+    .intelligence-stat {
+      background: #0f172a;
+      border: 1px solid #263449;
+      border-radius: 7px;
+      padding: 8px;
+      min-width: 0;
+    }
+
+    .intelligence-stat-label {
+      color: #94a3b8;
+      font-size: 8px;
+      line-height: 1.4;
+    }
+
+    .intelligence-stat-value {
+      color: #facc15;
+      font-size: 14px;
+      font-weight: bold;
+      margin-top: 5px;
+      overflow-wrap: anywhere;
+    }
+
+    .window-heading {
+      font-size: 10px;
+      color: #cbd5e1;
+      font-weight: bold;
+      margin: 12px 0 7px;
+    }
+
+    .window-list {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .window-item {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 7px;
+      padding: 9px;
+    }
+
+    .window-item.central {
+      border: 1px solid #eab308;
+      background: #292313;
+    }
+
+    .window-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 5px;
+      margin-bottom: 6px;
+    }
+
+    .window-rank {
+      font-size: 9px;
+      color: #cbd5e1;
+      font-weight: bold;
+    }
+
+    .window-label {
+      color: #facc15;
+      font-size: 9px;
+      font-weight: bold;
+      text-align: right;
+    }
+
+    .window-time {
+      font-size: 13px;
+      font-weight: bold;
+      color: #ffffff;
+    }
+
+    .window-range {
+      font-size: 9px;
+      color: #94a3b8;
+      margin-top: 4px;
+    }
+
+    .window-countdown {
+      font-size: 10px;
+      color: #22c55e;
+      margin-top: 7px;
+      font-weight: bold;
+    }
+
+    .window-countdown.passed {
+      color: #94a3b8;
+    }
+
+    .window-countdown.active {
+      color: #facc15;
+    }
+
+    .intelligence-reason {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 7px;
+      padding: 9px;
+      color: #94a3b8;
+      font-size: 9px;
+      line-height: 1.5;
+      margin-top: 10px;
+    }
+
+    .intelligence-footer {
+      text-align: center;
+      font-size: 9px;
+      color: #94a3b8;
+      line-height: 1.6;
+      margin-top: 13px;
+    }
+
     @media (max-width: 350px) {
       .bonus-monitor,
-      .analysis-grid {
+      .analysis-grid,
+      .intelligence-grid {
         grid-template-columns: 1fr;
       }
     }
@@ -604,8 +824,6 @@
 
     <div class="analysis-grid">
 
-      <!-- THREE ROLLS ANALYSIS -->
-
       <div class="analysis-card three">
 
         <div class="analysis-title">
@@ -633,8 +851,6 @@
         </div>
 
       </div>
-
-      <!-- FIVE ROLLS ANALYSIS -->
 
       <div class="analysis-card five">
 
@@ -672,6 +888,238 @@
       Backend analysis runs every 5 minutes.
       <br>
       Display automatically refreshes every 1 minute.
+    </div>
+
+  </div>
+
+  <!-- NEW BONUS INTELLIGENCE DASHBOARD -->
+
+  <div class="section">
+
+    <div class="section-header">
+      <h2>🤖 Bonus Intelligence Dashboard</h2>
+      <span class="intelligence-header-status">● INTELLIGENCE ENGINE</span>
+    </div>
+
+    <div class="intelligence-intro">
+      Statistical analysis of historical bonus intervals. Five estimated time windows are generated for each bonus type.
+      These are estimates, not guaranteed predictions or winning probabilities.
+    </div>
+
+    <div class="intelligence-grid">
+
+      <!-- THREE ROLLS INTELLIGENCE -->
+
+      <div class="intelligence-card three">
+
+        <div class="intelligence-title">
+          🎲 THREE ROLLS INTELLIGENCE
+        </div>
+
+        <div class="intelligence-main">
+
+          <div class="intelligence-main-label">
+            CENTRAL ESTIMATE
+          </div>
+
+          <div class="intelligence-main-value" id="threeCentral">
+            Loading...
+          </div>
+
+          <div class="intelligence-main-sub" id="threeCentralRange">
+            Waiting for intelligence data...
+          </div>
+
+          <div class="intelligence-main-label" style="margin-top:10px">
+            HISTORICAL CONFIDENCE
+          </div>
+
+          <span class="confidence-badge confidence-Low" id="threeConfidence">
+            LOW
+          </span>
+
+        </div>
+
+        <div class="intelligence-stats">
+
+          <div class="intelligence-stat">
+            <div class="intelligence-stat-label">TOTAL BONUSES</div>
+            <div class="intelligence-stat-value" id="threeTotalBonuses">-</div>
+          </div>
+
+          <div class="intelligence-stat">
+            <div class="intelligence-stat-label">INTERVAL RECORDS</div>
+            <div class="intelligence-stat-value" id="threeIntervals">-</div>
+          </div>
+
+          <div class="intelligence-stat">
+            <div class="intelligence-stat-label">AVERAGE INTERVAL</div>
+            <div class="intelligence-stat-value" id="threeAverage">-</div>
+          </div>
+
+          <div class="intelligence-stat">
+            <div class="intelligence-stat-label">MEDIAN INTERVAL</div>
+            <div class="intelligence-stat-value" id="threeMedian">-</div>
+          </div>
+
+          <div class="intelligence-stat">
+            <div class="intelligence-stat-label">RECENT AVERAGE</div>
+            <div class="intelligence-stat-value" id="threeRecent">-</div>
+          </div>
+
+          <div class="intelligence-stat">
+            <div class="intelligence-stat-label">CURRENT GAP</div>
+            <div class="intelligence-stat-value" id="threeGap">-</div>
+          </div>
+
+          <div class="intelligence-stat">
+            <div class="intelligence-stat-label">SELECTED MODEL</div>
+            <div class="intelligence-stat-value" id="threeModel">-</div>
+          </div>
+
+          <div class="intelligence-stat">
+            <div class="intelligence-stat-label">BACKTEST MAE</div>
+            <div class="intelligence-stat-value" id="threeMae">-</div>
+          </div>
+
+          <div class="intelligence-stat">
+            <div class="intelligence-stat-label">BACKTEST BIAS</div>
+            <div class="intelligence-stat-value" id="threeBias">-</div>
+          </div>
+
+          <div class="intelligence-stat">
+            <div class="intelligence-stat-label">VARIABILITY (CV)</div>
+            <div class="intelligence-stat-value" id="threeCV">-</div>
+          </div>
+
+        </div>
+
+        <div class="window-heading">
+          📊 FIVE ESTIMATED TIME WINDOWS
+        </div>
+
+        <div class="window-list" id="threeWindows">
+          <div class="analysis-empty">Loading estimated windows...</div>
+        </div>
+
+        <div class="intelligence-reason" id="threeReason">
+          Waiting for analysis...
+        </div>
+
+      </div>
+
+      <!-- FIVE ROLLS INTELLIGENCE -->
+
+      <div class="intelligence-card five">
+
+        <div class="intelligence-title">
+          🎲 FIVE ROLLS INTELLIGENCE
+        </div>
+
+        <div class="intelligence-main">
+
+          <div class="intelligence-main-label">
+            CENTRAL ESTIMATE
+          </div>
+
+          <div class="intelligence-main-value" id="fiveCentral">
+            Loading...
+          </div>
+
+          <div class="intelligence-main-sub" id="fiveCentralRange">
+            Waiting for intelligence data...
+          </div>
+
+          <div class="intelligence-main-label" style="margin-top:10px">
+            HISTORICAL CONFIDENCE
+          </div>
+
+          <span class="confidence-badge confidence-Low" id="fiveConfidence">
+            LOW
+          </span>
+
+        </div>
+
+        <div class="intelligence-stats">
+
+          <div class="intelligence-stat">
+            <div class="intelligence-stat-label">TOTAL BONUSES</div>
+            <div class="intelligence-stat-value" id="fiveTotalBonuses">-</div>
+          </div>
+
+          <div class="intelligence-stat">
+            <div class="intelligence-stat-label">INTERVAL RECORDS</div>
+            <div class="intelligence-stat-value" id="fiveIntervals">-</div>
+          </div>
+
+          <div class="intelligence-stat">
+            <div class="intelligence-stat-label">AVERAGE INTERVAL</div>
+            <div class="intelligence-stat-value" id="fiveAverage">-</div>
+          </div>
+
+          <div class="intelligence-stat">
+            <div class="intelligence-stat-label">MEDIAN INTERVAL</div>
+            <div class="intelligence-stat-value" id="fiveMedian">-</div>
+          </div>
+
+          <div class="intelligence-stat">
+            <div class="intelligence-stat-label">RECENT AVERAGE</div>
+            <div class="intelligence-stat-value" id="fiveRecent">-</div>
+          </div>
+
+          <div class="intelligence-stat">
+            <div class="intelligence-stat-label">CURRENT GAP</div>
+            <div class="intelligence-stat-value" id="fiveGap">-</div>
+          </div>
+
+          <div class="intelligence-stat">
+            <div class="intelligence-stat-label">SELECTED MODEL</div>
+            <div class="intelligence-stat-value" id="fiveModel">-</div>
+          </div>
+
+          <div class="intelligence-stat">
+            <div class="intelligence-stat-label">BACKTEST MAE</div>
+            <div class="intelligence-stat-value" id="fiveMae">-</div>
+          </div>
+
+          <div class="intelligence-stat">
+            <div class="intelligence-stat-label">BACKTEST BIAS</div>
+            <div class="intelligence-stat-value" id="fiveBias">-</div>
+          </div>
+
+          <div class="intelligence-stat">
+            <div class="intelligence-stat-label">VARIABILITY (CV)</div>
+            <div class="intelligence-stat-value" id="fiveCV">-</div>
+          </div>
+
+        </div>
+
+        <div class="window-heading">
+          📊 FIVE ESTIMATED TIME WINDOWS
+        </div>
+
+        <div class="window-list" id="fiveWindows">
+          <div class="analysis-empty">Loading estimated windows...</div>
+        </div>
+
+        <div class="intelligence-reason" id="fiveReason">
+          Waiting for analysis...
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="intelligence-footer">
+      Model performance is measured using historical backtesting.
+      <br>
+      MAE means average historical estimation error in minutes.
+      <br>
+      Confidence describes data reliability, NOT the probability of a bonus.
+      <br>
+      Past timing patterns cannot reveal or change the game's random number generation.
+      <br>
+      Intelligence data automatically refreshes every minute.
     </div>
 
   </div>
@@ -1218,13 +1666,9 @@ function updateBonusMonitor() {
 
     }
 
-    // USE ADJUSTED TIME
-
     const lastDate = getAdjustedDate(last);
 
     if (!lastDate) return;
-
-    // TIMER BASED ON ADJUSTED TIME
 
     const elapsed = Date.now() - lastDate.getTime();
 
@@ -1234,12 +1678,8 @@ function updateBonusMonitor() {
     document.getElementById(prefix + 'Elapsed').textContent =
       'TIME SINCE LAST BONUS';
 
-    // LAST APPEARED - ADJUSTED TIME
-
     document.getElementById(prefix + 'LastTime').textContent =
       formatDate(last.adjusted_at || last.settled_at);
-
-    // MULTIPLIER
 
     document.getElementById(prefix + 'LastMultiplier').textContent =
       getBonusMultiplier(last, type);
@@ -1289,7 +1729,6 @@ async function loadBonusMonitor() {
 
 
 // FORMAT ANALYSIS HOUR
-// Uses Philippines time (Asia/Manila)
 
 function formatAnalysisHour(hour) {
 
@@ -1365,12 +1804,8 @@ async function loadAnalysis() {
 
     const data = await response.json();
 
-    // TOTAL ANALYZED RECORDS
-
     document.getElementById('analysisTotal').textContent =
       Number(data.totalRecords || 0).toLocaleString();
-
-    // LAST ANALYSIS TIME
 
     document.getElementById('analysisLast').textContent =
       data.lastAnalysisAt
@@ -1381,8 +1816,6 @@ async function loadAnalysis() {
             timeZone: 'Asia/Manila'
           })
         : 'Waiting...';
-
-    // THREE ROLLS
 
     renderAnalysisList(
       'threeBestHours',
@@ -1395,8 +1828,6 @@ async function loadAnalysis() {
       data.threeRolls?.bestDays,
       'day'
     );
-
-    // FIVE ROLLS
 
     renderAnalysisList(
       'fiveBestHours',
@@ -1432,6 +1863,358 @@ async function loadAnalysis() {
 
     document.getElementById('fiveBestDays').innerHTML =
       '<div class="analysis-empty">Unable to load analysis.</div>';
+
+  }
+
+}
+
+
+// ===================================
+// BONUS INTELLIGENCE ENGINE
+// ===================================
+
+let intelligenceData = null;
+
+
+// FORMAT MINUTES
+
+function formatMinutes(value) {
+
+  if (value === null || value === undefined ||
+      !Number.isFinite(Number(value))) {
+    return '-';
+  }
+
+  return Number(value).toFixed(1) + ' min';
+
+}
+
+
+// FORMAT WINDOW DATE
+
+function formatWindowDate(value) {
+
+  if (!value) return '-';
+
+  const date = new Date(value);
+
+  if (isNaN(date.getTime())) return '-';
+
+  return date.toLocaleString('en-PH', {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+    timeZone: 'Asia/Manila'
+  });
+
+}
+
+
+// FORMAT WINDOW COUNTDOWN
+
+function getWindowCountdown(start, end) {
+
+  const now = Date.now();
+
+  const startTime = new Date(start).getTime();
+  const endTime = new Date(end).getTime();
+
+  if (!Number.isFinite(startTime) ||
+      !Number.isFinite(endTime)) {
+    return {
+      text: 'Time unavailable',
+      className: 'passed'
+    };
+  }
+
+  if (now > endTime) {
+
+    return {
+      text: 'Estimated window has passed',
+      className: 'passed'
+    };
+
+  }
+
+  if (now >= startTime && now <= endTime) {
+
+    return {
+      text: '● CURRENT ESTIMATED WINDOW',
+      className: 'active'
+    };
+
+  }
+
+  const remaining = startTime - now;
+
+  const totalMinutes = Math.floor(remaining / 60000);
+
+  const hours = Math.floor(totalMinutes / 60);
+
+  const minutes = totalMinutes % 60;
+
+  if (hours > 0) {
+
+    return {
+      text: `Starts in ${hours}h ${minutes}m`,
+      className: ''
+    };
+
+  }
+
+  return {
+    text: `Starts in ${minutes} minutes`,
+    className: ''
+  };
+
+}
+
+
+// RENDER ESTIMATED WINDOWS
+
+function renderEstimatedWindows(elementId, windows) {
+
+  const container = document.getElementById(elementId);
+
+  if (!Array.isArray(windows) || !windows.length) {
+
+    container.innerHTML = `
+      <div class="analysis-empty">
+        Not enough historical data to generate windows.
+      </div>
+    `;
+
+    return;
+
+  }
+
+  container.innerHTML = windows.map(window => {
+
+    const isCentral =
+      String(window.label || '').toLowerCase().includes('central');
+
+    const countdown = getWindowCountdown(
+      window.windowStart,
+      window.windowEnd
+    );
+
+    return `
+      <div class="window-item ${isCentral ? 'central' : ''}">
+
+        <div class="window-top">
+
+          <span class="window-rank">
+            WINDOW ${escapeHTML(window.rank)}
+          </span>
+
+          <span class="window-label">
+            ${escapeHTML(window.label || 'ESTIMATED RANGE')}
+          </span>
+
+        </div>
+
+        <div class="window-time">
+          ${escapeHTML(formatWindowDate(window.centerAt))}
+        </div>
+
+        <div class="window-range">
+          Range:
+          ${escapeHTML(formatWindowDate(window.windowStart))}
+          –
+          ${escapeHTML(formatWindowDate(window.windowEnd))}
+        </div>
+
+        <div class="window-range">
+          Estimated interval:
+          ${escapeHTML(formatMinutes(window.minutesFromLast))}
+        </div>
+
+        <div class="window-countdown ${countdown.className}">
+          ${escapeHTML(countdown.text)}
+        </div>
+
+      </div>
+    `;
+
+  }).join('');
+
+}
+
+
+// UPDATE WINDOW COUNTDOWNS
+
+function updateIntelligenceCountdowns() {
+
+  if (!intelligenceData) return;
+
+  renderEstimatedWindows(
+    'threeWindows',
+    intelligenceData.threeRolls?.estimatedWindows
+  );
+
+  renderEstimatedWindows(
+    'fiveWindows',
+    intelligenceData.fiveRolls?.estimatedWindows
+  );
+
+}
+
+
+// RENDER INTELLIGENCE TYPE
+
+function renderIntelligenceType(type, data) {
+
+  const prefix = type === 'three' ? 'three' : 'five';
+
+  if (!data) return;
+
+  const confidence = data.confidence || 'Low';
+
+  const confidenceElement =
+    document.getElementById(prefix + 'Confidence');
+
+  confidenceElement.textContent =
+    String(confidence).toUpperCase();
+
+  confidenceElement.className =
+    'confidence-badge confidence-' + confidence;
+
+
+  // CENTRAL ESTIMATE
+
+  const centralWindow = Array.isArray(data.estimatedWindows)
+    ? data.estimatedWindows.find(window =>
+        String(window.label || '').toLowerCase().includes('central')
+      )
+    : null;
+
+  document.getElementById(prefix + 'Central').textContent =
+    centralWindow
+      ? formatWindowDate(centralWindow.centerAt)
+      : formatMinutes(data.estimatedIntervalMinutes);
+
+  document.getElementById(prefix + 'CentralRange').textContent =
+    centralWindow
+      ? 'Estimated range: ' +
+        formatWindowDate(centralWindow.windowStart) +
+        ' – ' +
+        formatWindowDate(centralWindow.windowEnd)
+      : 'Central estimate based on historical intervals';
+
+
+  // HISTORICAL STATISTICS
+
+  document.getElementById(prefix + 'TotalBonuses').textContent =
+    Number(data.totalBonuses || 0).toLocaleString();
+
+  document.getElementById(prefix + 'Intervals').textContent =
+    Number(data.intervalCount || 0).toLocaleString();
+
+  document.getElementById(prefix + 'Average').textContent =
+    formatMinutes(data.averageIntervalMinutes);
+
+  document.getElementById(prefix + 'Median').textContent =
+    formatMinutes(data.medianIntervalMinutes);
+
+  document.getElementById(prefix + 'Recent').textContent =
+    formatMinutes(data.recentAverageIntervalMinutes);
+
+  document.getElementById(prefix + 'Gap').textContent =
+    formatMinutes(data.currentGapMinutes);
+
+  document.getElementById(prefix + 'Model').textContent =
+    data.selectedModel || '-';
+
+  document.getElementById(prefix + 'Mae').textContent =
+    formatMinutes(data.backtestMaeMinutes);
+
+  document.getElementById(prefix + 'Bias').textContent =
+    formatMinutes(data.backtestBiasMinutes);
+
+  document.getElementById(prefix + 'CV').textContent =
+    data.coefficientOfVariation !== null &&
+    data.coefficientOfVariation !== undefined
+      ? Number(data.coefficientOfVariation).toFixed(3)
+      : '-';
+
+
+  // ESTIMATED WINDOWS
+
+  renderEstimatedWindows(
+    prefix + 'Windows',
+    data.estimatedWindows
+  );
+
+
+  // CONFIDENCE EXPLANATION
+
+  document.getElementById(prefix + 'Reason').textContent =
+    data.confidenceReason ||
+    'Confidence is based on historical data quality and model performance. It is not a winning probability.';
+
+}
+
+
+// LOAD BONUS INTELLIGENCE
+
+async function loadIntelligence() {
+
+  try {
+
+    const response = await fetch(
+      '/api/intelligence',
+      { cache: 'no-store' }
+    );
+
+    if (!response.ok) {
+
+      throw new Error(
+        'Intelligence request failed: ' + response.status
+      );
+
+    }
+
+    const data = await response.json();
+
+    intelligenceData = data;
+
+    renderIntelligenceType(
+      'three',
+      data.threeRolls
+    );
+
+    renderIntelligenceType(
+      'five',
+      data.fiveRolls
+    );
+
+    if (data.error) {
+      console.error('Intelligence warning:', data.error);
+    }
+
+  } catch (error) {
+
+    console.error('Intelligence Error:', error);
+
+    document.getElementById('threeCentral').textContent =
+      'Unavailable';
+
+    document.getElementById('fiveCentral').textContent =
+      'Unavailable';
+
+    document.getElementById('threeWindows').innerHTML =
+      '<div class="analysis-empty">Unable to load intelligence data.</div>';
+
+    document.getElementById('fiveWindows').innerHTML =
+      '<div class="analysis-empty">Unable to load intelligence data.</div>';
+
+    document.getElementById('threeReason').textContent =
+      'Check whether the backend /api/intelligence endpoint is available.';
+
+    document.getElementById('fiveReason').textContent =
+      'Check whether the backend /api/intelligence endpoint is available.';
 
   }
 
@@ -1481,11 +2264,13 @@ async function loadRecords() {
 
     renderHourlyStats(allRecords);
 
-    // LOAD BONUS MONITOR AND SMART ANALYSIS
+    // LOAD EXISTING AND NEW ANALYSIS
 
     loadBonusMonitor();
 
     loadAnalysis();
+
+    loadIntelligence();
 
   } catch (error) {
 
@@ -1557,11 +2342,22 @@ setInterval(() => {
 }, 1000);
 
 
+// INTELLIGENCE COUNTDOWNS UPDATE EVERY SECOND
+
+setInterval(() => {
+
+  updateIntelligenceCountdowns();
+
+}, 1000);
+
+
 // SMART ANALYSIS AUTO REFRESH EVERY 1 MINUTE
 
 setInterval(() => {
 
   loadAnalysis();
+
+  loadIntelligence();
 
 }, 60000);
 
