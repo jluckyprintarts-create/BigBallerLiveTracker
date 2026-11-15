@@ -320,9 +320,29 @@ function extractRows(payload) {
   );
 
   const dealer =
-    data.dealer ||
-    raw.dealer ||
-    {};
+  data.dealer ||
+  raw.dealer ||
+  {};
+
+const host =
+  data.host ||
+  raw.host ||
+  {};
+
+const dealerName = [
+  data.host_name,
+  data.hostName,
+  raw.host_name,
+  raw.hostName,
+  data.dealerName,
+  raw.dealerName,
+  host.name,
+  host.displayName,
+  dealer.name,
+  dealer.displayName
+].find(value =>
+  typeof value === 'string' && value.trim() !== ''
+) || null;
 
   return {
     eventId: String(eventId),
@@ -339,10 +359,7 @@ function extractRows(payload) {
 
     bigWinMultiplier,
 
-    dealerName:
-      dealer.name ||
-      dealer.displayName ||
-      null,
+    dealerName,
 
     raw
   };
