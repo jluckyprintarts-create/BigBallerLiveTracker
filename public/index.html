@@ -7,9 +7,7 @@
   <title>MONOPOLY Big Baller Live Tracker</title>
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -140,8 +138,7 @@
       table-layout: fixed;
     }
 
-    th,
-    td {
+    th, td {
       padding: 9px 4px;
       text-align: left;
       border-bottom: 1px solid #263449;
@@ -157,9 +154,7 @@
       background: #172033;
     }
 
-    td {
-      color: #e2e8f0;
-    }
+    td { color: #e2e8f0; }
 
     .empty {
       text-align: center;
@@ -177,13 +172,8 @@
       color: #ffffff;
     }
 
-    .badge-three {
-      background: #1d4ed8;
-    }
-
-    .badge-five {
-      background: #7c3aed;
-    }
+    .badge-three { background: #1d4ed8; }
+    .badge-five { background: #7c3aed; }
 
     .multiplier {
       color: #facc15;
@@ -234,14 +224,8 @@
       font-size: 11px;
     }
 
-    .hour-label {
-      color: #94a3b8;
-    }
-
-    .hour-count {
-      color: #facc15;
-      font-weight: bold;
-    }
+    .hour-label { color: #94a3b8; }
+    .hour-count { color: #facc15; font-weight: bold; }
 
     .status {
       color: #94a3b8;
@@ -266,13 +250,8 @@
       min-width: 0;
     }
 
-    .bonus-card.three {
-      border-left: 3px solid #3b82f6;
-    }
-
-    .bonus-card.five {
-      border-left: 3px solid #a78bfa;
-    }
+    .bonus-card.three { border-left: 3px solid #3b82f6; }
+    .bonus-card.five { border-left: 3px solid #a78bfa; }
 
     .bonus-name {
       font-size: 11px;
@@ -308,9 +287,7 @@
       margin-top: 6px;
     }
 
-    .bonus-detail span:first-child {
-      color: #94a3b8;
-    }
+    .bonus-detail span:first-child { color: #94a3b8; }
 
     .bonus-detail span:last-child {
       color: #e2e8f0;
@@ -339,13 +316,8 @@
       min-width: 0;
     }
 
-    .analysis-card.three {
-      border-left: 3px solid #3b82f6;
-    }
-
-    .analysis-card.five {
-      border-left: 3px solid #a78bfa;
-    }
+    .analysis-card.three { border-left: 3px solid #3b82f6; }
+    .analysis-card.five { border-left: 3px solid #a78bfa; }
 
     .analysis-title {
       font-size: 11px;
@@ -377,9 +349,7 @@
       font-size: 10px;
     }
 
-    .analysis-item span:first-child {
-      color: #cbd5e1;
-    }
+    .analysis-item span:first-child { color: #cbd5e1; }
 
     .analysis-count {
       color: #facc15;
@@ -415,10 +385,7 @@
       overflow-wrap: anywhere;
     }
 
-    .analysis-status {
-      font-size: 9px;
-      color: #22c55e;
-    }
+    .analysis-status { font-size: 9px; color: #22c55e; }
 
     .analysis-footer {
       font-size: 9px;
@@ -434,9 +401,7 @@
       padding: 5px 0;
     }
 
-    /* ===================================
-       BONUS INTELLIGENCE DASHBOARD
-    =================================== */
+    /* BONUS INTELLIGENCE DASHBOARD */
 
     .intelligence-header-status {
       font-size: 9px;
@@ -464,13 +429,8 @@
       min-width: 0;
     }
 
-    .intelligence-card.three {
-      border-top: 3px solid #3b82f6;
-    }
-
-    .intelligence-card.five {
-      border-top: 3px solid #a78bfa;
-    }
+    .intelligence-card.three { border-top: 3px solid #3b82f6; }
+    .intelligence-card.five { border-top: 3px solid #a78bfa; }
 
     .intelligence-title {
       font-size: 12px;
@@ -517,20 +477,9 @@
       color: #ffffff;
     }
 
-    .confidence-Low {
-      background: #7f1d1d;
-      color: #fecaca;
-    }
-
-    .confidence-Moderate {
-      background: #854d0e;
-      color: #fef08a;
-    }
-
-    .confidence-Higher {
-      background: #14532d;
-      color: #bbf7d0;
-    }
+    .confidence-Low { background: #7f1d1d; color: #fecaca; }
+    .confidence-Moderate { background: #854d0e; color: #fef08a; }
+    .confidence-Higher { background: #14532d; color: #bbf7d0; }
 
     .intelligence-stats {
       display: grid;
@@ -626,13 +575,8 @@
       font-weight: bold;
     }
 
-    .window-countdown.passed {
-      color: #94a3b8;
-    }
-
-    .window-countdown.active {
-      color: #facc15;
-    }
+    .window-countdown.passed { color: #94a3b8; }
+    .window-countdown.active { color: #facc15; }
 
     .intelligence-reason {
       background: #0f172a;
@@ -653,25 +597,94 @@
       margin-top: 13px;
     }
 
+    /* AI PERFORMANCE MONITOR */
+
+    .performance-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 9px;
+      margin-bottom: 12px;
+    }
+
+    .performance-card {
+      background: #172033;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 11px;
+      min-width: 0;
+    }
+
+    .performance-label {
+      font-size: 9px;
+      color: #94a3b8;
+    }
+
+    .performance-value {
+      font-size: 19px;
+      font-weight: bold;
+      color: #facc15;
+      margin-top: 6px;
+      overflow-wrap: anywhere;
+    }
+
+    .performance-subtitle {
+      font-size: 10px;
+      color: #94a3b8;
+      margin-top: 5px;
+    }
+
+    .performance-table-wrap {
+      overflow-x: auto;
+      width: 100%;
+    }
+
+    .performance-table {
+      min-width: 520px;
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .performance-table th,
+    .performance-table td {
+      padding: 9px 7px;
+      border-bottom: 1px solid #263449;
+      font-size: 10px;
+      text-align: left;
+    }
+
+    .performance-good {
+      color: #22c55e;
+      font-weight: bold;
+    }
+
+    .performance-pending {
+      color: #facc15;
+      font-weight: bold;
+    }
+
+    .performance-note {
+      color: #94a3b8;
+      font-size: 9px;
+      text-align: center;
+      line-height: 1.6;
+      margin-top: 12px;
+    }
+
     @media (max-width: 350px) {
       .bonus-monitor,
       .analysis-grid,
-      .intelligence-grid {
+      .intelligence-grid,
+      .performance-grid {
         grid-template-columns: 1fr;
       }
     }
 
     @media (min-width: 700px) {
-      body {
-        padding: 24px;
-      }
+      body { padding: 24px; }
 
-      .cards {
-        grid-template-columns: repeat(3, 1fr);
-      }
+      .cards { grid-template-columns: repeat(3, 1fr); }
 
-      th,
-      td {
+      th, td {
         font-size: 13px;
         padding: 12px 10px;
       }
@@ -681,9 +694,7 @@
         padding: 5px 8px;
       }
 
-      .hourly-list {
-        grid-template-columns: repeat(4, 1fr);
-      }
+      .hourly-list { grid-template-columns: repeat(4, 1fr); }
     }
   </style>
 </head>
@@ -739,9 +750,7 @@
 
         <div class="bonus-name">🎲 THREE ROLLS</div>
 
-        <div class="bonus-timer" id="threeTimer">
-          --:--:--
-        </div>
+        <div class="bonus-timer" id="threeTimer">--:--:--</div>
 
         <div class="bonus-elapsed" id="threeElapsed">
           Waiting for record...
@@ -765,9 +774,7 @@
 
         <div class="bonus-name">🎲 FIVE ROLLS</div>
 
-        <div class="bonus-timer" id="fiveTimer">
-          --:--:--
-        </div>
+        <div class="bonus-timer" id="fiveTimer">--:--:--</div>
 
         <div class="bonus-elapsed" id="fiveElapsed">
           Waiting for record...
@@ -808,9 +815,7 @@
 
       <div class="analysis-stat">
         <div class="analysis-stat-label">TOTAL ANALYZED</div>
-        <div class="analysis-stat-value" id="analysisTotal">
-          0
-        </div>
+        <div class="analysis-stat-value" id="analysisTotal">0</div>
       </div>
 
       <div class="analysis-stat">
@@ -826,56 +831,36 @@
 
       <div class="analysis-card three">
 
-        <div class="analysis-title">
-          🎲 THREE ROLLS
-        </div>
+        <div class="analysis-title">🎲 THREE ROLLS</div>
 
-        <div class="analysis-label">
-          TOP HISTORICAL HOURS
-        </div>
+        <div class="analysis-label">TOP HISTORICAL HOURS</div>
 
         <div class="analysis-list" id="threeBestHours">
-          <div class="analysis-empty">
-            Loading analysis...
-          </div>
+          <div class="analysis-empty">Loading analysis...</div>
         </div>
 
-        <div class="analysis-label">
-          BEST DAYS
-        </div>
+        <div class="analysis-label">BEST DAYS</div>
 
         <div class="analysis-list" id="threeBestDays">
-          <div class="analysis-empty">
-            Loading analysis...
-          </div>
+          <div class="analysis-empty">Loading analysis...</div>
         </div>
 
       </div>
 
       <div class="analysis-card five">
 
-        <div class="analysis-title">
-          🎲 FIVE ROLLS
-        </div>
+        <div class="analysis-title">🎲 FIVE ROLLS</div>
 
-        <div class="analysis-label">
-          TOP HISTORICAL HOURS
-        </div>
+        <div class="analysis-label">TOP HISTORICAL HOURS</div>
 
         <div class="analysis-list" id="fiveBestHours">
-          <div class="analysis-empty">
-            Loading analysis...
-          </div>
+          <div class="analysis-empty">Loading analysis...</div>
         </div>
 
-        <div class="analysis-label">
-          BEST DAYS
-        </div>
+        <div class="analysis-label">BEST DAYS</div>
 
         <div class="analysis-list" id="fiveBestDays">
-          <div class="analysis-empty">
-            Loading analysis...
-          </div>
+          <div class="analysis-empty">Loading analysis...</div>
         </div>
 
       </div>
@@ -892,7 +877,7 @@
 
   </div>
 
-  <!-- NEW BONUS INTELLIGENCE DASHBOARD -->
+  <!-- BONUS INTELLIGENCE DASHBOARD -->
 
   <div class="section">
 
@@ -912,15 +897,11 @@
 
       <div class="intelligence-card three">
 
-        <div class="intelligence-title">
-          🎲 THREE ROLLS INTELLIGENCE
-        </div>
+        <div class="intelligence-title">🎲 THREE ROLLS INTELLIGENCE</div>
 
         <div class="intelligence-main">
 
-          <div class="intelligence-main-label">
-            CENTRAL ESTIMATE
-          </div>
+          <div class="intelligence-main-label">CENTRAL ESTIMATE</div>
 
           <div class="intelligence-main-value" id="threeCentral">
             Loading...
@@ -994,9 +975,7 @@
 
         </div>
 
-        <div class="window-heading">
-          📊 FIVE ESTIMATED TIME WINDOWS
-        </div>
+        <div class="window-heading">📊 FIVE ESTIMATED TIME WINDOWS</div>
 
         <div class="window-list" id="threeWindows">
           <div class="analysis-empty">Loading estimated windows...</div>
@@ -1012,15 +991,11 @@
 
       <div class="intelligence-card five">
 
-        <div class="intelligence-title">
-          🎲 FIVE ROLLS INTELLIGENCE
-        </div>
+        <div class="intelligence-title">🎲 FIVE ROLLS INTELLIGENCE</div>
 
         <div class="intelligence-main">
 
-          <div class="intelligence-main-label">
-            CENTRAL ESTIMATE
-          </div>
+          <div class="intelligence-main-label">CENTRAL ESTIMATE</div>
 
           <div class="intelligence-main-value" id="fiveCentral">
             Loading...
@@ -1094,9 +1069,7 @@
 
         </div>
 
-        <div class="window-heading">
-          📊 FIVE ESTIMATED TIME WINDOWS
-        </div>
+        <div class="window-heading">📊 FIVE ESTIMATED TIME WINDOWS</div>
 
         <div class="window-list" id="fiveWindows">
           <div class="analysis-empty">Loading estimated windows...</div>
@@ -1124,6 +1097,144 @@
 
   </div>
 
+  <!-- AI PERFORMANCE MONITOR -->
+
+  <div class="section">
+
+    <div class="section-header">
+      <h2>📈 AI Performance Monitor</h2>
+      <span class="analysis-status">● LIVE EVALUATION</span>
+    </div>
+
+    <div class="intelligence-intro">
+      Measures the historical accuracy of previous time estimates.
+      These results do not represent winning probabilities.
+    </div>
+
+    <h3 style="font-size:12px;color:#60a5fa;margin:12px 0">
+      🎲 THREE ROLLS PERFORMANCE
+    </h3>
+
+    <div class="performance-grid">
+
+      <div class="performance-card">
+        <div class="performance-label">EVALUATED FORECASTS</div>
+        <div class="performance-value" id="threePerfEvaluated">-</div>
+      </div>
+
+      <div class="performance-card">
+        <div class="performance-label">PENDING FORECASTS</div>
+        <div class="performance-value" id="threePerfPending">-</div>
+      </div>
+
+      <div class="performance-card">
+        <div class="performance-label">AVERAGE ERROR</div>
+        <div class="performance-value" id="threePerfError">-</div>
+        <div class="performance-subtitle">Minutes away from actual bonus</div>
+      </div>
+
+      <div class="performance-card">
+        <div class="performance-label">CENTRAL ESTIMATE HIT RATE</div>
+        <div class="performance-value" id="threePerfCentral">-</div>
+      </div>
+
+      <div class="performance-card">
+        <div class="performance-label">FIVE-WINDOW HIT RATE</div>
+        <div class="performance-value" id="threePerfCandidates">-</div>
+      </div>
+
+      <div class="performance-card">
+        <div class="performance-label">AVERAGE SIGNED ERROR</div>
+        <div class="performance-value" id="threePerfBias">-</div>
+        <div class="performance-subtitle">Positive = late; negative = early</div>
+      </div>
+
+    </div>
+
+    <h3 style="font-size:12px;color:#a78bfa;margin:18px 0 12px">
+      🎲 FIVE ROLLS PERFORMANCE
+    </h3>
+
+    <div class="performance-grid">
+
+      <div class="performance-card">
+        <div class="performance-label">EVALUATED FORECASTS</div>
+        <div class="performance-value" id="fivePerfEvaluated">-</div>
+      </div>
+
+      <div class="performance-card">
+        <div class="performance-label">PENDING FORECASTS</div>
+        <div class="performance-value" id="fivePerfPending">-</div>
+      </div>
+
+      <div class="performance-card">
+        <div class="performance-label">AVERAGE ERROR</div>
+        <div class="performance-value" id="fivePerfError">-</div>
+        <div class="performance-subtitle">Minutes away from actual bonus</div>
+      </div>
+
+      <div class="performance-card">
+        <div class="performance-label">CENTRAL ESTIMATE HIT RATE</div>
+        <div class="performance-value" id="fivePerfCentral">-</div>
+      </div>
+
+      <div class="performance-card">
+        <div class="performance-label">FIVE-WINDOW HIT RATE</div>
+        <div class="performance-value" id="fivePerfCandidates">-</div>
+      </div>
+
+      <div class="performance-card">
+        <div class="performance-label">AVERAGE SIGNED ERROR</div>
+        <div class="performance-value" id="fivePerfBias">-</div>
+        <div class="performance-subtitle">Positive = late; negative = early</div>
+      </div>
+
+    </div>
+
+    <div class="window-heading">📋 RECENT FORECAST EVALUATIONS</div>
+
+    <div class="performance-table-wrap">
+
+      <table class="performance-table">
+
+        <thead>
+          <tr>
+            <th>TYPE</th>
+            <th>FORECAST</th>
+            <th>ACTUAL</th>
+            <th>ERROR</th>
+            <th>RESULT</th>
+          </tr>
+        </thead>
+
+        <tbody id="performanceRecent">
+          <tr>
+            <td colspan="5" class="empty">
+              Loading performance data...
+            </td>
+          </tr>
+        </tbody>
+
+      </table>
+
+    </div>
+
+    <div class="performance-note" id="performanceUpdated">
+      Loading performance monitor...
+    </div>
+
+    <div class="performance-note">
+      Central hit rate measures how often the central estimate matched
+      the actual bonus window.
+      <br>
+      Five-window hit rate measures whether the bonus appeared inside
+      any of the five estimated windows.
+      <br>
+      Historical accuracy does not guarantee future results.
+    </div>
+
+  </div>
+
   <!-- HISTORICAL RECORDS -->
 
   <div class="section">
@@ -1134,17 +1245,9 @@
 
     <div class="filters">
 
-      <button class="filter-btn active" data-type="all">
-        All
-      </button>
-
-      <button class="filter-btn" data-type="three">
-        3 Rolls
-      </button>
-
-      <button class="filter-btn" data-type="five">
-        5 Rolls
-      </button>
+      <button class="filter-btn active" data-type="all">All</button>
+      <button class="filter-btn" data-type="three">3 Rolls</button>
+      <button class="filter-btn" data-type="five">5 Rolls</button>
 
     </div>
 
@@ -1163,13 +1266,9 @@
         </thead>
 
         <tbody id="records">
-
           <tr>
-            <td colspan="5" class="empty">
-              Loading records...
-            </td>
+            <td colspan="5" class="empty">Loading records...</td>
           </tr>
-
         </tbody>
 
       </table>
@@ -1320,21 +1419,11 @@ function getMultiplier(record) {
 function getEventType(record) {
 
   if (record.is_three_rolls) {
-
-    return {
-      label: '3 Rolls',
-      badge: 'badge-three'
-    };
-
+    return { label: '3 Rolls', badge: 'badge-three' };
   }
 
   if (record.is_five_rolls) {
-
-    return {
-      label: '5 Rolls',
-      badge: 'badge-five'
-    };
-
+    return { label: '5 Rolls', badge: 'badge-five' };
   }
 
   return {
@@ -1381,9 +1470,7 @@ function renderRecords() {
 
     tbody.innerHTML = `
       <tr>
-        <td colspan="5" class="empty">
-          No records found.
-        </td>
+        <td colspan="5" class="empty">No records found.</td>
       </tr>
     `;
 
@@ -1422,7 +1509,6 @@ function renderRecords() {
 
     return `
       <tr>
-
         <td>
           <span class="type-badge ${event.badge}">
             ${escapeHTML(event.label)}
@@ -1438,7 +1524,6 @@ function renderRecords() {
         <td>${escapeHTML(formatDate(record.settled_at))}</td>
 
         <td>${escapeHTML(formatDate(record.adjusted_at))}</td>
-
       </tr>
     `;
 
@@ -1453,9 +1538,7 @@ function renderRecords() {
     <button
       onclick="changePage(${currentPage - 1})"
       ${currentPage === 1 ? 'disabled' : ''}
-    >
-      Previous
-    </button>
+    >Previous</button>
   `;
 
   for (let page = 1; page <= totalPages; page++) {
@@ -1464,9 +1547,7 @@ function renderRecords() {
       <button
         class="${page === currentPage ? 'active' : ''}"
         onclick="changePage(${page})"
-      >
-        ${page}
-      </button>
+      >${page}</button>
     `;
 
   }
@@ -1475,9 +1556,7 @@ function renderRecords() {
     <button
       onclick="changePage(${currentPage + 1})"
       ${currentPage === totalPages ? 'disabled' : ''}
-    >
-      Next
-    </button>
+    >Next</button>
   `;
 
   pagination.innerHTML = buttons;
@@ -1496,9 +1575,7 @@ function changePage(page) {
     allRecords.length / recordsPerPage
   );
 
-  if (page < 1 || page > totalPages) {
-    return;
-  }
+  if (page < 1 || page > totalPages) return;
 
   currentPage = page;
 
@@ -1516,11 +1593,8 @@ function renderHourlyStats(records) {
   const hours = {};
 
   for (let i = 0; i < 24; i++) {
-
     const label = String(i).padStart(2, '0') + ':00';
-
     hours[label] = 0;
-
   }
 
   records.forEach(record => {
@@ -1546,27 +1620,18 @@ function renderHourlyStats(records) {
   });
 
   container.innerHTML = Object.entries(hours).map(
-    ([hour, count]) => {
-
-      return `
-        <div class="hour-item">
-          <span class="hour-label">${hour}</span>
-          <span class="hour-count">${count}</span>
-        </div>
-      `;
-
-    }
+    ([hour, count]) => `
+      <div class="hour-item">
+        <span class="hour-label">${hour}</span>
+        <span class="hour-count">${count}</span>
+      </div>
+    `
   ).join('');
 
 }
 
 
-// ===================================
 // BONUS ACTIVITY MONITOR
-// ===================================
-
-
-// BONUS MULTIPLIER
 
 function getBonusMultiplier(record, type) {
 
@@ -1701,11 +1766,9 @@ async function loadBonusMonitor() {
     );
 
     if (!response.ok) {
-
       throw new Error(
         'Bonus monitor request failed: ' + response.status
       );
-
     }
 
     const data = await response.json();
@@ -1723,12 +1786,7 @@ async function loadBonusMonitor() {
 }
 
 
-// ===================================
 // SMART GAME ANALYSIS
-// ===================================
-
-
-// FORMAT ANALYSIS HOUR
 
 function formatAnalysisHour(hour) {
 
@@ -1795,11 +1853,9 @@ async function loadAnalysis() {
     );
 
     if (!response.ok) {
-
       throw new Error(
         'Analysis request failed: ' + response.status
       );
-
     }
 
     const data = await response.json();
@@ -1869,14 +1925,10 @@ async function loadAnalysis() {
 }
 
 
-// ===================================
 // BONUS INTELLIGENCE ENGINE
-// ===================================
 
 let intelligenceData = null;
 
-
-// FORMAT MINUTES
 
 function formatMinutes(value) {
 
@@ -1889,8 +1941,6 @@ function formatMinutes(value) {
 
 }
 
-
-// FORMAT WINDOW DATE
 
 function formatWindowDate(value) {
 
@@ -1912,8 +1962,6 @@ function formatWindowDate(value) {
 }
 
 
-// FORMAT WINDOW COUNTDOWN
-
 function getWindowCountdown(start, end) {
 
   const now = Date.now();
@@ -1930,21 +1978,17 @@ function getWindowCountdown(start, end) {
   }
 
   if (now > endTime) {
-
     return {
       text: 'Estimated window has passed',
       className: 'passed'
     };
-
   }
 
   if (now >= startTime && now <= endTime) {
-
     return {
       text: '● CURRENT ESTIMATED WINDOW',
       className: 'active'
     };
-
   }
 
   const remaining = startTime - now;
@@ -1956,12 +2000,10 @@ function getWindowCountdown(start, end) {
   const minutes = totalMinutes % 60;
 
   if (hours > 0) {
-
     return {
       text: `Starts in ${hours}h ${minutes}m`,
       className: ''
     };
-
   }
 
   return {
@@ -2004,7 +2046,6 @@ function renderEstimatedWindows(elementId, windows) {
       <div class="window-item ${isCentral ? 'central' : ''}">
 
         <div class="window-top">
-
           <span class="window-rank">
             WINDOW ${escapeHTML(window.rank)}
           </span>
@@ -2012,7 +2053,6 @@ function renderEstimatedWindows(elementId, windows) {
           <span class="window-label">
             ${escapeHTML(window.label || 'ESTIMATED RANGE')}
           </span>
-
         </div>
 
         <div class="window-time">
@@ -2082,8 +2122,6 @@ function renderIntelligenceType(type, data) {
     'confidence-badge confidence-' + confidence;
 
 
-  // CENTRAL ESTIMATE
-
   const centralWindow = Array.isArray(data.estimatedWindows)
     ? data.estimatedWindows.find(window =>
         String(window.label || '').toLowerCase().includes('central')
@@ -2103,8 +2141,6 @@ function renderIntelligenceType(type, data) {
         formatWindowDate(centralWindow.windowEnd)
       : 'Central estimate based on historical intervals';
 
-
-  // HISTORICAL STATISTICS
 
   document.getElementById(prefix + 'TotalBonuses').textContent =
     Number(data.totalBonuses || 0).toLocaleString();
@@ -2140,15 +2176,11 @@ function renderIntelligenceType(type, data) {
       : '-';
 
 
-  // ESTIMATED WINDOWS
-
   renderEstimatedWindows(
     prefix + 'Windows',
     data.estimatedWindows
   );
 
-
-  // CONFIDENCE EXPLANATION
 
   document.getElementById(prefix + 'Reason').textContent =
     data.confidenceReason ||
@@ -2169,26 +2201,18 @@ async function loadIntelligence() {
     );
 
     if (!response.ok) {
-
       throw new Error(
         'Intelligence request failed: ' + response.status
       );
-
     }
 
     const data = await response.json();
 
     intelligenceData = data;
 
-    renderIntelligenceType(
-      'three',
-      data.threeRolls
-    );
+    renderIntelligenceType('three', data.threeRolls);
 
-    renderIntelligenceType(
-      'five',
-      data.fiveRolls
-    );
+    renderIntelligenceType('five', data.fiveRolls);
 
     if (data.error) {
       console.error('Intelligence warning:', data.error);
@@ -2222,8 +2246,243 @@ async function loadIntelligence() {
 
 
 // ===================================
-// LOAD RECORDS
+// AI PERFORMANCE MONITOR
 // ===================================
+
+function performanceNumber(value, suffix = '') {
+
+  if (value === null || value === undefined ||
+      !Number.isFinite(Number(value))) {
+    return '-';
+  }
+
+  return Number(value).toFixed(1) + suffix;
+
+}
+
+
+function performancePercent(value) {
+
+  if (value === null || value === undefined ||
+      !Number.isFinite(Number(value))) {
+    return '-';
+  }
+
+  let number = Number(value);
+
+  // Supports decimal values and percentage values.
+  if (number >= 0 && number <= 1) {
+    number *= 100;
+  }
+
+  return number.toFixed(1) + '%';
+
+}
+
+
+function renderPerformanceType(type, data) {
+
+  if (!data) return;
+
+  const prefix = type === 'three' ? 'three' : 'five';
+
+  document.getElementById(prefix + 'PerfEvaluated').textContent =
+    Number(data.totalEvaluated || 0).toLocaleString();
+
+  document.getElementById(prefix + 'PerfPending').textContent =
+    Number(data.totalPending || 0).toLocaleString();
+
+  document.getElementById(prefix + 'PerfError').textContent =
+    performanceNumber(data.averageErrorMinutes, ' min');
+
+  document.getElementById(prefix + 'PerfBias').textContent =
+    performanceNumber(data.averageSignedErrorMinutes, ' min');
+
+  document.getElementById(prefix + 'PerfCentral').textContent =
+    performancePercent(data.centralHitRate);
+
+  document.getElementById(prefix + 'PerfCandidates').textContent =
+    performancePercent(data.candidateHitRate);
+
+}
+
+
+// FLEXIBLE FIELD READER
+
+function getPerformanceField(record, names) {
+
+  for (const name of names) {
+
+    if (record[name] !== undefined && record[name] !== null) {
+      return record[name];
+    }
+
+  }
+
+  return null;
+
+}
+
+
+// RENDER RECENT EVALUATIONS
+
+function renderRecentPerformance(records) {
+
+  const tbody = document.getElementById('performanceRecent');
+
+  if (!Array.isArray(records) || !records.length) {
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="5" class="empty">
+          No evaluated forecasts yet.
+        </td>
+      </tr>
+    `;
+
+    return;
+
+  }
+
+  tbody.innerHTML = records.slice(0, 15).map(record => {
+
+    const rawType = String(
+      getPerformanceField(record, [
+        'game_type',
+        'gameType',
+        'type',
+        'bonusType',
+        'forecastType'
+      ]) || ''
+    ).toLowerCase();
+
+    const type = rawType.includes('five') || rawType.includes('5')
+      ? '5 Rolls'
+      : rawType.includes('three') || rawType.includes('3')
+        ? '3 Rolls'
+        : '-';
+
+    const forecast = getPerformanceField(record, [
+      'central_center_at',
+      'forecast_at',
+      'forecastAt',
+      'predictedAt',
+      'forecastTime'
+    ]);
+
+    const actual = getPerformanceField(record, [
+      'actual_bonus_at',
+      'actual_at',
+      'actualAt',
+      'actualTime'
+    ]);
+
+    const error = getPerformanceField(record, [
+      'error_minutes',
+      'errorMinutes',
+      'absoluteErrorMinutes'
+    ]);
+
+    const status = String(
+      getPerformanceField(record, [
+        'status',
+        'result'
+      ]) || ''
+    ).toLowerCase();
+
+    const centralHit = getPerformanceField(record, [
+      'central_hit',
+      'centralHit'
+    ]);
+
+    const candidateHit = getPerformanceField(record, [
+      'candidate_hit',
+      'candidateHit'
+    ]);
+
+    let result = '<span class="performance-pending">PENDING</span>';
+
+    if (status === 'evaluated' || actual) {
+
+      if (centralHit === true) {
+
+        result = '<span class="performance-good">CENTRAL HIT</span>';
+
+      } else if (candidateHit === true) {
+
+        result = '<span class="performance-good">WINDOW HIT</span>';
+
+      } else if (centralHit === false || candidateHit === false) {
+
+        result = '<span style="color:#ef4444;font-weight:bold">MISSED</span>';
+
+      } else {
+
+        result = '<span class="performance-pending">EVALUATED</span>';
+
+      }
+
+    }
+
+    return `
+      <tr>
+        <td>${escapeHTML(type)}</td>
+        <td>${escapeHTML(forecast ? formatDate(forecast) : '-')}</td>
+        <td>${escapeHTML(actual ? formatDate(actual) : '-')}</td>
+        <td>${escapeHTML(performanceNumber(error, ' min'))}</td>
+        <td>${result}</td>
+      </tr>
+    `;
+
+  }).join('');
+
+}
+
+
+// LOAD PERFORMANCE DATA
+
+async function loadPerformance() {
+
+  try {
+
+    const response = await fetch(
+      '/api/performance',
+      { cache: 'no-store' }
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        'Performance request failed: ' + response.status
+      );
+    }
+
+    const data = await response.json();
+
+    renderPerformanceType('three', data.threeRolls);
+
+    renderPerformanceType('five', data.fiveRolls);
+
+    renderRecentPerformance(data.recent);
+
+    document.getElementById('performanceUpdated').textContent =
+      'Last updated: ' +
+      (data.lastUpdated
+        ? formatDate(data.lastUpdated)
+        : 'Waiting for data');
+
+  } catch (error) {
+
+    console.error('AI Performance Monitor Error:', error);
+
+    document.getElementById('performanceUpdated').textContent =
+      'Unable to load performance data. Check /api/performance.';
+
+  }
+
+}
+
+
+// LOAD RECORDS
 
 async function loadRecords() {
 
@@ -2233,9 +2492,7 @@ async function loadRecords() {
 
   tbody.innerHTML = `
     <tr>
-      <td colspan="5" class="empty">
-        Loading records...
-      </td>
+      <td colspan="5" class="empty">Loading records...</td>
     </tr>
   `;
 
@@ -2247,11 +2504,9 @@ async function loadRecords() {
     );
 
     if (!response.ok) {
-
       throw new Error(
         'Records request failed: ' + response.status
       );
-
     }
 
     const data = await response.json();
@@ -2271,6 +2526,8 @@ async function loadRecords() {
     loadAnalysis();
 
     loadIntelligence();
+
+    loadPerformance();
 
   } catch (error) {
 
@@ -2301,9 +2558,7 @@ document.querySelectorAll('[data-type]').forEach(button => {
   button.addEventListener('click', () => {
 
     document.querySelectorAll('[data-type]').forEach(item => {
-
       item.classList.remove('active');
-
     });
 
     button.classList.add('active');
@@ -2351,13 +2606,15 @@ setInterval(() => {
 }, 1000);
 
 
-// SMART ANALYSIS AUTO REFRESH EVERY 1 MINUTE
+// SMART ANALYSIS, INTELLIGENCE AND PERFORMANCE REFRESH
 
 setInterval(() => {
 
   loadAnalysis();
 
   loadIntelligence();
+
+  loadPerformance();
 
 }, 60000);
 
