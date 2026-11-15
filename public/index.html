@@ -250,6 +250,89 @@
       text-align: center;
     }
 
+    /* BONUS ACTIVITY MONITOR - ADDITION */
+
+    .bonus-monitor {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 9px;
+    }
+
+    .bonus-card {
+      background: #172033;
+      border: 1px solid #334155;
+      border-radius: 9px;
+      padding: 11px;
+      min-width: 0;
+    }
+
+    .bonus-card.three {
+      border-left: 3px solid #3b82f6;
+    }
+
+    .bonus-card.five {
+      border-left: 3px solid #a78bfa;
+    }
+
+    .bonus-name {
+      font-size: 11px;
+      font-weight: bold;
+      color: #cbd5e1;
+      margin-bottom: 9px;
+    }
+
+    .bonus-timer {
+      font-size: clamp(17px, 4vw, 25px);
+      font-weight: bold;
+      color: #facc15;
+      letter-spacing: 1px;
+      white-space: nowrap;
+    }
+
+    .bonus-elapsed {
+      font-size: 9px;
+      color: #94a3b8;
+      margin-top: 3px;
+    }
+
+    .bonus-divider {
+      border-top: 1px solid #334155;
+      margin: 9px 0;
+    }
+
+    .bonus-detail {
+      display: flex;
+      justify-content: space-between;
+      gap: 5px;
+      font-size: 10px;
+      margin-top: 6px;
+    }
+
+    .bonus-detail span:first-child {
+      color: #94a3b8;
+    }
+
+    .bonus-detail span:last-child {
+      color: #e2e8f0;
+      font-weight: bold;
+      text-align: right;
+    }
+
+    .bonus-average {
+      color: #facc15 !important;
+    }
+
+    .bonus-live {
+      color: #22c55e;
+      font-size: 9px;
+    }
+
+    @media (max-width: 350px) {
+      .bonus-monitor {
+        grid-template-columns: 1fr;
+      }
+    }
+
     @media (min-width: 700px) {
       body {
         padding: 24px;
@@ -309,6 +392,91 @@
     <div class="card">
       <div class="card-title">5 ROLLS</div>
       <div class="card-value" id="fiveRolls">0</div>
+    </div>
+
+  </div>
+
+  <!-- BONUS ACTIVITY MONITOR - NEW -->
+
+  <div class="section">
+
+    <div class="section-header">
+      <h2>🎲 Bonus Activity Monitor</h2>
+      <span class="bonus-live">● LIVE TRACKING</span>
+    </div>
+
+    <div class="bonus-monitor">
+
+      <!-- THREE ROLLS -->
+
+      <div class="bonus-card three">
+
+        <div class="bonus-name">🎲 THREE ROLLS</div>
+
+        <div class="bonus-timer" id="threeTimer">
+          --:--:--
+        </div>
+
+        <div class="bonus-elapsed" id="threeElapsed">
+          Waiting for record...
+        </div>
+
+        <div class="bonus-divider"></div>
+
+        <div class="bonus-detail">
+          <span>Last appeared</span>
+          <span id="threeLastTime">-</span>
+        </div>
+
+        <div class="bonus-detail">
+          <span>Multiplier</span>
+          <span id="threeLastMultiplier">-</span>
+        </div>
+
+        <div class="bonus-detail">
+          <span>Average interval</span>
+          <span class="bonus-average" id="threeAverage">-</span>
+        </div>
+
+      </div>
+
+      <!-- FIVE ROLLS -->
+
+      <div class="bonus-card five">
+
+        <div class="bonus-name">🎲 FIVE ROLLS</div>
+
+        <div class="bonus-timer" id="fiveTimer">
+          --:--:--
+        </div>
+
+        <div class="bonus-elapsed" id="fiveElapsed">
+          Waiting for record...
+        </div>
+
+        <div class="bonus-divider"></div>
+
+        <div class="bonus-detail">
+          <span>Last appeared</span>
+          <span id="fiveLastTime">-</span>
+        </div>
+
+        <div class="bonus-detail">
+          <span>Multiplier</span>
+          <span id="fiveLastMultiplier">-</span>
+        </div>
+
+        <div class="bonus-detail">
+          <span>Average interval</span>
+          <span class="bonus-average" id="fiveAverage">-</span>
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="status">
+      Based on actual recorded game results
     </div>
 
   </div>
@@ -401,6 +569,11 @@ const recordsPerPage = 20;
 let allRecords = [];
 
 
+// BONUS ACTIVITY MONITOR DATA
+
+let bonusRecords = [];
+
+
 // SAFE TEXT
 
 function escapeHTML(value) {
@@ -439,17 +612,13 @@ function formatDate(value) {
 
 // GET MULTIPLIER
 
-// GET MULTIPLIER - CORRECTED
-
 function getMultiplier(record) {
 
-  // Kunin ang actual game result mula sa raw_data
   const result =
     record.raw_data?.data?.result ||
     record.raw_data?.result ||
     {};
 
-  // 3 Rolls
   if (record.is_three_rolls) {
 
     const bonusRound = (result.bonusRounds || []).find(
@@ -466,7 +635,6 @@ function getMultiplier(record) {
       : '-';
   }
 
-  // 5 Rolls
   if (record.is_five_rolls) {
 
     const bonusRound = (result.bonusRounds || []).find(
@@ -483,10 +651,11 @@ function getMultiplier(record) {
       : '-';
   }
 
-  // Ordinary rounds: walang ipapakitang multiplier
   return '-';
 
 }
+
+
 // GET EVENT TYPE
 
 function getEventType(record) {
@@ -723,6 +892,201 @@ function renderHourlyStats(records) {
 }
 
 
+// ===================================
+// BONUS ACTIVITY MONITOR FUNCTIONS
+// ===================================
+
+
+// GET BONUS MULTIPLIER
+
+function getBonusMultiplier(record, type) {
+
+  const result =
+    record.raw_data?.data?.result ||
+    record.raw_data?.result ||
+    {};
+
+  const mode = type === 'three'
+    ? 'ThreeRolls'
+    : 'FiveRolls';
+
+  const bonus = (result.bonusRounds || []).find(
+    item => item.gameMode === mode
+  );
+
+  const value = bonus?.totalMultiplier ??
+    (type === 'three'
+      ? result.threeRollsTotalMultiplier
+      : result.fiveRollsTotalMultiplier);
+
+  return value !== null && value !== undefined
+    ? Number(value) + 'x'
+    : '-';
+
+}
+
+
+// FORMAT TIMER
+
+function formatElapsed(milliseconds) {
+
+  if (milliseconds < 0) {
+    milliseconds = 0;
+  }
+
+  const totalSeconds = Math.floor(milliseconds / 1000);
+
+  const hours = Math.floor(totalSeconds / 3600);
+
+  const minutes = Math.floor(
+    (totalSeconds % 3600) / 60
+  );
+
+  const seconds = totalSeconds % 60;
+
+  return [
+    String(hours).padStart(2, '0'),
+    String(minutes).padStart(2, '0'),
+    String(seconds).padStart(2, '0')
+  ].join(':');
+
+}
+
+
+// AVERAGE INTERVAL
+
+function averageInterval(records) {
+
+  const dates = records
+    .map(record => new Date(record.settled_at))
+    .filter(date => !isNaN(date.getTime()))
+    .sort((a, b) => a - b);
+
+  if (dates.length < 2) {
+    return '-';
+  }
+
+  let total = 0;
+
+  for (let i = 1; i < dates.length; i++) {
+    total += dates[i] - dates[i - 1];
+  }
+
+  const average = total / (dates.length - 1);
+
+  const minutes = Math.round(average / 60000);
+
+  if (minutes < 60) {
+    return minutes + ' min';
+  }
+
+  return Math.floor(minutes / 60) +
+    'h ' + (minutes % 60) + 'm';
+
+}
+
+
+// UPDATE BONUS MONITOR
+
+function updateBonusMonitor() {
+
+  const now = Date.now();
+
+  ['three', 'five'].forEach(type => {
+
+    const isThree = type === 'three';
+
+    const filtered = bonusRecords
+      .filter(record =>
+        isThree
+          ? record.is_three_rolls
+          : record.is_five_rolls
+      )
+      .sort((a, b) =>
+        new Date(b.settled_at) - new Date(a.settled_at)
+      );
+
+    const prefix = isThree ? 'three' : 'five';
+
+    const last = filtered[0];
+
+    if (!last) {
+
+      document.getElementById(prefix + 'Timer').textContent =
+        '--:--:--';
+
+      document.getElementById(prefix + 'Elapsed').textContent =
+        'No record found';
+
+      document.getElementById(prefix + 'LastTime').textContent =
+        '-';
+
+      document.getElementById(prefix + 'LastMultiplier').textContent =
+        '-';
+
+      document.getElementById(prefix + 'Average').textContent =
+        '-';
+
+      return;
+    }
+
+    const lastDate = new Date(last.settled_at);
+
+    if (isNaN(lastDate.getTime())) {
+      return;
+    }
+
+    const elapsed = now - lastDate.getTime();
+
+    document.getElementById(prefix + 'Timer').textContent =
+      formatElapsed(elapsed);
+
+    document.getElementById(prefix + 'Elapsed').textContent =
+      'TIME SINCE LAST BONUS';
+
+    document.getElementById(prefix + 'LastTime').textContent =
+      formatDate(last.settled_at);
+
+    document.getElementById(prefix + 'LastMultiplier').textContent =
+      getBonusMultiplier(last, type);
+
+    document.getElementById(prefix + 'Average').textContent =
+      averageInterval(filtered);
+
+  });
+
+}
+
+
+// LOAD BONUS MONITOR DATA
+
+async function loadBonusMonitor() {
+
+  try {
+
+    const response = await fetch(
+      '/api/history?type=all&limit=200'
+    );
+
+    if (!response.ok) {
+      throw new Error('Bonus monitor request failed');
+    }
+
+    const data = await response.json();
+
+    bonusRecords = data.records || [];
+
+    updateBonusMonitor();
+
+  } catch (error) {
+
+    console.error('Bonus Monitor Error:', error);
+
+  }
+
+}
+
+
 // LOAD RECORDS
 
 async function loadRecords() {
@@ -758,6 +1122,9 @@ async function loadRecords() {
     renderRecords();
 
     renderHourlyStats(allRecords);
+
+    // BONUS MONITOR UPDATE
+    loadBonusMonitor();
 
   } catch (error) {
 
@@ -816,6 +1183,15 @@ setInterval(() => {
   loadRecords();
 
 }, 30000);
+
+
+// BONUS TIMER UPDATES EVERY SECOND
+
+setInterval(() => {
+
+  updateBonusMonitor();
+
+}, 1000);
 
 </script>
 
