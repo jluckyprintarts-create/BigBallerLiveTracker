@@ -162,6 +162,33 @@ td {
     }
 
     @media (min-width: 700px) {
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 18px;
+}
+
+.pagination button {
+  padding: 8px 12px;
+  font-size: 12px;
+  min-width: 36px;
+}
+
+.pagination button.active {
+  background: #d5a91f;
+  color: #111827;
+  font-weight: bold;
+}
+
+.pagination button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+      
       .cards {
         grid-template-columns: repeat(4, 1fr);
       }
@@ -267,7 +294,7 @@ td {
       </table>
 
     </div>
-
+<div id="pagination" class="pagination"></div>
   </section>
 
   <section class="card">
@@ -294,6 +321,9 @@ td {
 <script>
 
 let currentType = 'all';
+let currentPage = 1;
+const recordsPerPage = 20;
+let allRecords = [];
 
 function formatTime(value) {
 
@@ -357,6 +387,110 @@ async function loadStats() {
 
 }
 
+async function renderRecords() {
+
+  const tbody = document.getElementById('records');
+  const pagination = document.getElementById('pagination');
+
+  const totalPages = Math.ceil(allRecords.length / recordsPerPage);
+
+  if (allRecords.length === 0) {
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="5" class="empty">
+          No records found.
+        </td>
+      </tr>
+    `;
+
+    pagination.innerHTML = '';
+    return;
+  }
+
+  if (currentPage > totalPages) {
+    currentPage = totalPages;
+  }
+
+  const start = (currentPage - 1) * recordsPerPage;
+  const end = start + recordsPerPage;
+
+  const pageRecords = allRecords.slice(start, end);
+
+  tbody.innerHTML = pageRecords.map(record => {
+
+    const types = [];
+
+    if (record.is_three_rolls) types.push('3 Rolls');
+    if (record.is_five_rolls) types.push('5 Rolls');
+    if (record.is_big_win) types.push('Big Win');
+
+    return `
+      <tr>
+        <td>${types.join(', ') || '-'}</td>
+
+        <td>${escapeHTML(record.dealer_name || 'Unknown')}</td>
+
+        <td>
+          ${
+            record.big_win_multiplier !== null
+              ? Number(record.big_win_multiplier).toFixed(2) + 'x'
+              : '-'
+          }
+        </td>
+
+        <td>${formatTime(record.settled_at)}</td>
+
+        <td>${formatTime(record.adjusted_at)}</td>
+      </tr>
+    `;
+
+  }).join('');
+
+  let buttons = '';
+
+  buttons += `
+    <button ${currentPage === 1 ? 'disabled' : ''}
+      onclick="changePage(${currentPage - 1})">
+      Prev
+    </button>
+  `;
+
+  for (let i = 1; i <= totalPages; i++) {
+
+    buttons += `
+      <button
+        class="${i === currentPage ? 'active' : ''}"
+        onclick="changePage(${i})">
+        ${i}
+      </button>
+    `;
+
+  }
+
+  buttons += `
+    <button ${currentPage === totalPages ? 'disabled' : ''}
+      onclick="changePage(${currentPage + 1})">
+      Next
+    </button>
+  `;
+
+  pagination.innerHTML = buttons;
+
+}
+
+function changePage(page) {
+
+  const totalPages = Math.ceil(allRecords.length / recordsPerPage);
+
+  if (page < 1 || page > totalPages) return;
+
+  currentPage = page;
+
+  renderRecords();
+
+}
+
 async function loadRecords() {
 
   const tbody = document.getElementById('records');
@@ -379,53 +513,27 @@ async function loadRecords() {
 
     const data = await response.json();
 
-    if (!data.records || data.records.length === 0) {
+    allRecords = data.records || [];
 
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="5" class="empty">
-            No records found.
-          </td>
-        </tr>
-      `;
-
-      return;
-
-    }
-
-    tbody.innerHTML = data.records.map(record => {
-
-      const types = [];
-
-      if (record.is_three_rolls) types.push('3 Rolls');
-      if (record.is_five_rolls) types.push('5 Rolls');
-      if (record.is_big_win) types.push('Big Win');
-
-      return `
-        <tr>
-     
-          <td>${types.join(', ') || '-'}</td>
-
-<td>
-  ${escapeHTML(record.dealer_name || 'Unknown')}
-</td>
-
-<td>
-  ${
-    record.big_win_multiplier !== null
-      ? Number(record.big_win_multiplier).toFixed(2) + 'x'
-      : '-'
-  }
-</td>
-          <td>${formatTime(record.settled_at)}</td>
-          <td>${formatTime(record.adjusted_at)}</td>
-        </tr>
-      `;
-
-    }).join('');
+    renderRecords();
 
   } catch (error) {
 
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="5" class="empty">
+          Unable to load records.
+        </td>
+      </tr>
+    `;
+
+    document.getElementById('pagination').innerHTML = '';
+
+    console.error(error);
+
+  }
+
+                         }
     tbody.innerHTML = `
       <tr>
         <td colspan="5" class="empty">
