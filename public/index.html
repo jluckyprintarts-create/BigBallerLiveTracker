@@ -1036,8 +1036,10 @@ function updateBonusMonitor() {
       return;
     }
 
-    const elapsed = now - lastDate.getTime();
+    const adjustment = isThree ? 3 : 4;
 
+const elapsed =
+  now - lastDate.getTime() - (adjustment * 60 * 1000);
     document.getElementById(prefix + 'Timer').textContent =
       formatElapsed(elapsed);
 
