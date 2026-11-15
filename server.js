@@ -18,6 +18,9 @@ const POLL_INTERVAL_MS = Math.max(
   Number(process.env.POLL_INTERVAL_MS || 30000)
 );
 
+// SMART ANALYSIS: EVERY 5 MINUTES
+const ANALYSIS_INTERVAL_MS = 5 * 60 * 1000;
+
 const UPSTREAM_URL =
   process.env.UPSTREAM_URL ||
   'https://api-cs.casino.org/svc-evolution-game-events/api/bigballer?page=0&size=14&sort=data.settledAt,desc&duration=6&isThreeRolls=true,false&isFiveRolls=true,false';
@@ -40,6 +43,26 @@ let lastSuccessAt = null;
 let lastPollError = null;
 let lastFetchedCount = 0;
 let lastSavedCount = 0;
+
+// SMART ANALYSIS STATUS
+let analysisInProgress = false;
+
+let analysisCache = {
+  lastAnalysisAt: null,
+
+  threeRolls: {
+    bestHours: [],
+    bestDays: []
+  },
+
+  fiveRolls: {
+    bestHours: [],
+    bestDays: []
+  },
+
+  totalRecords: 0,
+  error: null
+};
 
 
 // ----------------------------------
@@ -167,8 +190,6 @@ function getBonusMultiplier(result, expectedMode) {
 
   let round = matchingRound;
 
-  // Kung walang gameMode pero iisa lang ang bonus round,
-  // gamitin ang nag-iisang round.
   if (!round && bonusRounds.length === 1) {
     round = bonusRounds[0];
   }
@@ -183,7 +204,6 @@ function getBonusMultiplier(result, expectedMode) {
 
   }
 
-  // Fallback sa official result fields.
   if (expectedMode === 'ThreeRolls') {
 
     return getNumber(
@@ -244,9 +264,7 @@ function normalizeEvent(raw) {
   }
 
 
-  // ----------------------------------
   // DETECT ROLL TYPES
-  // ----------------------------------
 
   let isThreeRolls = Boolean(
     result.isThreeRolls ||
@@ -291,9 +309,7 @@ function normalizeEvent(raw) {
   }
 
 
-  // ----------------------------------
   // GET ACTUAL GAME MULTIPLIER
-  // ----------------------------------
 
   let bigWinMultiplier = null;
 
@@ -316,16 +332,12 @@ function normalizeEvent(raw) {
   }
 
 
-  // ----------------------------------
   // BIG WIN DISABLED
-  // ----------------------------------
 
   const isBigWin = false;
 
 
-  // ----------------------------------
   // TIME ADJUSTMENT
-  // ----------------------------------
 
   let adjustment = 0;
 
@@ -342,9 +354,7 @@ function normalizeEvent(raw) {
   );
 
 
-  // ----------------------------------
   // HOST / DEALER NAME
-  // ----------------------------------
 
   const dealer =
     data.dealer ||
@@ -378,10 +388,6 @@ function normalizeEvent(raw) {
     value.trim() !== ''
   ) || null;
 
-
-  // ----------------------------------
-  // RETURN EVENT
-  // ----------------------------------
 
   return {
 
@@ -559,6 +565,253 @@ async function pollUpstream() {
 
 
 // ----------------------------------
+// SMART GAME ANALYSIS
+// ----------------------------------
+
+async function runAutomaticAnalysis() {
+
+  if (analysisInProgress) return;
+
+  analysisInProgress = true;
+
+  try {
+
+    // HOURLY ANALYSIS
+
+    const hourly = await pool.query(`
+
+      SELECT
+
+        EXTRACT(
+          HOUR FROM adjusted_at AT TIME ZONE 'Asia/Manila'
+        )::int AS hour,
+
+        COUNT(*) FILTER (
+          WHERE is_three_rolls = TRUE
+        )::int AS three_rolls,
+
+        COUNT(*) FILTER (
+          WHERE is_five_rolls = TRUE
+        )::int AS five_rolls
+
+      FROM game_history
+
+      WHERE (
+        is_three_rolls = TRUE
+        OR is_five_rolls = TRUE
+      )
+
+      GROUP BY hour
+
+      ORDER BY hour
+
+    `);
+
+
+    // DAILY ANALYSIS
+
+    const daily = await pool.query(`
+
+      SELECT
+
+        EXTRACT(
+          DOW FROM adjusted_at AT TIME ZONE 'Asia/Manila'
+        )::int AS day_number,
+
+        COUNT(*) FILTER (
+          WHERE is_three_rolls = TRUE
+        )::int AS three_rolls,
+
+        COUNT(*) FILTER (
+          WHERE is_five_rolls = TRUE
+        )::int AS five_rolls
+
+      FROM game_history
+
+      WHERE (
+        is_three_rolls = TRUE
+        OR is_five_rolls = TRUE
+      )
+
+      GROUP BY day_number
+
+      ORDER BY day_number
+
+    `);
+
+
+    // TOTAL RECORDS
+
+    const totals = await pool.query(`
+
+      SELECT
+
+        COUNT(*)::int AS total_records,
+
+        COUNT(*) FILTER (
+          WHERE is_three_rolls = TRUE
+        )::int AS three_rolls,
+
+        COUNT(*) FILTER (
+          WHERE is_five_rolls = TRUE
+        )::int AS five_rolls
+
+      FROM game_history
+
+      WHERE (
+        is_three_rolls = TRUE
+        OR is_five_rolls = TRUE
+      )
+
+    `);
+
+
+    const dayNames = [
+      'Sunday',
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday'
+    ];
+
+
+    // GET TOP HOURS
+
+    function topHours(rows, type) {
+
+      return rows
+
+        .map(row => ({
+
+          hour: Number(row.hour),
+
+          count: Number(row[type])
+
+        }))
+
+        .filter(row => row.count > 0)
+
+        .sort((a, b) => b.count - a.count)
+
+        .slice(0, 5);
+
+    }
+
+
+    // GET TOP DAYS
+
+    function topDays(rows, type) {
+
+      return rows
+
+        .map(row => ({
+
+          day: dayNames[
+            Number(row.day_number)
+          ],
+
+          count: Number(row[type])
+
+        }))
+
+        .filter(row => row.count > 0)
+
+        .sort((a, b) => b.count - a.count)
+
+        .slice(0, 7);
+
+    }
+
+
+    // SAVE ANALYSIS RESULTS
+
+    analysisCache = {
+
+      lastAnalysisAt: new Date().toISOString(),
+
+      threeRolls: {
+
+        bestHours: topHours(
+          hourly.rows,
+          'three_rolls'
+        ),
+
+        bestDays: topDays(
+          daily.rows,
+          'three_rolls'
+        )
+
+      },
+
+      fiveRolls: {
+
+        bestHours: topHours(
+          hourly.rows,
+          'five_rolls'
+        ),
+
+        bestDays: topDays(
+          daily.rows,
+          'five_rolls'
+        )
+
+      },
+
+      totalRecords: totals.rows[0].total_records,
+
+      totals: {
+
+        threeRolls: totals.rows[0].three_rolls,
+
+        fiveRolls: totals.rows[0].five_rolls
+
+      },
+
+      error: null,
+
+      note:
+        'Historical frequency only. Not a prediction or guarantee of winning.'
+
+    };
+
+
+    console.log(
+      'SMART ANALYSIS UPDATED:',
+      analysisCache.lastAnalysisAt
+    );
+
+  } catch (error) {
+
+    analysisCache.error = error.message;
+
+    console.error(
+      'SMART ANALYSIS ERROR:',
+      error.message
+    );
+
+  } finally {
+
+    analysisInProgress = false;
+
+  }
+
+}
+
+
+// ----------------------------------
+// ANALYSIS API
+// ----------------------------------
+
+app.get('/api/analysis', (req, res) => {
+
+  res.json(analysisCache);
+
+});
+
+
+// ----------------------------------
 // HEALTH CHECK
 // ----------------------------------
 
@@ -597,7 +850,11 @@ app.get('/health', async (req, res) => {
 
     lastSavedCount,
 
-    pollIntervalMs: POLL_INTERVAL_MS
+    pollIntervalMs: POLL_INTERVAL_MS,
+
+    analysisIntervalMs: ANALYSIS_INTERVAL_MS,
+
+    lastAnalysisAt: analysisCache.lastAnalysisAt
 
   });
 
@@ -880,13 +1137,27 @@ async function start() {
       `Polling every ${POLL_INTERVAL_MS}ms`
     );
 
+    console.log(
+      `Smart analysis every ${ANALYSIS_INTERVAL_MS}ms`
+    );
+
   });
 
   await pollUpstream();
 
+  // FIRST ANALYSIS ON STARTUP
+  await runAutomaticAnalysis();
+
+  // DATA COLLECTION
   setInterval(
     pollUpstream,
     POLL_INTERVAL_MS
+  );
+
+  // SMART ANALYSIS EVERY 5 MINUTES
+  setInterval(
+    runAutomaticAnalysis,
+    ANALYSIS_INTERVAL_MS
   );
 
 }
