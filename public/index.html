@@ -119,10 +119,19 @@
     }
 
     table {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 600px;
-    }
+  width: 100%;
+  min-width: 0;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 8px 4px;
+  border-bottom: 1px solid #293653;
+  text-align: left;
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
 
     th, td {
       padding: 12px;
