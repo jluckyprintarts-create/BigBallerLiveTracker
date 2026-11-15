@@ -185,11 +185,6 @@
       background: #7c3aed;
     }
 
-    .badge-big {
-      background: #b45309;
-      color: #fff7ed;
-    }
-
     .multiplier {
       color: #facc15;
       font-weight: bold;
@@ -261,7 +256,7 @@
       }
 
       .cards {
-        grid-template-columns: repeat(4, 1fr);
+        grid-template-columns: repeat(3, 1fr);
       }
 
       th,
@@ -316,11 +311,6 @@
       <div class="card-value" id="fiveRolls">0</div>
     </div>
 
-    <div class="card">
-      <div class="card-title">BIG WINS 100x+</div>
-      <div class="card-value" id="bigWins">0</div>
-    </div>
-
   </div>
 
   <!-- HISTORICAL RECORDS -->
@@ -343,10 +333,6 @@
 
       <button class="filter-btn" data-type="five">
         5 Rolls
-      </button>
-
-      <button class="filter-btn" data-type="bigwins">
-        Big Wins
       </button>
 
     </div>
@@ -494,19 +480,6 @@ function getEventType(record) {
     };
   }
 
-  const multiplier = Number(
-    record.big_win_multiplier ??
-    record.multiplier ??
-    0
-  );
-
-  if (record.is_big_win || multiplier >= 100) {
-    return {
-      label: 'Big Win',
-      badge: 'badge-big'
-    };
-  }
-
   return {
     label: record.roll_type || 'Other',
     badge: ''
@@ -527,18 +500,6 @@ function updateCards(records) {
     record => record.is_five_rolls
   ).length;
 
-  const big = records.filter(record => {
-
-    const multiplier = Number(
-      record.big_win_multiplier ??
-      record.multiplier ??
-      0
-    );
-
-    return record.is_big_win || multiplier >= 100;
-
-  }).length;
-
   document.getElementById('totalRecords').textContent =
     records.length;
 
@@ -547,9 +508,6 @@ function updateCards(records) {
 
   document.getElementById('fiveRolls').textContent =
     five;
-
-  document.getElementById('bigWins').textContent =
-    big;
 
 }
 
