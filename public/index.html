@@ -392,13 +392,18 @@ async function loadRecords() {
         <tr>
           <td>${escapeHTML(record.event_id)}</td>
           <td>${types.join(', ') || '-'}</td>
-          <td>
-            ${
-              record.big_win_multiplier !== null
-                ? Number(record.big_win_multiplier).toFixed(2) + 'x'
-                : '-'
-            }
-          </td>
+
+<td>
+  ${escapeHTML(record.dealer_name || 'Unknown')}
+</td>
+
+<td>
+  ${
+    record.big_win_multiplier !== null
+      ? Number(record.big_win_multiplier).toFixed(2) + 'x'
+      : '-'
+  }
+</td>
           <td>${formatTime(record.settled_at)}</td>
           <td>${formatTime(record.adjusted_at)}</td>
         </tr>
