@@ -20,7 +20,7 @@ const POLL_INTERVAL_MS = Math.max(
 
 const UPSTREAM_URL =
   process.env.UPSTREAM_URL ||
-  'https://api-cs.casino.org/svc-evolution-game-events/api/bigballer?page=0&size=100&sort=data.settledAt,desc&duration=6&isThreeRolls=true&isFiveRolls=true,false';
+  'https://api-cs.casino.org/svc-evolution-game-events/api/bigballer?page=0&size=14&sort=data.settledAt,desc&duration=6&isThreeRolls=true&isFiveRolls=true';
 
 if (!process.env.DATABASE_URL) {
   console.error('DATABASE_URL is required');
