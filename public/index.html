@@ -1035,6 +1035,87 @@ function updateBonusMonitor() {
 
     const last = filtered[0];
 
+// ===================================
+// BONUS ACTIVITY MONITOR FUNCTIONS
+// ===================================
+
+
+// GET ADJUSTED DATE
+
+function getAdjustedDate(record) {
+
+  const value = record.adjusted_at || record.settled_at;
+
+  const date = new Date(value);
+
+  return isNaN(date.getTime()) ? null : date;
+
+}
+
+
+// AVERAGE INTERVAL - BASED ON ADJUSTED TIME
+
+function averageInterval(records) {
+
+  const dates = records
+    .map(record => getAdjustedDate(record))
+    .filter(date => date !== null)
+    .sort((a, b) => a - b);
+
+  if (dates.length < 2) {
+    return '-';
+  }
+
+  let total = 0;
+
+  for (let i = 1; i < dates.length; i++) {
+    total += dates[i] - dates[i - 1];
+  }
+
+  const average = total / (dates.length - 1);
+
+  const minutes = Math.round(average / 60000);
+
+  if (minutes < 60) {
+    return minutes + ' min';
+  }
+
+  return Math.floor(minutes / 60) +
+    'h ' + (minutes % 60) + 'm';
+
+}
+
+
+// UPDATE BONUS MONITOR
+
+function updateBonusMonitor() {
+
+  const now = Date.now();
+
+  ['three', 'five'].forEach(type => {
+
+    const isThree = type === 'three';
+
+    const filtered = bonusRecords
+      .filter(record =>
+        isThree
+          ? record.is_three_rolls
+          : record.is_five_rolls
+      )
+      .sort((a, b) => {
+
+        const dateA = getAdjustedDate(a);
+        const dateB = getAdjustedDate(b);
+
+        return (dateB?.getTime() || 0) -
+               (dateA?.getTime() || 0);
+
+      });
+
+    const prefix = isThree ? 'three' : 'five';
+
+    const last = filtered[0];
+
     if (!last) {
 
       document.getElementById(prefix + 'Timer').textContent =
@@ -1056,6 +1137,7 @@ function updateBonusMonitor() {
     }
 
     // USE ADJUSTED TIME
+
     const lastDate = getAdjustedDate(last);
 
     if (!lastDate) {
@@ -1063,6 +1145,7 @@ function updateBonusMonitor() {
     }
 
     // TIMER BASED ON ADJUSTED TIME
+
     const elapsed = now - lastDate.getTime();
 
     document.getElementById(prefix + 'Timer').textContent =
@@ -1071,14 +1154,18 @@ function updateBonusMonitor() {
     document.getElementById(prefix + 'Elapsed').textContent =
       'TIME SINCE LAST BONUS';
 
-    // LAST APPEARED USES ADJUSTED TIME
+    // LAST APPEARED
+
     document.getElementById(prefix + 'LastTime').textContent =
       formatDate(last.adjusted_at || last.settled_at);
+
+    // MULTIPLIER
 
     document.getElementById(prefix + 'LastMultiplier').textContent =
       getBonusMultiplier(last, type);
 
-    // AVERAGE ALSO USES ADJUSTED TIME
+    // AVERAGE INTERVAL
+
     document.getElementById(prefix + 'Average').textContent =
       averageInterval(filtered);
 
