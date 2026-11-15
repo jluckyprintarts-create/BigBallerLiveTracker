@@ -66,6 +66,44 @@ let analysisCache = {
 
 
 // ----------------------------------
+// BONUS INTELLIGENCE ENGINE STATUS
+// ----------------------------------
+
+let intelligenceInProgress = false;
+
+function emptyForecast() {
+  return {
+    totalBonuses: 0,
+    intervalCount: 0,
+    lastBonusAt: null,
+    averageIntervalMinutes: null,
+    medianIntervalMinutes: null,
+    recentAverageIntervalMinutes: null,
+    estimatedIntervalMinutes: null,
+    selectedModel: null,
+    backtestMaeMinutes: null,
+    backtestBiasMinutes: null,
+    backtestSamples: 0,
+    coefficientOfVariation: null,
+    currentGapMinutes: null,
+    anomaly: 'not-enough-data',
+    confidence: 'Low',
+    confidenceReason: 'Not enough historical intervals.',
+    estimatedWindows: []
+  };
+}
+
+let intelligenceCache = {
+  lastAnalysisAt: null,
+  threeRolls: emptyForecast(),
+  fiveRolls: emptyForecast(),
+  error: null,
+  note:
+    'Historical interval analysis only. Bootstrap resampling estimates uncertainty in historical intervals; it does not simulate or predict the game RNG, winning probability, or guaranteed bonus times.'
+};
+
+
+// ----------------------------------
 // DATABASE
 // ----------------------------------
 
@@ -801,12 +839,578 @@ async function runAutomaticAnalysis() {
 
 
 // ----------------------------------
+// BONUS INTELLIGENCE MATH HELPERS
+// ----------------------------------
+
+function average(values) {
+
+  if (!values.length) return null;
+
+  return values.reduce((sum, value) => sum + value, 0) /
+    values.length;
+
+}
+
+
+function median(values) {
+
+  if (!values.length) return null;
+
+  const sorted = [...values].sort((a, b) => a - b);
+  const middle = Math.floor(sorted.length / 2);
+
+  if (sorted.length % 2) {
+    return sorted[middle];
+  }
+
+  return (sorted[middle - 1] + sorted[middle]) / 2;
+
+}
+
+
+function standardDeviation(values) {
+
+  if (values.length < 2) return 0;
+
+  const avg = average(values);
+
+  const variance = average(
+    values.map(value => Math.pow(value - avg, 2))
+  );
+
+  return Math.sqrt(variance);
+
+}
+
+
+function percentile(values, percent) {
+
+  if (!values.length) return null;
+
+  const sorted = [...values].sort((a, b) => a - b);
+  const position = (sorted.length - 1) * percent;
+  const lower = Math.floor(position);
+  const upper = Math.ceil(position);
+
+  if (lower === upper) {
+    return sorted[lower];
+  }
+
+  const fraction = position - lower;
+
+  return sorted[lower] +
+    (sorted[upper] - sorted[lower]) * fraction;
+
+}
+
+
+function roundNumber(value, digits = 1) {
+
+  if (!Number.isFinite(value)) return null;
+
+  const factor = Math.pow(10, digits);
+
+  return Math.round(value * factor) / factor;
+
+}
+
+
+// ----------------------------------
+// MODEL ESTIMATORS
+// ----------------------------------
+
+function estimateWithModel(values, model) {
+
+  if (!values.length) return null;
+
+  if (model === 'mean') {
+    return average(values);
+  }
+
+  if (model === 'median') {
+    return median(values);
+  }
+
+  if (model === 'recent10') {
+    return average(values.slice(-10));
+  }
+
+  if (model === 'weighted') {
+
+    // Recent intervals receive more weight.
+    // The newest interval has weight 1.
+    let weightedTotal = 0;
+    let totalWeight = 0;
+
+    values.forEach((value, index) => {
+
+      const age = values.length - 1 - index;
+      const weight = Math.pow(0.85, age);
+
+      weightedTotal += value * weight;
+      totalWeight += weight;
+
+    });
+
+    return totalWeight
+      ? weightedTotal / totalWeight
+      : average(values);
+
+  }
+
+  return median(values);
+
+}
+
+
+// ----------------------------------
+// WALK-FORWARD BACKTEST
+// ----------------------------------
+
+function runIntervalBacktest(intervals) {
+
+  const models = [
+    'mean',
+    'median',
+    'recent10',
+    'weighted'
+  ];
+
+  const results = {};
+
+  for (const model of models) {
+
+    const errors = [];
+    const signedErrors = [];
+
+    // Each test only uses intervals that came before it.
+    // Start after five historical intervals are available.
+    for (let index = 5; index < intervals.length; index++) {
+
+      const training = intervals.slice(0, index);
+      const actual = intervals[index];
+      const predicted = estimateWithModel(training, model);
+
+      if (
+        !Number.isFinite(predicted) ||
+        !Number.isFinite(actual)
+      ) {
+        continue;
+      }
+
+      errors.push(Math.abs(predicted - actual));
+      signedErrors.push(predicted - actual);
+
+    }
+
+    results[model] = {
+
+      maeMinutes: errors.length
+        ? average(errors)
+        : null,
+
+      biasMinutes: signedErrors.length
+        ? average(signedErrors)
+        : null,
+
+      samples: errors.length
+
+    };
+
+  }
+
+  // Do not select a model based on too few test cases.
+  const eligible = models
+    .filter(model => results[model].samples >= 5)
+    .sort((a, b) =>
+      results[a].maeMinutes - results[b].maeMinutes
+    );
+
+  const selectedModel = eligible.length
+    ? eligible[0]
+    : 'median';
+
+  return {
+    selectedModel,
+    results,
+    selected: results[selectedModel]
+  };
+
+}
+
+
+// ----------------------------------
+// BOOTSTRAP INTERVAL UNCERTAINTY
+// ----------------------------------
+
+function createBootstrapEstimates(intervals, model, simulations = 1500) {
+
+  if (!intervals.length) return [];
+
+  const sampleSize = Math.min(10, intervals.length);
+  const estimates = [];
+
+  for (let simulation = 0; simulation < simulations; simulation++) {
+
+    const sample = [];
+
+    for (let index = 0; index < sampleSize; index++) {
+
+      const randomIndex = Math.floor(
+        Math.random() * intervals.length
+      );
+
+      sample.push(intervals[randomIndex]);
+
+    }
+
+    const estimate = estimateWithModel(sample, model);
+
+    if (Number.isFinite(estimate) && estimate > 0) {
+      estimates.push(estimate);
+    }
+
+  }
+
+  return estimates;
+
+}
+
+
+// ----------------------------------
+// BUILD ONE TYPE'S INTELLIGENCE
+// ----------------------------------
+
+function buildBonusForecast(timestampValues) {
+
+  const timestamps = timestampValues
+    .map(value => getDate(value))
+    .filter(Boolean)
+    .sort((a, b) => a.getTime() - b.getTime());
+
+  const result = emptyForecast();
+
+  result.totalBonuses = timestamps.length;
+
+  if (timestamps.length) {
+    result.lastBonusAt =
+      timestamps[timestamps.length - 1].toISOString();
+  }
+
+  if (timestamps.length < 2) {
+    return result;
+  }
+
+  const intervals = [];
+
+  for (let index = 1; index < timestamps.length; index++) {
+
+    const minutes = (
+      timestamps[index].getTime() -
+      timestamps[index - 1].getTime()
+    ) / 60000;
+
+    // Ignore zero or negative gaps caused by duplicate timestamps
+    // or inconsistent source ordering.
+    if (minutes > 0 && Number.isFinite(minutes)) {
+      intervals.push(minutes);
+    }
+
+  }
+
+  result.intervalCount = intervals.length;
+
+  if (!intervals.length) {
+    return result;
+  }
+
+  const avg = average(intervals);
+  const med = median(intervals);
+  const recent = intervals.slice(-10);
+  const recentAvg = average(recent);
+  const deviation = standardDeviation(intervals);
+  const cv = avg > 0 ? deviation / avg : null;
+
+  result.averageIntervalMinutes = roundNumber(avg);
+  result.medianIntervalMinutes = roundNumber(med);
+  result.recentAverageIntervalMinutes = roundNumber(recentAvg);
+  result.coefficientOfVariation = roundNumber(cv, 3);
+
+  const backtest = runIntervalBacktest(intervals);
+  const selectedModel = backtest.selectedModel;
+  const estimatedInterval = estimateWithModel(
+    intervals,
+    selectedModel
+  );
+
+  result.selectedModel = selectedModel;
+  result.estimatedIntervalMinutes =
+    roundNumber(estimatedInterval);
+
+  result.backtestMaeMinutes =
+    backtest.selected.maeMinutes === null
+      ? null
+      : roundNumber(backtest.selected.maeMinutes);
+
+  result.backtestBiasMinutes =
+    backtest.selected.biasMinutes === null
+      ? null
+      : roundNumber(backtest.selected.biasMinutes);
+
+  result.backtestSamples = backtest.selected.samples;
+
+  // Current elapsed time since the latest adjusted bonus timestamp.
+  const lastTimestamp = timestamps[timestamps.length - 1];
+  const currentGap = Math.max(
+    0,
+    (Date.now() - lastTimestamp.getTime()) / 60000
+  );
+
+  result.currentGapMinutes = roundNumber(currentGap);
+
+  // Robust anomaly check using median absolute deviation.
+  const absoluteDeviations = intervals.map(
+    value => Math.abs(value - med)
+  );
+
+  const mad = median(absoluteDeviations);
+
+  if (intervals.length < 5) {
+
+    result.anomaly = 'not-enough-data';
+
+  } else if (mad > 0 && currentGap > med + (3 * 1.4826 * mad)) {
+
+    result.anomaly = 'unusually-long-gap';
+
+  } else if (mad === 0 && currentGap > med * 2) {
+
+    result.anomaly = 'unusually-long-gap';
+
+  } else {
+
+    result.anomaly = 'within-historical-range';
+
+  }
+
+  // Confidence describes the stability of the interval estimate,
+  // NOT the probability that a bonus will happen.
+  const mae = backtest.selected.maeMinutes;
+  const relativeMae = (
+    mae !== null && med > 0
+  ) ? mae / med : null;
+
+  if (
+    intervals.length >= 30 &&
+    backtest.selected.samples >= 15 &&
+    cv !== null &&
+    cv <= 0.35 &&
+    relativeMae !== null &&
+    relativeMae <= 0.25
+  ) {
+
+    result.confidence = 'Higher';
+    result.confidenceReason =
+      'Large interval sample with relatively consistent gaps and measurable backtest error. This is not a chance-of-bonus percentage.';
+
+  } else if (
+    intervals.length >= 15 &&
+    backtest.selected.samples >= 5 &&
+    cv !== null &&
+    cv <= 0.65 &&
+    relativeMae !== null &&
+    relativeMae <= 0.50
+  ) {
+
+    result.confidence = 'Moderate';
+    result.confidenceReason =
+      'Some historical consistency is present, but timing uncertainty remains substantial. This is not a chance-of-bonus percentage.';
+
+  } else {
+
+    result.confidence = 'Low';
+    result.confidenceReason =
+      'Historical intervals are limited or variable, so estimated timing is uncertain. This is not a chance-of-bonus percentage.';
+
+  }
+
+  // Generate five alternative timing windows from bootstrap
+  // resampling of observed intervals. This does not simulate game outcomes.
+  const bootstrap = createBootstrapEstimates(
+    intervals,
+    selectedModel,
+    1500
+  );
+
+  if (!bootstrap.length || !Number.isFinite(estimatedInterval)) {
+    return result;
+  }
+
+  const quantiles = [
+    { label: 'EARLIER RANGE', value: 0.10 },
+    { label: 'EARLY-MIDDLE RANGE', value: 0.30 },
+    { label: 'CENTRAL ESTIMATE', value: 0.50 },
+    { label: 'LATE-MIDDLE RANGE', value: 0.70 },
+    { label: 'LATER RANGE', value: 0.90 }
+  ];
+
+  // Window width reflects historical dispersion, with a small
+  // minimum so the UI does not display a false exact minute.
+  const intervalSpread = mad > 0 ? mad : deviation;
+  const halfWindow = Math.max(
+    3,
+    Math.min(20, intervalSpread * 0.25)
+  );
+
+  result.estimatedWindows = quantiles.map((item, index) => {
+
+    const minutesFromLast = Math.max(
+      1,
+      percentile(bootstrap, item.value)
+    );
+
+    const centerDate = new Date(
+      lastTimestamp.getTime() + minutesFromLast * 60000
+    );
+
+    const startDate = new Date(
+      centerDate.getTime() - halfWindow * 60000
+    );
+
+    const endDate = new Date(
+      centerDate.getTime() + halfWindow * 60000
+    );
+
+    return {
+
+      rank: index + 1,
+
+      label: item.label,
+
+      minutesFromLast: roundNumber(minutesFromLast),
+
+      centerAt: centerDate.toISOString(),
+
+      windowStart: startDate.toISOString(),
+
+      windowEnd: endDate.toISOString()
+
+    };
+
+  });
+
+  return result;
+
+}
+
+
+// ----------------------------------
+// RUN BONUS INTELLIGENCE ANALYSIS
+// ----------------------------------
+
+async function runBonusIntelligenceAnalysis() {
+
+  if (intelligenceInProgress) return;
+
+  intelligenceInProgress = true;
+
+  try {
+
+    // Read ALL stored bonus timestamps, not just the latest
+    // 200 records shown by the frontend.
+    const result = await pool.query(`
+
+      SELECT
+        adjusted_at,
+        is_three_rolls,
+        is_five_rolls
+
+      FROM game_history
+
+      WHERE (
+        is_three_rolls = TRUE
+        OR is_five_rolls = TRUE
+      )
+
+      ORDER BY adjusted_at ASC
+
+    `);
+
+    const threeRollTimestamps = [];
+    const fiveRollTimestamps = [];
+
+    for (const row of result.rows) {
+
+      if (row.is_three_rolls) {
+        threeRollTimestamps.push(row.adjusted_at);
+      }
+
+      if (row.is_five_rolls) {
+        fiveRollTimestamps.push(row.adjusted_at);
+      }
+
+    }
+
+    intelligenceCache = {
+
+      lastAnalysisAt: new Date().toISOString(),
+
+      threeRolls: buildBonusForecast(
+        threeRollTimestamps
+      ),
+
+      fiveRolls: buildBonusForecast(
+        fiveRollTimestamps
+      ),
+
+      error: null,
+
+      note:
+        'Five candidate windows are calculated by resampling historical bonus intervals. They are not five guaranteed predictions. Past timing patterns do not change the game odds or reveal the game RNG.'
+
+    };
+
+    console.log(
+      'BONUS INTELLIGENCE UPDATED:',
+      intelligenceCache.lastAnalysisAt
+    );
+
+  } catch (error) {
+
+    intelligenceCache.error = error.message;
+
+    console.error(
+      'BONUS INTELLIGENCE ERROR:',
+      error.message
+    );
+
+  } finally {
+
+    intelligenceInProgress = false;
+
+  }
+
+}
+
+
+// ----------------------------------
 // ANALYSIS API
 // ----------------------------------
 
 app.get('/api/analysis', (req, res) => {
 
   res.json(analysisCache);
+
+});
+
+
+// ----------------------------------
+// BONUS INTELLIGENCE API
+// ----------------------------------
+
+app.get('/api/intelligence', (req, res) => {
+
+  res.json(intelligenceCache);
 
 });
 
@@ -854,7 +1458,10 @@ app.get('/health', async (req, res) => {
 
     analysisIntervalMs: ANALYSIS_INTERVAL_MS,
 
-    lastAnalysisAt: analysisCache.lastAnalysisAt
+    lastAnalysisAt: analysisCache.lastAnalysisAt,
+
+    lastIntelligenceAnalysisAt:
+      intelligenceCache.lastAnalysisAt
 
   });
 
@@ -1141,12 +1748,19 @@ async function start() {
       `Smart analysis every ${ANALYSIS_INTERVAL_MS}ms`
     );
 
+    console.log(
+      `Bonus intelligence every ${ANALYSIS_INTERVAL_MS}ms`
+    );
+
   });
 
   await pollUpstream();
 
   // FIRST ANALYSIS ON STARTUP
   await runAutomaticAnalysis();
+
+  // FIRST BONUS INTELLIGENCE ANALYSIS
+  await runBonusIntelligenceAnalysis();
 
   // DATA COLLECTION
   setInterval(
@@ -1157,6 +1771,12 @@ async function start() {
   // SMART ANALYSIS EVERY 5 MINUTES
   setInterval(
     runAutomaticAnalysis,
+    ANALYSIS_INTERVAL_MS
+  );
+
+  // BONUS INTELLIGENCE EVERY 5 MINUTES
+  setInterval(
+    runBonusIntelligenceAnalysis,
     ANALYSIS_INTERVAL_MS
   );
 
