@@ -41,6 +41,7 @@ let lastPollError = null;
 let lastFetchedCount = 0;
 let lastSavedCount = 0;
 
+
 // ----------------------------------
 // DATABASE
 // ----------------------------------
@@ -70,6 +71,7 @@ async function initializeDatabase() {
 
 }
 
+
 // ----------------------------------
 // HELPERS
 // ----------------------------------
@@ -83,50 +85,26 @@ function getDate(value) {
     : new Date(value);
 
   return Number.isNaN(date.getTime()) ? null : date;
+
 }
+
 
 function getNumber(value) {
 
-  if (value === undefined || value === null || value === '') {
+  if (
+    value === undefined ||
+    value === null ||
+    value === ''
+  ) {
     return null;
   }
 
   const number = Number(value);
 
   return Number.isFinite(number) ? number : null;
+
 }
 
-function findMultipliers(obj, output = []) {
-
-  if (Array.isArray(obj)) {
-    for (const item of obj) {
-      findMultipliers(item, output);
-    }
-    return output;
-  }
-
-  if (!obj || typeof obj !== 'object') return output;
-
-  for (const [key, value] of Object.entries(obj)) {
-
-    if (/multiplier/i.test(key)) {
-
-      const number = getNumber(value);
-
-      if (number !== null) {
-        output.push(number);
-      }
-
-    } else if (value && typeof value === 'object') {
-
-      findMultipliers(value, output);
-
-    }
-
-  }
-
-  return output;
-}
 
 function extractRows(payload) {
 
@@ -155,17 +133,94 @@ function extractRows(payload) {
   }
 
   return [];
+
 }
+
+
+// ----------------------------------
+// GET BONUS ROUND MULTIPLIER
+// ----------------------------------
+
+function getBonusMultiplier(result, expectedMode) {
+
+  if (!result || typeof result !== 'object') {
+    return null;
+  }
+
+  const bonusRounds = Array.isArray(result.bonusRounds)
+    ? result.bonusRounds
+    : [];
+
+  const matchingRound = bonusRounds.find(round => {
+
+    const mode = String(
+      round.gameMode ||
+      round.mode ||
+      round.gameType ||
+      round.type ||
+      ''
+    );
+
+    return new RegExp(expectedMode, 'i').test(mode);
+
+  });
+
+  let round = matchingRound;
+
+  // Kung walang gameMode pero iisa lang ang bonus round,
+  // gamitin ang nag-iisang round.
+  if (!round && bonusRounds.length === 1) {
+    round = bonusRounds[0];
+  }
+
+  if (round) {
+
+    const value = getNumber(round.totalMultiplier);
+
+    if (value !== null) {
+      return value;
+    }
+
+  }
+
+  // Fallback sa official result fields.
+  if (expectedMode === 'ThreeRolls') {
+
+    return getNumber(
+      result.threeRollsTotalMultiplier
+    );
+
+  }
+
+  if (expectedMode === 'FiveRolls') {
+
+    return getNumber(
+      result.fiveRollsTotalMultiplier
+    );
+
+  }
+
+  return null;
+
+}
+
 
 // ----------------------------------
 // NORMALIZE EVENT
 // ----------------------------------
 
-  function normalizeEvent(raw) {
-  if (!raw || typeof raw !== 'object') return null;
+function normalizeEvent(raw) {
+
+  if (!raw || typeof raw !== 'object') {
+    return null;
+  }
 
   const data = raw.data || {};
-  const result = raw.result || data.result || {};
+
+  const result =
+    data.result ||
+    raw.result ||
+    {};
 
   const eventId =
     raw.id ||
@@ -184,11 +239,15 @@ function extractRows(payload) {
     raw.startedAt
   );
 
-  if (!eventId || !settledAt) return null;
+  if (!eventId || !settledAt) {
+    return null;
+  }
 
-  /*
-   * Keep the original flag detection.
-   */
+
+  // ----------------------------------
+  // DETECT ROLL TYPES
+  // ----------------------------------
+
   let isThreeRolls = Boolean(
     result.isThreeRolls ||
     data.isThreeRolls ||
@@ -201,37 +260,17 @@ function extractRows(payload) {
     raw.isFiveRolls
   );
 
-  /*
-   * Additional detection for APIs where the roll type
-   * is stored inside bonusRounds/gameMode/mode.
-   */
-  const bonusRounds = [];
 
-  function collectBonusRounds(node) {
-  if (!node || typeof node !== 'object') return;
+  const bonusRounds = Array.isArray(result.bonusRounds)
+    ? result.bonusRounds
+    : [];
 
-  if (Array.isArray(node)) {
-    for (const item of node) {
-      collectBonusRounds(item);
-    }
-    return;
-  }
-
-  for (const [key, child] of Object.entries(node)) {
-    if (/bonusRounds/i.test(key) && Array.isArray(child)) {
-      for (const round of child) {
-        bonusRounds.push(round);
-      }
-    } else if (child && typeof child === 'object') {
-      collectBonusRounds(child);
-    }
-  }
-}
-
-  collectBonusRounds(raw);
 
   for (const round of bonusRounds) {
-    if (!round || typeof round !== 'object') continue;
+
+    if (!round || typeof round !== 'object') {
+      continue;
+    }
 
     const mode = String(
       round.gameMode ||
@@ -248,63 +287,46 @@ function extractRows(payload) {
     if (/five.?roll/i.test(mode)) {
       isFiveRolls = true;
     }
+
   }
 
-  /*
-   * Also check common game-mode fields directly.
-   */
-  const directModes = [
-    raw.gameMode,
-    raw.mode,
-    raw.gameType,
-    data.gameMode,
-    data.mode,
-    data.gameType,
-    result.gameMode,
-    result.mode,
-    result.gameType
-  ];
 
-  for (const value of directModes) {
-    const mode = String(value || '');
+  // ----------------------------------
+  // GET ACTUAL GAME MULTIPLIER
+  // ----------------------------------
 
-    if (/three.?roll/i.test(mode)) {
-      isThreeRolls = true;
-    }
+  let bigWinMultiplier = null;
 
-    if (/five.?roll/i.test(mode)) {
-      isFiveRolls = true;
-    }
+  if (isThreeRolls) {
+
+    bigWinMultiplier = getBonusMultiplier(
+      result,
+      'ThreeRolls'
+    );
+
   }
 
-  /*
-   * Original multiplier detection is preserved.
-   */
-  const multipliers = findMultipliers(raw);
+  else if (isFiveRolls) {
 
-  const bigWinMultiplier = multipliers.length
-    ? Math.max(...multipliers)
-    : null;
+    bigWinMultiplier = getBonusMultiplier(
+      result,
+      'FiveRolls'
+    );
 
-  const isBigWin =
-    bigWinMultiplier !== null &&
-    bigWinMultiplier >= 100;
-
-  if (
-    !isThreeRolls &&
-    !isFiveRolls &&
-    !isBigWin
-  ) {
-    return null;
   }
 
-  /*
-   * Time adjustment:
-   * 3 Rolls = -2 minutes
-   * 5 Rolls = -4 minutes
-   *
-   * If an event is marked as both, 5 Rolls takes precedence.
-   */
+
+  // ----------------------------------
+  // BIG WIN DISABLED
+  // ----------------------------------
+
+  const isBigWin = false;
+
+
+  // ----------------------------------
+  // TIME ADJUSTMENT
+  // ----------------------------------
+
   let adjustment = 0;
 
   if (isThreeRolls) {
@@ -319,32 +341,50 @@ function extractRows(payload) {
     settledAt.getTime() - adjustment * 60000
   );
 
+
+  // ----------------------------------
+  // HOST / DEALER NAME
+  // ----------------------------------
+
   const dealer =
-  data.dealer ||
-  raw.dealer ||
-  {};
+    data.dealer ||
+    raw.dealer ||
+    {};
 
-const host =
-  data.host ||
-  raw.host ||
-  {};
+  const host =
+    data.host ||
+    raw.host ||
+    {};
 
-const dealerName = [
-  data.host_name,
-  data.hostName,
-  raw.host_name,
-  raw.hostName,
-  data.dealerName,
-  raw.dealerName,
-  host.name,
-  host.displayName,
-  dealer.name,
-  dealer.displayName
-].find(value =>
-  typeof value === 'string' && value.trim() !== ''
-) || null;
+  const dealerName = [
+
+    data.host_name,
+    data.hostName,
+
+    raw.host_name,
+    raw.hostName,
+
+    data.dealerName,
+    raw.dealerName,
+
+    host.name,
+    host.displayName,
+
+    dealer.name,
+    dealer.displayName
+
+  ].find(value =>
+    typeof value === 'string' &&
+    value.trim() !== ''
+  ) || null;
+
+
+  // ----------------------------------
+  // RETURN EVENT
+  // ----------------------------------
 
   return {
+
     eventId: String(eventId),
 
     settledAt,
@@ -362,8 +402,12 @@ const dealerName = [
     dealerName,
 
     raw
+
   };
-  }
+
+}
+
+
 // ----------------------------------
 // SAVE EVENT
 // ----------------------------------
@@ -384,26 +428,36 @@ async function saveEvent(event) {
       dealer_name,
       raw_data
     )
+
     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
 
     ON CONFLICT (event_id)
+
     DO UPDATE SET
 
       settled_at = EXCLUDED.settled_at,
+
       adjusted_at = EXCLUDED.adjusted_at,
+
       is_three_rolls = EXCLUDED.is_three_rolls,
+
       is_five_rolls = EXCLUDED.is_five_rolls,
+
       is_big_win = EXCLUDED.is_big_win,
+
       big_win_multiplier = EXCLUDED.big_win_multiplier,
+
       dealer_name = COALESCE(
         EXCLUDED.dealer_name,
         game_history.dealer_name
       ),
+
       raw_data = EXCLUDED.raw_data
 
     RETURNING (xmax = 0) AS inserted`,
 
     [
+
       event.eventId,
       event.settledAt,
       event.adjustedAt,
@@ -413,6 +467,7 @@ async function saveEvent(event) {
       event.bigWinMultiplier,
       event.dealerName,
       JSON.stringify(event.raw)
+
     ]
 
   );
@@ -420,6 +475,7 @@ async function saveEvent(event) {
   return Boolean(result.rows[0].inserted);
 
 }
+
 
 // ----------------------------------
 // LIVE MONITOR
@@ -447,9 +503,11 @@ async function pollUpstream() {
     });
 
     if (!response.ok) {
+
       throw new Error(
         `Upstream HTTP ${response.status}`
       );
+
     }
 
     const payload = await response.json();
@@ -499,6 +557,7 @@ async function pollUpstream() {
 
 }
 
+
 // ----------------------------------
 // HEALTH CHECK
 // ----------------------------------
@@ -544,6 +603,7 @@ app.get('/health', async (req, res) => {
 
 });
 
+
 // ----------------------------------
 // BIG BALLER API
 // ----------------------------------
@@ -588,6 +648,7 @@ app.get('/api/bigballer', async (req, res) => {
 
 });
 
+
 // ----------------------------------
 // HISTORY API
 // ----------------------------------
@@ -608,21 +669,29 @@ app.get('/api/history', async (req, res) => {
     let where = '';
 
     if (['3', 'three', 'three_rolls'].includes(type)) {
+
       where = 'WHERE is_three_rolls = TRUE';
+
     }
 
     else if (['5', 'five', 'five_rolls'].includes(type)) {
+
       where = 'WHERE is_five_rolls = TRUE';
+
     }
 
-    else if (['bigwin', 'big_win'].includes(type)) {
-      where = 'WHERE is_big_win = TRUE';
+    else if (type === 'all') {
+
+      where = '';
+
     }
 
-    else if (type !== 'all') {
+    else {
 
       return res.status(400).json({
+
         error: 'Invalid type'
+
       });
 
     }
@@ -658,6 +727,7 @@ app.get('/api/history', async (req, res) => {
   }
 
 });
+
 
 // ----------------------------------
 // STATISTICS
@@ -742,6 +812,7 @@ app.get('/api/stats', async (req, res) => {
 
 });
 
+
 // ----------------------------------
 // FRONTEND
 // ----------------------------------
@@ -762,23 +833,29 @@ app.get('*', (req, res, next) => {
   }
 
   res.sendFile(
+
     path.join(
       __dirname,
       'public',
       'index.html'
     ),
+
     (error) => {
 
       if (error) {
+
         res.status(404).send(
           'Frontend file not found. Add public/index.html.'
         );
+
       }
 
     }
+
   );
 
 });
+
 
 // ----------------------------------
 // START SERVER
@@ -819,6 +896,7 @@ start().catch((error) => {
   process.exit(1);
 
 });
+
 
 process.on('SIGTERM', async () => {
 
