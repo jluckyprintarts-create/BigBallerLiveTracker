@@ -955,11 +955,26 @@ function formatElapsed(milliseconds) {
 
 // AVERAGE INTERVAL
 
+// GET ADJUSTED DATE
+
+function getAdjustedDate(record) {
+
+  const value = record.adjusted_at || record.settled_at;
+
+  const date = new Date(value);
+
+  return isNaN(date.getTime()) ? null : date;
+
+}
+
+
+// AVERAGE INTERVAL - BASED ON ADJUSTED TIME
+
 function averageInterval(records) {
 
   const dates = records
-    .map(record => new Date(record.settled_at))
-    .filter(date => !isNaN(date.getTime()))
+    .map(record => getAdjustedDate(record))
+    .filter(date => date !== null)
     .sort((a, b) => a - b);
 
   if (dates.length < 2) {
@@ -984,8 +999,12 @@ function averageInterval(records) {
     'h ' + (minutes % 60) + 'm';
 
 }
+}
 
 
+// UPDATE BONUS MONITOR
+
+function updateBonusMonitor() {
 // UPDATE BONUS MONITOR
 
 function updateBonusMonitor() {
@@ -1002,9 +1021,15 @@ function updateBonusMonitor() {
           ? record.is_three_rolls
           : record.is_five_rolls
       )
-      .sort((a, b) =>
-        new Date(b.settled_at) - new Date(a.settled_at)
-      );
+      .sort((a, b) => {
+
+        const dateA = getAdjustedDate(a);
+        const dateB = getAdjustedDate(b);
+
+        return (dateB?.getTime() || 0) -
+               (dateA?.getTime() || 0);
+
+      });
 
     const prefix = isThree ? 'three' : 'five';
 
@@ -1030,35 +1055,36 @@ function updateBonusMonitor() {
       return;
     }
 
-    const lastDate = new Date(last.settled_at);
+    // USE ADJUSTED TIME
+    const lastDate = getAdjustedDate(last);
 
-    if (isNaN(lastDate.getTime())) {
+    if (!lastDate) {
       return;
     }
 
-    const adjustment = isThree ? 3 : 4;
+    // TIMER BASED ON ADJUSTED TIME
+    const elapsed = now - lastDate.getTime();
 
-const elapsed =
-  now - lastDate.getTime() - (adjustment * 60 * 1000);
     document.getElementById(prefix + 'Timer').textContent =
       formatElapsed(elapsed);
 
     document.getElementById(prefix + 'Elapsed').textContent =
       'TIME SINCE LAST BONUS';
 
+    // LAST APPEARED USES ADJUSTED TIME
     document.getElementById(prefix + 'LastTime').textContent =
-      formatDate(last.settled_at);
+      formatDate(last.adjusted_at || last.settled_at);
 
     document.getElementById(prefix + 'LastMultiplier').textContent =
       getBonusMultiplier(last, type);
 
+    // AVERAGE ALSO USES ADJUSTED TIME
     document.getElementById(prefix + 'Average').textContent =
       averageInterval(filtered);
 
   });
 
 }
-
 
 // LOAD BONUS MONITOR DATA
 
