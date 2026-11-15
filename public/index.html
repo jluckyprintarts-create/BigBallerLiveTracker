@@ -439,29 +439,54 @@ function formatDate(value) {
 
 // GET MULTIPLIER
 
+// GET MULTIPLIER - CORRECTED
+
 function getMultiplier(record) {
 
-  const value =
-    record.big_win_multiplier ??
-    record.multiplier ??
-    record.three_multiplier ??
-    record.five_multiplier;
+  // Kunin ang actual game result mula sa raw_data
+  const result =
+    record.raw_data?.data?.result ||
+    record.raw_data?.result ||
+    {};
 
-  if (value === null || value === undefined || value === '') {
-    return '-';
+  // 3 Rolls
+  if (record.is_three_rolls) {
+
+    const bonusRound = (result.bonusRounds || []).find(
+      round => round.gameMode === 'ThreeRolls'
+    );
+
+    const value =
+      bonusRound?.totalMultiplier ??
+      result.threeRollsTotalMultiplier ??
+      record.three_multiplier;
+
+    return value !== null && value !== undefined
+      ? Number(value) + 'x'
+      : '-';
   }
 
-  const number = Number(value);
+  // 5 Rolls
+  if (record.is_five_rolls) {
 
-  if (Number.isNaN(number)) {
-    return escapeHTML(value);
+    const bonusRound = (result.bonusRounds || []).find(
+      round => round.gameMode === 'FiveRolls'
+    );
+
+    const value =
+      bonusRound?.totalMultiplier ??
+      result.fiveRollsTotalMultiplier ??
+      record.five_multiplier;
+
+    return value !== null && value !== undefined
+      ? Number(value) + 'x'
+      : '-';
   }
 
-  return number + 'x';
+  // Ordinary rounds: walang ipapakitang multiplier
+  return '-';
 
 }
-
-
 // GET EVENT TYPE
 
 function getEventType(record) {
