@@ -323,8 +323,120 @@
       font-size: 9px;
     }
 
+    /* SMART GAME ANALYSIS */
+
+    .analysis-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 9px;
+    }
+
+    .analysis-card {
+      background: #172033;
+      border: 1px solid #334155;
+      border-radius: 9px;
+      padding: 11px;
+      min-width: 0;
+    }
+
+    .analysis-card.three {
+      border-left: 3px solid #3b82f6;
+    }
+
+    .analysis-card.five {
+      border-left: 3px solid #a78bfa;
+    }
+
+    .analysis-title {
+      font-size: 11px;
+      font-weight: bold;
+      color: #e2e8f0;
+      margin-bottom: 10px;
+    }
+
+    .analysis-label {
+      font-size: 9px;
+      color: #94a3b8;
+      margin: 9px 0 6px;
+    }
+
+    .analysis-list {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .analysis-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 5px;
+      background: #0f172a;
+      padding: 7px;
+      border-radius: 5px;
+      font-size: 10px;
+    }
+
+    .analysis-item span:first-child {
+      color: #cbd5e1;
+    }
+
+    .analysis-count {
+      color: #facc15;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    .analysis-summary {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .analysis-stat {
+      background: #172033;
+      border: 1px solid #334155;
+      border-radius: 7px;
+      padding: 9px;
+      min-width: 0;
+    }
+
+    .analysis-stat-label {
+      color: #94a3b8;
+      font-size: 9px;
+    }
+
+    .analysis-stat-value {
+      color: #facc15;
+      font-size: 17px;
+      font-weight: bold;
+      margin-top: 4px;
+      overflow-wrap: anywhere;
+    }
+
+    .analysis-status {
+      font-size: 9px;
+      color: #22c55e;
+    }
+
+    .analysis-footer {
+      font-size: 9px;
+      color: #94a3b8;
+      text-align: center;
+      margin-top: 10px;
+      line-height: 1.5;
+    }
+
+    .analysis-empty {
+      color: #64748b;
+      font-size: 10px;
+      padding: 5px 0;
+    }
+
     @media (max-width: 350px) {
-      .bonus-monitor {
+      .bonus-monitor,
+      .analysis-grid {
         grid-template-columns: 1fr;
       }
     }
@@ -463,6 +575,107 @@
 
   </div>
 
+  <!-- SMART GAME ANALYSIS -->
+
+  <div class="section">
+
+    <div class="section-header">
+      <h2>🧠 Smart Game Analysis</h2>
+      <span class="analysis-status">● AUTO ANALYSIS</span>
+    </div>
+
+    <div class="analysis-summary">
+
+      <div class="analysis-stat">
+        <div class="analysis-stat-label">TOTAL ANALYZED</div>
+        <div class="analysis-stat-value" id="analysisTotal">
+          0
+        </div>
+      </div>
+
+      <div class="analysis-stat">
+        <div class="analysis-stat-label">LAST ANALYSIS</div>
+        <div class="analysis-stat-value" id="analysisLast" style="font-size:12px">
+          Loading...
+        </div>
+      </div>
+
+    </div>
+
+    <div class="analysis-grid">
+
+      <!-- THREE ROLLS ANALYSIS -->
+
+      <div class="analysis-card three">
+
+        <div class="analysis-title">
+          🎲 THREE ROLLS
+        </div>
+
+        <div class="analysis-label">
+          TOP HISTORICAL HOURS
+        </div>
+
+        <div class="analysis-list" id="threeBestHours">
+          <div class="analysis-empty">
+            Loading analysis...
+          </div>
+        </div>
+
+        <div class="analysis-label">
+          BEST DAYS
+        </div>
+
+        <div class="analysis-list" id="threeBestDays">
+          <div class="analysis-empty">
+            Loading analysis...
+          </div>
+        </div>
+
+      </div>
+
+      <!-- FIVE ROLLS ANALYSIS -->
+
+      <div class="analysis-card five">
+
+        <div class="analysis-title">
+          🎲 FIVE ROLLS
+        </div>
+
+        <div class="analysis-label">
+          TOP HISTORICAL HOURS
+        </div>
+
+        <div class="analysis-list" id="fiveBestHours">
+          <div class="analysis-empty">
+            Loading analysis...
+          </div>
+        </div>
+
+        <div class="analysis-label">
+          BEST DAYS
+        </div>
+
+        <div class="analysis-list" id="fiveBestDays">
+          <div class="analysis-empty">
+            Loading analysis...
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="analysis-footer">
+      Based on historical records only. Past results do not guarantee future bonuses or winning outcomes.
+      <br>
+      Backend analysis runs every 5 minutes.
+      <br>
+      Display automatically refreshes every 1 minute.
+    </div>
+
+  </div>
+
   <!-- HISTORICAL RECORDS -->
 
   <div class="section">
@@ -586,7 +799,8 @@ function formatDate(value) {
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
-    hour12: true
+    hour12: true,
+    timeZone: 'Asia/Manila'
   });
 
 }
@@ -869,10 +1083,17 @@ function renderHourlyStats(records) {
 
     if (isNaN(date.getTime())) return;
 
-    const hour =
-      String(date.getHours()).padStart(2, '0') + ':00';
+    const hour = new Intl.DateTimeFormat('en-GB', {
+      hour: '2-digit',
+      hour12: false,
+      timeZone: 'Asia/Manila'
+    }).format(date);
 
-    hours[hour]++;
+    const label = hour + ':00';
+
+    if (hours[label] !== undefined) {
+      hours[label]++;
+    }
 
   });
 
@@ -1035,7 +1256,8 @@ async function loadBonusMonitor() {
   try {
 
     const response = await fetch(
-      '/api/history?type=all&limit=200'
+      '/api/history?type=all&limit=200',
+      { cache: 'no-store' }
     );
 
     if (!response.ok) {
@@ -1061,7 +1283,164 @@ async function loadBonusMonitor() {
 }
 
 
+// ===================================
+// SMART GAME ANALYSIS
+// ===================================
+
+
+// FORMAT ANALYSIS HOUR
+// Uses Philippines time (Asia/Manila)
+
+function formatAnalysisHour(hour) {
+
+  const date = new Date(
+    Date.UTC(2020, 0, 1, Number(hour) - 8, 0, 0)
+  );
+
+  return date.toLocaleTimeString('en-PH', {
+    hour: 'numeric',
+    hour12: true,
+    timeZone: 'Asia/Manila'
+  });
+
+}
+
+
+// RENDER ANALYSIS LIST
+
+function renderAnalysisList(elementId, items, type) {
+
+  const container = document.getElementById(elementId);
+
+  if (!items || !items.length) {
+
+    container.innerHTML = `
+      <div class="analysis-empty">
+        Not enough records yet.
+      </div>
+    `;
+
+    return;
+
+  }
+
+  container.innerHTML = items.map(item => {
+
+    const label = type === 'hour'
+      ? formatAnalysisHour(item.hour)
+      : escapeHTML(item.day);
+
+    return `
+      <div class="analysis-item">
+        <span>${label}</span>
+        <span class="analysis-count">
+          ${Number(item.count)} records
+        </span>
+      </div>
+    `;
+
+  }).join('');
+
+}
+
+
+// LOAD SMART ANALYSIS
+
+async function loadAnalysis() {
+
+  try {
+
+    const response = await fetch(
+      '/api/analysis',
+      { cache: 'no-store' }
+    );
+
+    if (!response.ok) {
+
+      throw new Error(
+        'Analysis request failed: ' + response.status
+      );
+
+    }
+
+    const data = await response.json();
+
+    // TOTAL ANALYZED RECORDS
+
+    document.getElementById('analysisTotal').textContent =
+      Number(data.totalRecords || 0).toLocaleString();
+
+    // LAST ANALYSIS TIME
+
+    document.getElementById('analysisLast').textContent =
+      data.lastAnalysisAt
+        ? new Date(data.lastAnalysisAt).toLocaleTimeString('en-PH', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true,
+            timeZone: 'Asia/Manila'
+          })
+        : 'Waiting...';
+
+    // THREE ROLLS
+
+    renderAnalysisList(
+      'threeBestHours',
+      data.threeRolls?.bestHours,
+      'hour'
+    );
+
+    renderAnalysisList(
+      'threeBestDays',
+      data.threeRolls?.bestDays,
+      'day'
+    );
+
+    // FIVE ROLLS
+
+    renderAnalysisList(
+      'fiveBestHours',
+      data.fiveRolls?.bestHours,
+      'hour'
+    );
+
+    renderAnalysisList(
+      'fiveBestDays',
+      data.fiveRolls?.bestDays,
+      'day'
+    );
+
+    if (data.error) {
+      console.error('Analysis warning:', data.error);
+    }
+
+  } catch (error) {
+
+    console.error('Smart Analysis Error:', error);
+
+    document.getElementById('analysisLast').textContent =
+      'Unavailable';
+
+    document.getElementById('threeBestHours').innerHTML =
+      '<div class="analysis-empty">Unable to load analysis.</div>';
+
+    document.getElementById('threeBestDays').innerHTML =
+      '<div class="analysis-empty">Unable to load analysis.</div>';
+
+    document.getElementById('fiveBestHours').innerHTML =
+      '<div class="analysis-empty">Unable to load analysis.</div>';
+
+    document.getElementById('fiveBestDays').innerHTML =
+      '<div class="analysis-empty">Unable to load analysis.</div>';
+
+  }
+
+}
+
+
+// ===================================
 // LOAD RECORDS
+// ===================================
 
 async function loadRecords() {
 
@@ -1080,7 +1459,8 @@ async function loadRecords() {
   try {
 
     const response = await fetch(
-      `/api/history?type=${currentType}&limit=200`
+      `/api/history?type=${currentType}&limit=200`,
+      { cache: 'no-store' }
     );
 
     if (!response.ok) {
@@ -1101,9 +1481,11 @@ async function loadRecords() {
 
     renderHourlyStats(allRecords);
 
-    // LOAD BONUS MONITOR INDEPENDENTLY
+    // LOAD BONUS MONITOR AND SMART ANALYSIS
 
     loadBonusMonitor();
+
+    loadAnalysis();
 
   } catch (error) {
 
@@ -1173,6 +1555,15 @@ setInterval(() => {
   updateBonusMonitor();
 
 }, 1000);
+
+
+// SMART ANALYSIS AUTO REFRESH EVERY 1 MINUTE
+
+setInterval(() => {
+
+  loadAnalysis();
+
+}, 60000);
 
 </script>
 
