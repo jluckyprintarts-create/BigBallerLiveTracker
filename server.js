@@ -730,8 +730,7 @@ async function pollUpstream() {
     const payload = await response.json();
 
 console.log(
-  'UPSTREAM JSON RESPONSE:',
-  JSON.stringify(payload, null, 2)
+  `UPSTREAM RESPONSE: ${rows.length} records fetched`
 );
     
     const rows = extractRows(payload);
