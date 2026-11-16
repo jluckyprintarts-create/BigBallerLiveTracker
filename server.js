@@ -2204,3 +2204,162 @@ process.on('SIGTERM', async () => {
   process.exit(0);
 
 });
+
+// ----------------------------------
+// BIG WIN MONITOR API (100x+)
+// ADD-ON ONLY - EXISTING CODE UNCHANGED
+// ----------------------------------
+
+app.get('/api/bigwins', async (req, res) => {
+
+  try {
+
+    const limit = Math.min(
+      500,
+      Math.max(1, Number(req.query.limit) || 100)
+    );
+
+    const summary = await pool.query(`
+
+      SELECT
+
+        COUNT(*)::int AS total_big_wins,
+
+        COUNT(*) FILTER (
+          WHERE is_three_rolls = TRUE
+        )::int AS three_rolls_big_wins,
+
+        COUNT(*) FILTER (
+          WHERE is_five_rolls = TRUE
+        )::int AS five_rolls_big_wins,
+
+        MAX(big_win_multiplier) AS highest_multiplier,
+
+        ROUND(
+          AVG(big_win_multiplier),
+          2
+        ) AS average_multiplier
+
+      FROM game_history
+
+      WHERE big_win_multiplier >= 100
+
+    `);
+
+
+    const recent = await pool.query(`
+
+      SELECT
+
+        event_id,
+
+        settled_at,
+
+        adjusted_at,
+
+        is_three_rolls,
+
+        is_five_rolls,
+
+        big_win_multiplier,
+
+        dealer_name
+
+      FROM game_history
+
+      WHERE big_win_multiplier >= 100
+
+      ORDER BY settled_at DESC
+
+      LIMIT $1
+
+    `, [limit]);
+
+
+    const hourly = await pool.query(`
+
+      SELECT
+
+        EXTRACT(
+          HOUR FROM adjusted_at AT TIME ZONE 'Asia/Manila'
+        )::int AS hour,
+
+        COUNT(*)::int AS total_big_wins,
+
+        ROUND(
+          MAX(big_win_multiplier),
+          2
+        ) AS highest_multiplier
+
+      FROM game_history
+
+      WHERE big_win_multiplier >= 100
+
+      GROUP BY hour
+
+      ORDER BY hour
+
+    `);
+
+
+    res.json({
+
+      success: true,
+
+      threshold: 100,
+
+      lastUpdated: new Date().toISOString(),
+
+      summary: {
+
+        totalBigWins: Number(
+          summary.rows[0].total_big_wins
+        ),
+
+        threeRollsBigWins: Number(
+          summary.rows[0].three_rolls_big_wins
+        ),
+
+        fiveRollsBigWins: Number(
+          summary.rows[0].five_rolls_big_wins
+        ),
+
+        highestMultiplier:
+          summary.rows[0].highest_multiplier === null
+            ? null
+            : Number(summary.rows[0].highest_multiplier),
+
+        averageMultiplier:
+          summary.rows[0].average_multiplier === null
+            ? null
+            : Number(summary.rows[0].average_multiplier)
+
+      },
+
+      recent: recent.rows,
+
+      hourly: hourly.rows,
+
+      note:
+        'Big Wins are based on recorded official multipliers of 100x or higher. Historical results do not predict future outcomes.'
+
+    });
+
+  } catch (error) {
+
+    console.error(
+      'BIG WIN MONITOR ERROR:',
+      error.message
+    );
+
+    res.status(500).json({
+
+      success: false,
+
+      error: error.message
+
+    });
+
+  }
+
+});
