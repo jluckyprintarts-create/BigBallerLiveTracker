@@ -160,7 +160,26 @@ async function initializeDatabase() {
       UNIQUE (
         game_type,
         source,
-        forecast_origin
+        forecast_origin_at
+      )
+    )
+  `);
+
+  await pool.query(`
+    CREATE INDEX IF NOT EXISTS idx_forecast_pending
+    ON forecast_evaluations (
+      game_type,
+      status,
+      forecast_origin_at
+    )
+  `);
+
+  await pool.query(`
+    CREATE INDEX IF NOT EXISTS idx_forecast_created
+    ON forecast_evaluations (
+      created_at DESC
+    )
+  `);
 
 // ----------------------------------
 // HELPERS
