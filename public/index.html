@@ -6,8 +6,6 @@
 
   <title>MONOPOLY Big Baller Live Tracker</title>
 
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
-
   <style>
     * { box-sizing: border-box; }
 
@@ -236,24 +234,12 @@
       text-align: center;
     }
 
-    /* LIVE VIDEO PLAYER */
+    /* OFFICIAL LIVE STREAM */
 
-    .live-video-container {
-      width: 100%;
-      aspect-ratio: 16 / 9;
-      background: #000000;
-      border: 1px solid #334155;
-      border-radius: 10px;
-      overflow: hidden;
-      position: relative;
-    }
-
-    .live-video-container video {
-      width: 100%;
-      height: 100%;
-      display: block;
-      object-fit: contain;
-      background: #000000;
+    .live-indicator {
+      color: #22c55e;
+      font-size: 10px;
+      font-weight: bold;
     }
 
     .live-video-note {
@@ -263,36 +249,20 @@
       margin-top: 10px;
     }
 
-    .live-indicator {
-      color: #22c55e;
-      font-size: 10px;
-      font-weight: bold;
-    }
-
     .live-open-btn {
       display: inline-block;
       background: #eab308;
       color: #111827;
-      padding: 10px 14px;
+      padding: 13px 20px;
       border-radius: 7px;
       text-decoration: none;
-      font-size: 11px;
+      font-size: 12px;
       font-weight: bold;
-      margin-top: 10px;
+      margin-top: 18px;
     }
 
-    .live-quality {
-      color: #facc15;
-      font-size: 10px;
-      margin-top: 8px;
-    }
-
-    .live-error {
-      color: #f87171;
-      font-size: 11px;
-      margin-top: 8px;
-      line-height: 1.5;
-      overflow-wrap: anywhere;
+    .live-open-btn:active {
+      transform: scale(0.97);
     }
 
     /* BONUS ACTIVITY MONITOR */
@@ -775,44 +745,63 @@
     </button>
   </header>
 
-  <!-- LIVE VIDEO -->
+  <!-- OFFICIAL LIVE STREAM -->
 
   <div class="section">
 
     <div class="section-header">
       <h2>🎥 MONOPOLY BIG BALLER LIVE</h2>
-      <span class="live-indicator" id="liveStatus">● CONNECTING</span>
+      <span class="live-indicator">● OFFICIAL STREAM</span>
     </div>
 
-    <div class="live-video-container">
-      <video
-        id="bigBallerVideo"
-        controls
-        autoplay
-        muted
-        playsinline
-        preload="auto">
-      </video>
-    </div>
+    <div style="
+      background:#000;
+      border:1px solid #334155;
+      border-radius:10px;
+      min-height:190px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      text-align:center;
+      padding:20px;
+    ">
 
-    <div class="live-quality" id="liveQuality">
-      Connecting to live stream...
-    </div>
+      <div style="font-size:48px;margin-bottom:12px">🎥</div>
 
-    <div class="live-error" id="liveError"></div>
+      <div style="
+        color:#facc15;
+        font-size:15px;
+        font-weight:bold;
+        margin-bottom:8px;
+      ">
+        MONOPOLY BIG BALLER
+      </div>
+
+      <div style="
+        color:#94a3b8;
+        font-size:11px;
+        line-height:1.6;
+      ">
+        Watch the official live game stream.
+        <br>
+        Tap the button below to open the live broadcast.
+      </div>
+
+      <a
+        class="live-open-btn"
+        href="https://www.casino.org/casinoscores/monopoly-big-baller/"
+        target="_blank"
+        rel="noopener noreferrer">
+        ▶ WATCH OFFICIAL LIVE
+      </a>
+
+    </div>
 
     <div class="live-video-note">
-      Live HLS video player. Automatic quality selection.
-      If playback is unavailable, use the official stream button.
+      The official CasinoScores page will open in a new tab.
+      Live video playback is provided by the official website.
     </div>
-
-    <a
-      class="live-open-btn"
-      href="https://www.casino.org/casinoscores/monopoly-big-baller/"
-      target="_blank"
-      rel="noopener noreferrer">
-      ▶ OPEN OFFICIAL LIVE STREAM
-    </a>
 
   </div>
 
@@ -2320,312 +2309,6 @@ document.querySelectorAll('[data-type]').forEach(button => {
   });
 
 });
-
-
-// ============================================
-// IMPROVED MONOPOLY BIG BALLER HLS LIVE PLAYER
-// ============================================
-
-(function initBigBallerLivePlayer() {
-
-  const video = document.getElementById('bigBallerVideo');
-  const status = document.getElementById('liveStatus');
-  const quality = document.getElementById('liveQuality');
-  const errorBox = document.getElementById('liveError');
-
-  // Master playlist: automatic quality selection
-  const streamURL =
-    'https://live124.egprom.com/app/44/monbbk1_mb_en_auto/playlist.m3u8';
-
-  let hls = null;
-  let retryTimer = null;
-  let retryCount = 0;
-  let isRetrying = false;
-
-  function updateStatus(message, color) {
-    status.textContent = message;
-    status.style.color = color;
-  }
-
-  function showError(message) {
-    errorBox.textContent = message;
-  }
-
-  function cleanupPlayer() {
-
-    if (hls) {
-      hls.destroy();
-      hls = null;
-    }
-
-    video.pause();
-    video.removeAttribute('src');
-    video.load();
-
-  }
-
-  function scheduleRetry() {
-
-    if (isRetrying) return;
-
-    isRetrying = true;
-
-    clearTimeout(retryTimer);
-
-    retryCount++;
-
-    const delay = Math.min(5000 * retryCount, 30000);
-
-    updateStatus('● RECONNECTING', '#facc15');
-
-    showError(
-      'Connection attempt ' + retryCount +
-      '. Retrying in ' + Math.round(delay / 1000) + ' seconds...'
-    );
-
-    retryTimer = setTimeout(() => {
-
-      isRetrying = false;
-
-      startStream();
-
-    }, delay);
-
-  }
-
-  function startStream() {
-
-    clearTimeout(retryTimer);
-    isRetrying = false;
-
-    cleanupPlayer();
-
-    updateStatus('● CONNECTING', '#facc15');
-
-    quality.textContent = 'Loading live stream...';
-    showError('');
-
-    // Check HLS.js library
-    if (!window.Hls) {
-
-      updateStatus('● PLAYER LIBRARY ERROR', '#ef4444');
-
-      showError(
-        'HLS.js failed to load. Check your internet connection or CDN access.'
-      );
-
-      return;
-
-    }
-
-    // HLS.js supported browsers
-    if (Hls.isSupported()) {
-
-      hls = new Hls({
-
-        enableWorker: true,
-        lowLatencyMode: true,
-
-        liveSyncDurationCount: 3,
-        maxLiveSyncPlaybackRate: 1.5,
-
-        manifestLoadingTimeOut: 20000,
-        levelLoadingTimeOut: 20000,
-        fragLoadingTimeOut: 30000,
-
-        manifestLoadingMaxRetry: 2,
-        levelLoadingMaxRetry: 2,
-        fragLoadingMaxRetry: 2
-
-      });
-
-      // Listen for errors BEFORE loading the source
-      hls.on(Hls.Events.ERROR, function(event, data) {
-
-        console.error('HLS ERROR DETAILS:', {
-          type: data.type,
-          details: data.details,
-          fatal: data.fatal,
-          response: data.response,
-          url: data.url
-        });
-
-        if (!data.fatal) return;
-
-        updateStatus('● STREAM ERROR', '#ef4444');
-
-        const details = data.details || 'Unknown stream error';
-
-        const httpStatus =
-          data.response && data.response.code
-            ? ' HTTP ' + data.response.code
-            : '';
-
-        if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
-
-          showError('Video decoding error. Attempting media recovery...');
-
-          try {
-            hls.recoverMediaError();
-          } catch (error) {
-            console.error('Media recovery failed:', error);
-            scheduleRetry();
-          }
-
-          return;
-
-        }
-
-        if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
-
-          showError(
-            'Network/playlist error: ' + details + httpStatus +
-            '. Reconnecting...'
-          );
-
-          scheduleRetry();
-
-          return;
-
-        }
-
-        showError(
-          'Fatal player error: ' + details + httpStatus +
-          '. Reconnecting...'
-        );
-
-        scheduleRetry();
-
-      });
-
-      hls.on(Hls.Events.MANIFEST_PARSED, function() {
-
-        updateStatus('● STREAM READY', '#22c55e');
-
-        quality.textContent =
-          'Stream loaded. Starting playback...';
-
-        video.play().catch(() => {
-
-          quality.textContent =
-            'Stream loaded. Press PLAY to start the live video.';
-
-        });
-
-      });
-
-      hls.on(Hls.Events.LEVEL_SWITCHED, function(event, data) {
-
-        if (!hls || !hls.levels[data.level]) return;
-
-        const level = hls.levels[data.level];
-
-        quality.textContent =
-          'LIVE QUALITY: ' +
-          Math.round(level.bitrate / 1000) +
-          ' kbps';
-
-      });
-
-      hls.loadSource(streamURL);
-      hls.attachMedia(video);
-
-    }
-
-    // Native HLS playback fallback
-    else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-
-      video.src = streamURL;
-
-      video.addEventListener('loadedmetadata', function() {
-
-        updateStatus('● STREAM READY', '#22c55e');
-
-        quality.textContent = 'Native HLS playback';
-
-        video.play().catch(() => {
-
-          quality.textContent =
-            'Press PLAY to start the live video.';
-
-        });
-
-      }, { once: true });
-
-      video.addEventListener('error', function() {
-
-        updateStatus('● STREAM ERROR', '#ef4444');
-
-        showError(
-          'Native HLS playback failed. The stream may be unavailable or blocked.'
-        );
-
-        scheduleRetry();
-
-      }, { once: true });
-
-    }
-
-    // Unsupported browser
-    else {
-
-      updateStatus('● NOT SUPPORTED', '#ef4444');
-
-      showError(
-        'Your browser does not support HLS playback. Try opening this website in Chrome.'
-      );
-
-    }
-
-  }
-
-
-  // Video playback events
-
-  video.addEventListener('playing', function() {
-
-    retryCount = 0;
-
-    updateStatus('● LIVE', '#22c55e');
-
-    quality.textContent = 'Live video playing';
-
-    showError('');
-
-  });
-
-  video.addEventListener('waiting', function() {
-
-    updateStatus('● BUFFERING', '#facc15');
-
-  });
-
-  video.addEventListener('pause', function() {
-
-    if (!video.ended) {
-      updateStatus('● PAUSED', '#facc15');
-    }
-
-  });
-
-  video.addEventListener('error', function() {
-
-    if (video.error) {
-
-      console.error('HTML VIDEO ERROR:', {
-        code: video.error.code,
-        message: video.error.message
-      });
-
-    }
-
-  });
-
-
-  // Start player
-  startStream();
-
-})();
 
 
 // INITIAL LOAD
