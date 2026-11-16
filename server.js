@@ -132,7 +132,67 @@ async function initializeDatabase() {
   `);
 
 }
+  // ----------------------------------
+  // AI PERFORMANCE FORECAST DATABASE
+  // ----------------------------------
 
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS forecast_evaluations (
+
+      id BIGSERIAL PRIMARY KEY,
+
+      game_type TEXT NOT NULL,
+
+      source TEXT NOT NULL DEFAULT 'live',
+
+      forecast_origin_at TIMESTAMPTZ NOT NULL,
+
+      forecast_at TIMESTAMPTZ NOT NULL,
+
+      window_start TIMESTAMPTZ NOT NULL,
+
+      window_end TIMESTAMPTZ NOT NULL,
+
+      actual_bonus_at TIMESTAMPTZ,
+
+      error_minutes NUMERIC,
+
+      signed_error_minutes NUMERIC,
+
+      central_hit BOOLEAN,
+
+      candidate_hit BOOLEAN,
+
+      status TEXT NOT NULL DEFAULT 'pending',
+
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+
+      evaluated_at TIMESTAMPTZ,
+
+      UNIQUE (
+        game_type,
+        source,
+        forecast_origin_at
+      )
+
+    )
+  `);
+
+  await pool.query(`
+    CREATE INDEX IF NOT EXISTS idx_forecast_pending
+    ON forecast_evaluations (
+      game_type,
+      status,
+      forecast_origin_at
+    )
+  `);
+
+  await pool.query(`
+    CREATE INDEX IF NOT EXISTS idx_forecast_created
+    ON forecast_evaluations (
+      created_at DESC
+    )
+  `);
 
 // ----------------------------------
 // HELPERS
