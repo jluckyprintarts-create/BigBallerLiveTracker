@@ -174,12 +174,14 @@ async function initializeDatabase() {
     )
   `);
 
-  await pool.query(`
+    await pool.query(`
     CREATE INDEX IF NOT EXISTS idx_forecast_created
     ON forecast_evaluations (
       created_at DESC
     )
   `);
+
+}
 
 // ----------------------------------
 // HELPERS
