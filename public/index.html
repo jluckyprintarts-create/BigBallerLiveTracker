@@ -3255,5 +3255,130 @@ setInterval(() => {
 
 </script>
 
+<!-- BIG WIN CENTER TAB SYSTEM -->
+<style>
+  .tab-nav {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+
+  .tab-btn {
+    background: #172033;
+    color: #94a3b8;
+    border: 1px solid #334155;
+    padding: 13px 6px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: bold;
+  }
+
+  .tab-btn.active {
+    background: #d4af37;
+    color: #111827;
+    border-color: #ffd700;
+  }
+
+  .tab-panel {
+    display: none;
+  }
+
+  .tab-panel.active {
+    display: block;
+  }
+</style>
+
+<script>
+(function () {
+
+  const container = document.querySelector('.container');
+  if (!container) return;
+
+  const header = container.querySelector('header');
+  if (!header) return;
+
+  // Kunin ang lahat ng existing sections
+  const sections = Array.from(container.children)
+    .filter(element => element !== header);
+
+  // Gumawa ng navigation
+  const nav = document.createElement('div');
+  nav.className = 'tab-nav';
+
+  nav.innerHTML = `
+    <button class="tab-btn active" type="button">
+      🏠 MAIN DASHBOARD
+    </button>
+
+    <button class="tab-btn" type="button">
+      🏆 BIG WIN CENTER
+    </button>
+  `;
+
+  // Gumawa ng dalawang panel
+  const mainTab = document.createElement('div');
+  mainTab.className = 'tab-panel active';
+  mainTab.id = 'mainTab';
+
+  const bigWinTab = document.createElement('div');
+  bigWinTab.className = 'tab-panel';
+  bigWinTab.id = 'bigWinTab';
+
+  // Ipasok pagkatapos ng header
+  header.after(nav);
+  nav.after(mainTab);
+  mainTab.after(bigWinTab);
+
+  // Ilipat ang sections sa tamang tab
+  sections.forEach(section => {
+
+    const heading = section.querySelector('h2');
+    const title = heading
+      ? heading.textContent.toUpperCase()
+      : '';
+
+    if (
+      title.includes('BIG WIN MONITOR') ||
+      title.includes('BIG WIN INTELLIGENCE DASHBOARD')
+    ) {
+      bigWinTab.appendChild(section);
+    } else {
+      mainTab.appendChild(section);
+    }
+
+  });
+
+  const buttons = nav.querySelectorAll('.tab-btn');
+
+  // MAIN DASHBOARD
+  buttons[0].addEventListener('click', function () {
+
+    mainTab.classList.add('active');
+    bigWinTab.classList.remove('active');
+
+    buttons[0].classList.add('active');
+    buttons[1].classList.remove('active');
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  });
+
+  // BIG WIN CENTER
+  buttons[1].addEventListener('click', function () {
+
+    bigWinTab.classList.add('active');
+    mainTab.classList.remove('active');
+
+    buttons[1].classList.add('active');
+    buttons[0].classList.remove('active');
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  });
+
+})();
+</script>
+
 </body>
 </html>
