@@ -6,6 +6,9 @@
 
   <title>MONOPOLY Big Baller Live Tracker</title>
 
+  <!-- HLS VIDEO PLAYER LIBRARY -->
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
+
   <style>
     * { box-sizing: border-box; }
 
@@ -234,7 +237,7 @@
       text-align: center;
     }
 
-    /* LIVE BIG BALLER VIDEO */
+    /* MONOPOLY BIG BALLER HLS LIVE PLAYER */
 
     .live-video-container {
       width: 100%;
@@ -243,13 +246,15 @@
       border: 1px solid #334155;
       border-radius: 10px;
       overflow: hidden;
+      position: relative;
     }
 
-    .live-video-container iframe {
+    .live-video-container video {
       width: 100%;
       height: 100%;
-      border: 0;
       display: block;
+      object-fit: contain;
+      background: #000000;
     }
 
     .live-video-note {
@@ -275,6 +280,18 @@
       font-size: 11px;
       font-weight: bold;
       margin-top: 10px;
+    }
+
+    .live-quality {
+      color: #facc15;
+      font-size: 10px;
+      margin-top: 8px;
+    }
+
+    .live-error {
+      color: #f87171;
+      font-size: 11px;
+      margin-top: 8px;
     }
 
     /* BONUS ACTIVITY MONITOR */
@@ -757,31 +774,39 @@
     </button>
   </header>
 
-  <!-- MONOPOLY BIG BALLER LIVE VIDEO - TOP SECTION -->
+  <!-- MONOPOLY BIG BALLER LIVE VIDEO -->
 
   <div class="section">
 
     <div class="section-header">
       <h2>🎥 MONOPOLY BIG BALLER LIVE</h2>
-      <span class="live-indicator">● LIVE FEED</span>
+      <span class="live-indicator" id="liveStatus">
+        ● CONNECTING
+      </span>
     </div>
 
     <div class="live-video-container">
 
-      <iframe
-        src="https://www.casino.org/casinoscores/monopoly-big-baller/"
-        title="MONOPOLY Big Baller Live Stream"
-        allow="autoplay; fullscreen; picture-in-picture"
-        allowfullscreen
-        loading="lazy">
-      </iframe>
+      <video
+        id="bigBallerVideo"
+        controls
+        autoplay
+        muted
+        playsinline
+        preload="auto">
+      </video>
 
     </div>
 
+    <div class="live-quality" id="liveQuality">
+      Connecting to live stream...
+    </div>
+
+    <div class="live-error" id="liveError"></div>
+
     <div class="live-video-note">
-      Live feed provided by CasinoScores.
-      If the video cannot load inside this website, use the button below
-      to open the official live stream.
+      Live HLS video player. Automatic quality selection.
+      If playback is unavailable, use the official stream button.
     </div>
 
     <a
@@ -2325,9 +2350,7 @@ async function loadIntelligence() {
 }
 
 
-// ===================================
 // AI PERFORMANCE MONITOR
-// ===================================
 
 function performanceNumber(value, suffix = '') {
 
@@ -2350,7 +2373,6 @@ function performancePercent(value) {
 
   let number = Number(value);
 
-  // Supports decimal values and percentage values.
   if (number >= 0 && number <= 1) {
     number *= 100;
   }
@@ -2599,8 +2621,6 @@ async function loadRecords() {
 
     renderHourlyStats(allRecords);
 
-    // LOAD EXISTING AND NEW ANALYSIS
-
     loadBonusMonitor();
 
     loadAnalysis();
@@ -2652,6 +2672,249 @@ document.querySelectorAll('[data-type]').forEach(button => {
   });
 
 });
+
+
+// ===================================
+// MONOPOLY BIG BALLER HLS LIVE PLAYER
+// ===================================
+
+(function initBigBallerLivePlayer() {
+
+  const video = document.getElementById('bigBallerVideo');
+  const status = document.getElementById('liveStatus');
+  const quality = document.getElementById('liveQuality');
+  const errorBox = document.getElementById('liveError');
+
+  const streamURL =
+    'https://live124.egprom.com/app/44/monbbk1_mb_en_auto/playlist.m3u8';
+
+  let hls = null;
+  let retryTimer = null;
+  let retryCount = 0;
+  let isRetrying = false;
+
+  function updateStatus(message, color) {
+    status.textContent = message;
+    status.style.color = color;
+  }
+
+  function showError(message) {
+    errorBox.textContent = message;
+  }
+
+  function scheduleRetry() {
+
+    if (isRetrying) return;
+
+    isRetrying = true;
+
+    clearTimeout(retryTimer);
+
+    retryCount++;
+
+    const delay = Math.min(
+      5000 * retryCount,
+      30000
+    );
+
+    showError(
+      'Reconnecting in ' +
+      Math.round(delay / 1000) +
+      ' seconds...'
+    );
+
+    retryTimer = setTimeout(() => {
+
+      isRetrying = false;
+
+      startStream();
+
+    }, delay);
+
+  }
+
+  function startStream() {
+
+    clearTimeout(retryTimer);
+
+    isRetrying = false;
+
+    showError('');
+
+    updateStatus('● CONNECTING', '#facc15');
+
+    quality.textContent = 'Loading live stream...';
+
+    if (hls) {
+      hls.destroy();
+      hls = null;
+    }
+
+    if (Hls.isSupported()) {
+
+      hls = new Hls({
+
+        enableWorker: true,
+
+        lowLatencyMode: true,
+
+        liveSyncDurationCount: 3,
+
+        maxLiveSyncPlaybackRate: 1.5,
+
+        manifestLoadingTimeOut: 15000,
+
+        levelLoadingTimeOut: 15000,
+
+        fragLoadingTimeOut: 20000
+
+      });
+
+      hls.loadSource(streamURL);
+
+      hls.attachMedia(video);
+
+      hls.on(Hls.Events.MANIFEST_PARSED, function() {
+
+        updateStatus('● LIVE', '#22c55e');
+
+        quality.textContent =
+          'Automatic quality selection enabled';
+
+        video.play().catch(() => {
+
+          quality.textContent =
+            'Press PLAY to start the live video.';
+
+        });
+
+      });
+
+      hls.on(Hls.Events.LEVEL_SWITCHED, function(event, data) {
+
+        const level = hls.levels[data.level];
+
+        if (level) {
+
+          const bandwidth = Math.round(
+            level.bitrate / 1000
+          );
+
+          quality.textContent =
+            'LIVE QUALITY: ' + bandwidth + ' kbps';
+
+        }
+
+      });
+
+      hls.on(Hls.Events.ERROR, function(event, data) {
+
+        console.error('HLS Player Error:', data);
+
+        if (!data.fatal) return;
+
+        updateStatus('● STREAM ERROR', '#ef4444');
+
+        if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+
+          showError(
+            'Network error. Attempting to reconnect...'
+          );
+
+          hls.startLoad();
+
+        } else if (
+          data.type === Hls.ErrorTypes.MEDIA_ERROR
+        ) {
+
+          showError(
+            'Recovering video playback...'
+          );
+
+          hls.recoverMediaError();
+
+        } else {
+
+          showError(
+            'Unable to play stream. Checking connection...'
+          );
+
+          scheduleRetry();
+
+        }
+
+      });
+
+    } else if (
+      video.canPlayType('application/vnd.apple.mpegurl')
+    ) {
+
+      video.src = streamURL;
+
+      video.addEventListener('loadedmetadata', function() {
+
+        updateStatus('● LIVE', '#22c55e');
+
+        quality.textContent = 'Native HLS playback';
+
+        video.play().catch(() => {
+
+          quality.textContent =
+            'Press PLAY to start the live video.';
+
+        });
+
+      }, { once: true });
+
+      video.addEventListener('error', function() {
+
+        updateStatus('● STREAM ERROR', '#ef4444');
+
+        showError('Unable to load the live stream.');
+
+        scheduleRetry();
+
+      }, { once: true });
+
+    } else {
+
+      updateStatus('● NOT SUPPORTED', '#ef4444');
+
+      showError(
+        'This browser does not support HLS playback.'
+      );
+
+    }
+
+  }
+
+  video.addEventListener('playing', function() {
+
+    retryCount = 0;
+
+    updateStatus('● LIVE', '#22c55e');
+
+    showError('');
+
+  });
+
+  video.addEventListener('waiting', function() {
+
+    updateStatus('● BUFFERING', '#facc15');
+
+  });
+
+  video.addEventListener('pause', function() {
+
+    if (!video.ended) {
+      updateStatus('● PAUSED', '#facc15');
+    }
+
+  });
+
+  startStream();
+
+})();
 
 
 // INITIAL LOAD
