@@ -1645,6 +1645,84 @@ async function runHistoricalForecastEvaluation() {
 }
 
 // ----------------------------------
+// SAVE LIVE FORECAST
+// ----------------------------------
+
+async function saveLiveForecast(
+  gameType,
+  forecast
+) {
+
+  try {
+
+    if (
+      !forecast ||
+      !forecast.lastBonusAt ||
+      !Array.isArray(forecast.estimatedWindows)
+    ) {
+      return false;
+    }
+
+    // Use the central estimate.
+    const central = forecast.estimatedWindows.find(
+      item => item.label === 'CENTRAL ESTIMATE'
+    );
+
+    if (!central) {
+      return false;
+    }
+
+    await pool.query(
+      `
+      INSERT INTO forecast_evaluations (
+        game_type,
+        source,
+        forecast_origin_at,
+        forecast_at,
+        window_start,
+        window_end,
+        status
+      )
+      VALUES (
+        $1,
+        'live',
+        $2,
+        $3,
+        $4,
+        $5,
+        'pending'
+      )
+      ON CONFLICT (
+        game_type,
+        source,
+        forecast_origin_at
+      )
+      DO NOTHING
+      `,
+      [
+        gameType,
+        forecast.lastBonusAt,
+        central.centerAt,
+        central.windowStart,
+        central.windowEnd
+      ]
+    );
+
+    return true;
+
+  } catch (error) {
+
+    console.error(
+      'LIVE FORECAST SAVE ERROR:',
+      error.message
+    );
+
+    return false;
+
+  }
+
+}
+// ----------------------------------
 // RUN BONUS INTELLIGENCE ANALYSIS
 // ----------------------------------
 
