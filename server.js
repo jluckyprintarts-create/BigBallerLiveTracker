@@ -1575,7 +1575,74 @@ async function saveHistoricalForecasts(results) {
   return saved;
 }
 
+// ----------------------------------
+// RUN HISTORICAL FORECAST EVALUATION
+// ----------------------------------
 
+async function runHistoricalForecastEvaluation() {
+
+  try {
+
+    // GET THREE ROLLS HISTORY
+    const threeRollsResult = await pool.query(`
+      SELECT adjusted_at
+      FROM game_history
+      WHERE is_three_rolls = TRUE
+        AND adjusted_at IS NOT NULL
+      ORDER BY adjusted_at ASC
+    `);
+
+    // GET FIVE ROLLS HISTORY
+    const fiveRollsResult = await pool.query(`
+      SELECT adjusted_at
+      FROM game_history
+      WHERE is_five_rolls = TRUE
+        AND adjusted_at IS NOT NULL
+      ORDER BY adjusted_at ASC
+    `);
+
+    // EVALUATE THREE ROLLS
+    const threeRollsEvaluations =
+      evaluateHistoricalForecasts(
+        threeRollsResult.rows.map(row => row.adjusted_at),
+        'threeRolls'
+      );
+
+    // EVALUATE FIVE ROLLS
+    const fiveRollsEvaluations =
+      evaluateHistoricalForecasts(
+        fiveRollsResult.rows.map(row => row.adjusted_at),
+        'fiveRolls'
+      );
+
+    // SAVE RESULTS
+    const threeSaved =
+      await saveHistoricalForecasts(
+        threeRollsEvaluations
+      );
+
+    const fiveSaved =
+      await saveHistoricalForecasts(
+        fiveRollsEvaluations
+      );
+
+    console.log(
+      'HISTORICAL FORECAST EVALUATION COMPLETE',
+      {
+        threeRolls: threeSaved,
+        fiveRolls: fiveSaved
+      }
+    );
+
+  } catch (error) {
+
+    console.error(
+      'Historical forecast evaluation error:',
+      error.message
+    );
+
+  }
+}
 
 // ----------------------------------
 // RUN BONUS INTELLIGENCE ANALYSIS
