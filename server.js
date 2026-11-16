@@ -1811,7 +1811,17 @@ async function runBonusIntelligenceAnalysis() {
         'Five candidate windows are calculated by resampling historical bonus intervals. They are not five guaranteed predictions. Past timing patterns do not change the game odds or reveal the game RNG.'
 
     };
+    // SAVE LIVE THREE ROLLS FORECAST
+    await saveLiveForecastSnapshot(
+      'threeRolls',
+      intelligenceCache.threeRolls
+    );
 
+    // SAVE LIVE FIVE ROLLS FORECAST
+    await saveLiveForecastSnapshot(
+      'fiveRolls',
+      intelligenceCache.fiveRolls
+    );
     console.log(
       'BONUS INTELLIGENCE UPDATED:',
       intelligenceCache.lastAnalysisAt
