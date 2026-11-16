@@ -1353,7 +1353,150 @@ function buildBonusForecast(timestampValues) {
 
 }
 
+// ----------------------------------
+// HISTORICAL FORECAST EVALUATION
+// ----------------------------------
 
+function evaluateHistoricalForecasts(
+  timestamps,
+  gameType
+) {
+
+  const results = [];
+
+  const dates = timestamps
+    .map(value => getDate(value))
+    .filter(Boolean)
+    .sort((a, b) => a.getTime() - b.getTime());
+
+  if (dates.length < 7) {
+    return results;
+  }
+
+  for (let index = 6; index < dates.length; index++) {
+
+    // Historical training data only.
+    // Never include the actual result being evaluated.
+    const training = dates.slice(0, index);
+
+    const intervals = [];
+
+    for (let i = 1; i < training.length; i++) {
+
+      const minutes = (
+        training[i].getTime() -
+        training[i - 1].getTime()
+      ) / 60000;
+
+      if (minutes > 0 && Number.isFinite(minutes)) {
+        intervals.push(minutes);
+      }
+
+    }
+
+    if (intervals.length < 5) {
+      continue;
+    }
+
+    const backtest = runIntervalBacktest(intervals);
+
+    const model = backtest.selectedModel;
+
+    const predictedMinutes = estimateWithModel(
+      intervals,
+      model
+    );
+
+    if (
+      !Number.isFinite(predictedMinutes) ||
+      predictedMinutes <= 0
+    ) {
+      continue;
+    }
+
+    const lastTimestamp = training[training.length - 1];
+
+    const actualTimestamp = dates[index];
+
+    const forecastTimestamp = new Date(
+      lastTimestamp.getTime() +
+      predictedMinutes * 60000
+    );
+
+    const actualMinutes = (
+      actualTimestamp.getTime() -
+      forecastTimestamp.getTime()
+    ) / 60000;
+
+    const absoluteError = Math.abs(actualMinutes);
+
+    const actualInterval = (
+      actualTimestamp.getTime() -
+      lastTimestamp.getTime()
+    ) / 60000;
+
+    const intervalSpread = Math.max(
+      3,
+      Math.min(
+        20,
+        standardDeviation(intervals) * 0.25
+      )
+    );
+
+    const windowStart = new Date(
+      forecastTimestamp.getTime() -
+      intervalSpread * 60000
+    );
+
+    const windowEnd = new Date(
+      forecastTimestamp.getTime() +
+      intervalSpread * 60000
+    );
+
+    const centralHit = absoluteError <= 5;
+
+    const candidateHit =
+      actualTimestamp >= windowStart &&
+      actualTimestamp <= windowEnd;
+
+    results.push({
+
+      game_type: gameType,
+
+      forecast_origin_at: lastTimestamp.toISOString(),
+
+      forecast_at: forecastTimestamp.toISOString(),
+
+      window_start: windowStart.toISOString(),
+
+      window_end: windowEnd.toISOString(),
+
+      actual_bonus_at: actualTimestamp.toISOString(),
+
+      error_minutes: roundNumber(absoluteError),
+
+      signed_error_minutes: roundNumber(
+        forecastTimestamp.getTime() -
+        actualTimestamp.getTime()
+      ) / 60000,
+
+      central_hit: centralHit,
+
+      candidate_hit: candidateHit,
+
+      status: centralHit
+        ? 'central-hit'
+        : candidateHit
+          ? 'window-hit'
+          : 'missed'
+
+    });
+
+  }
+
+  return results;
+
+}
 // ----------------------------------
 // RUN BONUS INTELLIGENCE ANALYSIS
 // ----------------------------------
