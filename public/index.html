@@ -3380,5 +3380,165 @@ setInterval(() => {
 })();
 </script>
 
+<!-- BIG WIN ACTIVITY CARD -->
+
+<style>
+  .bonus-card.bigwin {
+    border-left: 3px solid #22c55e;
+  }
+
+  .bonus-card.bigwin .bonus-name,
+  .bonus-card.bigwin .bonus-timer {
+    color: #4ade80;
+  }
+</style>
+
+<script>
+(function () {
+
+  'use strict';
+
+  let bigWinActivityRecords = [];
+
+  const bonusMonitor = document.querySelector('.bonus-monitor');
+
+  if (!bonusMonitor) return;
+
+  // CREATE THIRD CARD
+
+  const bigWinCard = document.createElement('div');
+
+  bigWinCard.className = 'bonus-card bigwin';
+
+  bigWinCard.innerHTML = `
+    <div class="bonus-name">🏆 BIG WIN (100x+)</div>
+
+    <div class="bonus-timer" id="bigWinActivityTimer">
+      --:--:--
+    </div>
+
+    <div class="bonus-elapsed" id="bigWinActivityElapsed">
+      Waiting for record...
+    </div>
+
+    <div class="bonus-divider"></div>
+
+    <div class="bonus-detail">
+      <span>Last appeared</span>
+      <span id="bigWinActivityLastTime">-</span>
+    </div>
+
+    <div class="bonus-detail">
+      <span>Multiplier</span>
+      <span id="bigWinActivityMultiplier">-</span>
+    </div>
+  `;
+
+  bonusMonitor.appendChild(bigWinCard);
+
+
+  // UPDATE LIVE TIMER
+
+  function updateBigWinActivityTimer() {
+
+    const latest = bigWinActivityRecords[0];
+
+    if (!latest) {
+
+      document.getElementById('bigWinActivityTimer').textContent =
+        '--:--:--';
+
+      document.getElementById('bigWinActivityElapsed').textContent =
+        'No Big Win record found';
+
+      document.getElementById('bigWinActivityLastTime').textContent = '-';
+      document.getElementById('bigWinActivityMultiplier').textContent = '-';
+
+      return;
+    }
+
+    const lastDate = new Date(latest.settled_at);
+
+    if (isNaN(lastDate.getTime())) return;
+
+    const elapsed = Date.now() - lastDate.getTime();
+
+    document.getElementById('bigWinActivityTimer').textContent =
+      formatElapsed(elapsed);
+
+    document.getElementById('bigWinActivityElapsed').textContent =
+      'TIME SINCE LAST BIG WIN';
+
+    document.getElementById('bigWinActivityLastTime').textContent =
+      formatDate(latest.settled_at);
+
+    document.getElementById('bigWinActivityMultiplier').textContent =
+      formatBigWinMultiplier(latest.big_win_multiplier);
+
+  }
+
+
+  // LOAD BIG WIN DATA
+
+  async function loadBigWinActivity() {
+
+    try {
+
+      const response = await fetch('/api/bigwins?limit=1000', {
+        cache: 'no-store'
+      });
+
+      if (!response.ok) {
+        throw new Error('Big Win Activity request failed');
+      }
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.error || 'Big Win API error');
+      }
+
+      bigWinActivityRecords = (data.recent || [])
+        .filter(record =>
+          Number(record.big_win_multiplier) >= 100 &&
+          record.settled_at
+        )
+        .sort((a, b) =>
+          new Date(b.settled_at).getTime() -
+          new Date(a.settled_at).getTime()
+        );
+
+      updateBigWinActivityTimer();
+
+    } catch (error) {
+
+      console.error('Big Win Activity Error:', error);
+
+    }
+
+  }
+
+
+  // INITIAL LOAD
+
+  loadBigWinActivity();
+
+
+  // TIMER UPDATES EVERY SECOND
+
+  setInterval(function () {
+    updateBigWinActivityTimer();
+  }, 1000);
+
+
+  // DATA REFRESH EVERY 60 SECONDS
+
+  setInterval(function () {
+    loadBigWinActivity();
+  }, 60000);
+
+})();
+</script>
+
 </body>
 </html>
