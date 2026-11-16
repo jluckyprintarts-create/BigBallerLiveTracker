@@ -3257,10 +3257,13 @@ setInterval(() => {
 
 <!-- BIG WIN CENTER TAB SYSTEM -->
 <style>
+<!-- THREE TAB SYSTEM -->
+
+<style>
   .tab-nav {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 7px;
     margin-bottom: 18px;
   }
 
@@ -3268,10 +3271,11 @@ setInterval(() => {
     background: #172033;
     color: #94a3b8;
     border: 1px solid #334155;
-    padding: 13px 6px;
+    padding: 13px 4px;
     border-radius: 8px;
-    font-size: 11px;
+    font-size: 10px;
     font-weight: bold;
+    line-height: 1.4;
   }
 
   .tab-btn.active {
@@ -3298,25 +3302,30 @@ setInterval(() => {
   const header = container.querySelector('header');
   if (!header) return;
 
-  // Kunin ang lahat ng existing sections
   const sections = Array.from(container.children)
     .filter(element => element !== header);
 
-  // Gumawa ng navigation
+  // CREATE NAVIGATION
+
   const nav = document.createElement('div');
   nav.className = 'tab-nav';
 
   nav.innerHTML = `
     <button class="tab-btn active" type="button">
-      🏠 MAIN DASHBOARD
+      🏠 MAIN<br>DASHBOARD
     </button>
 
     <button class="tab-btn" type="button">
-      🏆 BIG WIN CENTER
+      🏆 BIG WIN<br>CENTER
+    </button>
+
+    <button class="tab-btn" type="button">
+      🎲 3 & 5 ROLLS<br>CENTER
     </button>
   `;
 
-  // Gumawa ng dalawang panel
+  // CREATE THREE PANELS
+
   const mainTab = document.createElement('div');
   mainTab.className = 'tab-panel active';
   mainTab.id = 'mainTab';
@@ -3325,15 +3334,21 @@ setInterval(() => {
   bigWinTab.className = 'tab-panel';
   bigWinTab.id = 'bigWinTab';
 
-  // Ipasok pagkatapos ng header
+  const rollsTab = document.createElement('div');
+  rollsTab.className = 'tab-panel';
+  rollsTab.id = 'rollsTab';
+
   header.after(nav);
   nav.after(mainTab);
   mainTab.after(bigWinTab);
+  bigWinTab.after(rollsTab);
 
-  // Ilipat ang sections sa tamang tab
+  // ORGANIZE SECTIONS
+
   sections.forEach(section => {
 
     const heading = section.querySelector('h2');
+
     const title = heading
       ? heading.textContent.toUpperCase()
       : '';
@@ -3342,38 +3357,54 @@ setInterval(() => {
       title.includes('BIG WIN MONITOR') ||
       title.includes('BIG WIN INTELLIGENCE DASHBOARD')
     ) {
+
       bigWinTab.appendChild(section);
+
+    } else if (
+      title.includes('BONUS ACTIVITY MONITOR') ||
+      title.includes('SMART GAME ANALYSIS') ||
+      title.includes('BONUS INTELLIGENCE DASHBOARD') ||
+      title.includes('AI PERFORMANCE MONITOR')
+    ) {
+
+      rollsTab.appendChild(section);
+
     } else {
+
       mainTab.appendChild(section);
+
     }
 
   });
 
+  // TAB BUTTONS
+
   const buttons = nav.querySelectorAll('.tab-btn');
 
-  // MAIN DASHBOARD
-  buttons[0].addEventListener('click', function () {
+  const panels = [mainTab, bigWinTab, rollsTab];
 
-    mainTab.classList.add('active');
-    bigWinTab.classList.remove('active');
+  function activateTab(index) {
 
-    buttons[0].classList.add('active');
-    buttons[1].classList.remove('active');
+    panels.forEach((panel, i) => {
+      panel.classList.toggle('active', i === index);
+    });
 
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    buttons.forEach((button, i) => {
+      button.classList.toggle('active', i === index);
+    });
 
-  });
+    window.scrollTo({
+      top: 0,
+      behavior: 'smooth'
+    });
 
-  // BIG WIN CENTER
-  buttons[1].addEventListener('click', function () {
+  }
 
-    bigWinTab.classList.add('active');
-    mainTab.classList.remove('active');
+  buttons.forEach((button, index) => {
 
-    buttons[1].classList.add('active');
-    buttons[0].classList.remove('active');
-
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    button.addEventListener('click', function () {
+      activateTab(index);
+    });
 
   });
 
