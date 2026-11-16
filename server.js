@@ -2100,8 +2100,11 @@ async function start() {
   await runAutomaticAnalysis();
 
   // FIRST BONUS INTELLIGENCE ANALYSIS
-  await runBonusIntelligenceAnalysis();
+await runBonusIntelligenceAnalysis();
 
+// FIRST HISTORICAL FORECAST EVALUATION
+runHistoricalForecastEvaluation();
+  
   // DATA COLLECTION
   setInterval(
     pollUpstream,
