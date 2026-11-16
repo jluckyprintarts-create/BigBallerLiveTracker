@@ -6,7 +6,6 @@
 
   <title>MONOPOLY Big Baller Live Tracker</title>
 
-  <!-- HLS VIDEO PLAYER LIBRARY -->
   <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
 
   <style>
@@ -237,7 +236,7 @@
       text-align: center;
     }
 
-    /* MONOPOLY BIG BALLER HLS LIVE PLAYER */
+    /* LIVE VIDEO PLAYER */
 
     .live-video-container {
       width: 100%;
@@ -292,6 +291,8 @@
       color: #f87171;
       font-size: 11px;
       margin-top: 8px;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
     }
 
     /* BONUS ACTIVITY MONITOR */
@@ -774,19 +775,16 @@
     </button>
   </header>
 
-  <!-- MONOPOLY BIG BALLER LIVE VIDEO -->
+  <!-- LIVE VIDEO -->
 
   <div class="section">
 
     <div class="section-header">
       <h2>🎥 MONOPOLY BIG BALLER LIVE</h2>
-      <span class="live-indicator" id="liveStatus">
-        ● CONNECTING
-      </span>
+      <span class="live-indicator" id="liveStatus">● CONNECTING</span>
     </div>
 
     <div class="live-video-container">
-
       <video
         id="bigBallerVideo"
         controls
@@ -795,7 +793,6 @@
         playsinline
         preload="auto">
       </video>
-
     </div>
 
     <div class="live-quality" id="liveQuality">
@@ -852,58 +849,38 @@
     <div class="bonus-monitor">
 
       <div class="bonus-card three">
-
         <div class="bonus-name">🎲 THREE ROLLS</div>
-
         <div class="bonus-timer" id="threeTimer">--:--:--</div>
-
-        <div class="bonus-elapsed" id="threeElapsed">
-          Waiting for record...
-        </div>
-
+        <div class="bonus-elapsed" id="threeElapsed">Waiting for record...</div>
         <div class="bonus-divider"></div>
-
         <div class="bonus-detail">
           <span>Last appeared</span>
           <span id="threeLastTime">-</span>
         </div>
-
         <div class="bonus-detail">
           <span>Multiplier</span>
           <span id="threeLastMultiplier">-</span>
         </div>
-
       </div>
 
       <div class="bonus-card five">
-
         <div class="bonus-name">🎲 FIVE ROLLS</div>
-
         <div class="bonus-timer" id="fiveTimer">--:--:--</div>
-
-        <div class="bonus-elapsed" id="fiveElapsed">
-          Waiting for record...
-        </div>
-
+        <div class="bonus-elapsed" id="fiveElapsed">Waiting for record...</div>
         <div class="bonus-divider"></div>
-
         <div class="bonus-detail">
           <span>Last appeared</span>
           <span id="fiveLastTime">-</span>
         </div>
-
         <div class="bonus-detail">
           <span>Multiplier</span>
           <span id="fiveLastMultiplier">-</span>
         </div>
-
       </div>
 
     </div>
 
-    <div class="status">
-      Based on actual recorded game results
-    </div>
+    <div class="status">Based on actual recorded game results</div>
 
   </div>
 
@@ -925,9 +902,7 @@
 
       <div class="analysis-stat">
         <div class="analysis-stat-label">LAST ANALYSIS</div>
-        <div class="analysis-stat-value" id="analysisLast" style="font-size:12px">
-          Loading...
-        </div>
+        <div class="analysis-stat-value" id="analysisLast" style="font-size:12px">Loading...</div>
       </div>
 
     </div>
@@ -935,49 +910,35 @@
     <div class="analysis-grid">
 
       <div class="analysis-card three">
-
         <div class="analysis-title">🎲 THREE ROLLS</div>
-
         <div class="analysis-label">TOP HISTORICAL HOURS</div>
-
         <div class="analysis-list" id="threeBestHours">
           <div class="analysis-empty">Loading analysis...</div>
         </div>
-
         <div class="analysis-label">BEST DAYS</div>
-
         <div class="analysis-list" id="threeBestDays">
           <div class="analysis-empty">Loading analysis...</div>
         </div>
-
       </div>
 
       <div class="analysis-card five">
-
         <div class="analysis-title">🎲 FIVE ROLLS</div>
-
         <div class="analysis-label">TOP HISTORICAL HOURS</div>
-
         <div class="analysis-list" id="fiveBestHours">
           <div class="analysis-empty">Loading analysis...</div>
         </div>
-
         <div class="analysis-label">BEST DAYS</div>
-
         <div class="analysis-list" id="fiveBestDays">
           <div class="analysis-empty">Loading analysis...</div>
         </div>
-
       </div>
 
     </div>
 
     <div class="analysis-footer">
       Based on historical records only. Past results do not guarantee future bonuses or winning outcomes.
-      <br>
-      Backend analysis runs every 5 minutes.
-      <br>
-      Display automatically refreshes every 1 minute.
+      <br>Backend analysis runs every 5 minutes.
+      <br>Display automatically refreshes every 1 minute.
     </div>
 
   </div>
@@ -998,32 +959,16 @@
 
     <div class="intelligence-grid">
 
-      <!-- THREE ROLLS INTELLIGENCE -->
-
       <div class="intelligence-card three">
 
         <div class="intelligence-title">🎲 THREE ROLLS INTELLIGENCE</div>
 
         <div class="intelligence-main">
-
           <div class="intelligence-main-label">CENTRAL ESTIMATE</div>
-
-          <div class="intelligence-main-value" id="threeCentral">
-            Loading...
-          </div>
-
-          <div class="intelligence-main-sub" id="threeCentralRange">
-            Waiting for intelligence data...
-          </div>
-
-          <div class="intelligence-main-label" style="margin-top:10px">
-            HISTORICAL CONFIDENCE
-          </div>
-
-          <span class="confidence-badge confidence-Low" id="threeConfidence">
-            LOW
-          </span>
-
+          <div class="intelligence-main-value" id="threeCentral">Loading...</div>
+          <div class="intelligence-main-sub" id="threeCentralRange">Waiting for intelligence data...</div>
+          <div class="intelligence-main-label" style="margin-top:10px">HISTORICAL CONFIDENCE</div>
+          <span class="confidence-badge confidence-Low" id="threeConfidence">LOW</span>
         </div>
 
         <div class="intelligence-stats">
@@ -1086,38 +1031,20 @@
           <div class="analysis-empty">Loading estimated windows...</div>
         </div>
 
-        <div class="intelligence-reason" id="threeReason">
-          Waiting for analysis...
-        </div>
+        <div class="intelligence-reason" id="threeReason">Waiting for analysis...</div>
 
       </div>
-
-      <!-- FIVE ROLLS INTELLIGENCE -->
 
       <div class="intelligence-card five">
 
         <div class="intelligence-title">🎲 FIVE ROLLS INTELLIGENCE</div>
 
         <div class="intelligence-main">
-
           <div class="intelligence-main-label">CENTRAL ESTIMATE</div>
-
-          <div class="intelligence-main-value" id="fiveCentral">
-            Loading...
-          </div>
-
-          <div class="intelligence-main-sub" id="fiveCentralRange">
-            Waiting for intelligence data...
-          </div>
-
-          <div class="intelligence-main-label" style="margin-top:10px">
-            HISTORICAL CONFIDENCE
-          </div>
-
-          <span class="confidence-badge confidence-Low" id="fiveConfidence">
-            LOW
-          </span>
-
+          <div class="intelligence-main-value" id="fiveCentral">Loading...</div>
+          <div class="intelligence-main-sub" id="fiveCentralRange">Waiting for intelligence data...</div>
+          <div class="intelligence-main-label" style="margin-top:10px">HISTORICAL CONFIDENCE</div>
+          <span class="confidence-badge confidence-Low" id="fiveConfidence">LOW</span>
         </div>
 
         <div class="intelligence-stats">
@@ -1180,9 +1107,7 @@
           <div class="analysis-empty">Loading estimated windows...</div>
         </div>
 
-        <div class="intelligence-reason" id="fiveReason">
-          Waiting for analysis...
-        </div>
+        <div class="intelligence-reason" id="fiveReason">Waiting for analysis...</div>
 
       </div>
 
@@ -1190,14 +1115,10 @@
 
     <div class="intelligence-footer">
       Model performance is measured using historical backtesting.
-      <br>
-      MAE means average historical estimation error in minutes.
-      <br>
-      Confidence describes data reliability, NOT the probability of a bonus.
-      <br>
-      Past timing patterns cannot reveal or change the game's random number generation.
-      <br>
-      Intelligence data automatically refreshes every minute.
+      <br>MAE means average historical estimation error in minutes.
+      <br>Confidence describes data reliability, NOT the probability of a bonus.
+      <br>Past timing patterns cannot reveal or change the game's random number generation.
+      <br>Intelligence data automatically refreshes every minute.
     </div>
 
   </div>
@@ -1216,9 +1137,7 @@
       These results do not represent winning probabilities.
     </div>
 
-    <h3 style="font-size:12px;color:#60a5fa;margin:12px 0">
-      🎲 THREE ROLLS PERFORMANCE
-    </h3>
+    <h3 style="font-size:12px;color:#60a5fa;margin:12px 0">🎲 THREE ROLLS PERFORMANCE</h3>
 
     <div class="performance-grid">
 
@@ -1256,9 +1175,7 @@
 
     </div>
 
-    <h3 style="font-size:12px;color:#a78bfa;margin:18px 0 12px">
-      🎲 FIVE ROLLS PERFORMANCE
-    </h3>
+    <h3 style="font-size:12px;color:#a78bfa;margin:18px 0 12px">🎲 FIVE ROLLS PERFORMANCE</h3>
 
     <div class="performance-grid">
 
@@ -1299,9 +1216,7 @@
     <div class="window-heading">📋 RECENT FORECAST EVALUATIONS</div>
 
     <div class="performance-table-wrap">
-
       <table class="performance-table">
-
         <thead>
           <tr>
             <th>TYPE</th>
@@ -1311,31 +1226,20 @@
             <th>RESULT</th>
           </tr>
         </thead>
-
         <tbody id="performanceRecent">
           <tr>
-            <td colspan="5" class="empty">
-              Loading performance data...
-            </td>
+            <td colspan="5" class="empty">Loading performance data...</td>
           </tr>
         </tbody>
-
       </table>
-
     </div>
 
-    <div class="performance-note" id="performanceUpdated">
-      Loading performance monitor...
-    </div>
+    <div class="performance-note" id="performanceUpdated">Loading performance monitor...</div>
 
     <div class="performance-note">
-      Central hit rate measures how often the central estimate matched
-      the actual bonus window.
-      <br>
-      Five-window hit rate measures whether the bonus appeared inside
-      any of the five estimated windows.
-      <br>
-      Historical accuracy does not guarantee future results.
+      Central hit rate measures how often the central estimate matched the actual bonus window.
+      <br>Five-window hit rate measures whether the bonus appeared inside any of the five estimated windows.
+      <br>Historical accuracy does not guarantee future results.
     </div>
 
   </div>
@@ -1349,17 +1253,13 @@
     </div>
 
     <div class="filters">
-
       <button class="filter-btn active" data-type="all">All</button>
       <button class="filter-btn" data-type="three">3 Rolls</button>
       <button class="filter-btn" data-type="five">5 Rolls</button>
-
     </div>
 
     <div class="table-wrap">
-
       <table>
-
         <thead>
           <tr>
             <th>Event Type</th>
@@ -1369,22 +1269,16 @@
             <th>Adjusted Time</th>
           </tr>
         </thead>
-
         <tbody id="records">
           <tr>
             <td colspan="5" class="empty">Loading records...</td>
           </tr>
         </tbody>
-
       </table>
-
     </div>
 
     <div id="pagination" class="pagination"></div>
-
-    <div class="status" id="recordStatus">
-      Waiting for data...
-    </div>
+    <div class="status" id="recordStatus">Waiting for data...</div>
 
   </div>
 
@@ -1410,7 +1304,6 @@
 
 let currentType = 'all';
 let currentPage = 1;
-
 const recordsPerPage = 20;
 
 let allRecords = [];
@@ -1422,7 +1315,6 @@ let bonusRecords = [];
 function escapeHTML(value) {
 
   return String(value ?? '').replace(/[&<>"']/g, function(char) {
-
     return {
       '&': '&amp;',
       '<': '&lt;',
@@ -1430,7 +1322,6 @@ function escapeHTML(value) {
       '"': '&quot;',
       "'": '&#039;'
     }[char];
-
   });
 
 }
@@ -1463,7 +1354,6 @@ function formatDate(value) {
 function getAdjustedDate(record) {
 
   const value = record.adjusted_at || record.settled_at;
-
   const date = new Date(value);
 
   return isNaN(date.getTime()) ? null : date;
@@ -1543,22 +1433,12 @@ function getEventType(record) {
 
 function updateCards(records) {
 
-  const three = records.filter(
-    record => record.is_three_rolls
-  ).length;
+  const three = records.filter(record => record.is_three_rolls).length;
+  const five = records.filter(record => record.is_five_rolls).length;
 
-  const five = records.filter(
-    record => record.is_five_rolls
-  ).length;
-
-  document.getElementById('totalRecords').textContent =
-    records.length;
-
-  document.getElementById('threeRolls').textContent =
-    three;
-
-  document.getElementById('fiveRolls').textContent =
-    five;
+  document.getElementById('totalRecords').textContent = records.length;
+  document.getElementById('threeRolls').textContent = three;
+  document.getElementById('fiveRolls').textContent = five;
 
 }
 
@@ -1568,49 +1448,34 @@ function updateCards(records) {
 function renderRecords() {
 
   const tbody = document.getElementById('records');
-
   const pagination = document.getElementById('pagination');
 
   if (!allRecords.length) {
 
     tbody.innerHTML = `
-      <tr>
-        <td colspan="5" class="empty">No records found.</td>
-      </tr>
+      <tr><td colspan="5" class="empty">No records found.</td></tr>
     `;
 
     pagination.innerHTML = '';
 
-    document.getElementById('recordStatus').textContent =
-      'No records available';
+    document.getElementById('recordStatus').textContent = 'No records available';
 
     return;
 
   }
 
-  const totalPages = Math.ceil(
-    allRecords.length / recordsPerPage
-  );
+  const totalPages = Math.ceil(allRecords.length / recordsPerPage);
 
-  if (currentPage > totalPages) {
-    currentPage = totalPages;
-  }
+  if (currentPage > totalPages) currentPage = totalPages;
 
   const start = (currentPage - 1) * recordsPerPage;
 
-  const pageRecords = allRecords.slice(
-    start,
-    start + recordsPerPage
-  );
+  const pageRecords = allRecords.slice(start, start + recordsPerPage);
 
   tbody.innerHTML = pageRecords.map(record => {
 
     const event = getEventType(record);
-
-    const host =
-      record.dealer_name ||
-      record.host_name ||
-      '-';
+    const host = record.dealer_name || record.host_name || '-';
 
     return `
       <tr>
@@ -1619,49 +1484,34 @@ function renderRecords() {
             ${escapeHTML(event.label)}
           </span>
         </td>
-
         <td>${escapeHTML(host)}</td>
-
-        <td class="multiplier">
-          ${escapeHTML(getMultiplier(record))}
-        </td>
-
+        <td class="multiplier">${escapeHTML(getMultiplier(record))}</td>
         <td>${escapeHTML(formatDate(record.settled_at))}</td>
-
         <td>${escapeHTML(formatDate(record.adjusted_at))}</td>
       </tr>
     `;
 
   }).join('');
 
-
-  // PAGINATION
-
   let buttons = '';
 
   buttons += `
-    <button
-      onclick="changePage(${currentPage - 1})"
-      ${currentPage === 1 ? 'disabled' : ''}
-    >Previous</button>
+    <button onclick="changePage(${currentPage - 1})"
+      ${currentPage === 1 ? 'disabled' : ''}>Previous</button>
   `;
 
   for (let page = 1; page <= totalPages; page++) {
 
     buttons += `
-      <button
-        class="${page === currentPage ? 'active' : ''}"
-        onclick="changePage(${page})"
-      >${page}</button>
+      <button class="${page === currentPage ? 'active' : ''}"
+        onclick="changePage(${page})">${page}</button>
     `;
 
   }
 
   buttons += `
-    <button
-      onclick="changePage(${currentPage + 1})"
-      ${currentPage === totalPages ? 'disabled' : ''}
-    >Next</button>
+    <button onclick="changePage(${currentPage + 1})"
+      ${currentPage === totalPages ? 'disabled' : ''}>Next</button>
   `;
 
   pagination.innerHTML = buttons;
@@ -1676,14 +1526,11 @@ function renderRecords() {
 
 function changePage(page) {
 
-  const totalPages = Math.ceil(
-    allRecords.length / recordsPerPage
-  );
+  const totalPages = Math.ceil(allRecords.length / recordsPerPage);
 
   if (page < 1 || page > totalPages) return;
 
   currentPage = page;
-
   renderRecords();
 
 }
@@ -1694,7 +1541,6 @@ function changePage(page) {
 function renderHourlyStats(records) {
 
   const container = document.getElementById('hourlyStats');
-
   const hours = {};
 
   for (let i = 0; i < 24; i++) {
@@ -1718,20 +1564,16 @@ function renderHourlyStats(records) {
 
     const label = hour + ':00';
 
-    if (hours[label] !== undefined) {
-      hours[label]++;
-    }
+    if (hours[label] !== undefined) hours[label]++;
 
   });
 
-  container.innerHTML = Object.entries(hours).map(
-    ([hour, count]) => `
-      <div class="hour-item">
-        <span class="hour-label">${hour}</span>
-        <span class="hour-count">${count}</span>
-      </div>
-    `
-  ).join('');
+  container.innerHTML = Object.entries(hours).map(([hour, count]) => `
+    <div class="hour-item">
+      <span class="hour-label">${hour}</span>
+      <span class="hour-count">${count}</span>
+    </div>
+  `).join('');
 
 }
 
@@ -1745,9 +1587,7 @@ function getBonusMultiplier(record, type) {
     record.raw_data?.result ||
     {};
 
-  const mode = type === 'three'
-    ? 'ThreeRolls'
-    : 'FiveRolls';
+  const mode = type === 'three' ? 'ThreeRolls' : 'FiveRolls';
 
   const bonus = (result.bonusRounds || []).find(
     item => item.gameMode === mode
@@ -1772,13 +1612,8 @@ function formatElapsed(milliseconds) {
   milliseconds = Math.max(0, milliseconds);
 
   const totalSeconds = Math.floor(milliseconds / 1000);
-
   const hours = Math.floor(totalSeconds / 3600);
-
-  const minutes = Math.floor(
-    (totalSeconds % 3600) / 60
-  );
-
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
 
   return [
@@ -1799,38 +1634,22 @@ function updateBonusMonitor() {
     const isThree = type === 'three';
 
     const filtered = bonusRecords
-      .filter(record =>
-        isThree
-          ? record.is_three_rolls
-          : record.is_five_rolls
-      )
+      .filter(record => isThree ? record.is_three_rolls : record.is_five_rolls)
       .sort((a, b) => {
-
         const dateA = getAdjustedDate(a);
         const dateB = getAdjustedDate(b);
-
-        return (dateB?.getTime() || 0) -
-               (dateA?.getTime() || 0);
-
+        return (dateB?.getTime() || 0) - (dateA?.getTime() || 0);
       });
 
     const prefix = isThree ? 'three' : 'five';
-
     const last = filtered[0];
 
     if (!last) {
 
-      document.getElementById(prefix + 'Timer').textContent =
-        '--:--:--';
-
-      document.getElementById(prefix + 'Elapsed').textContent =
-        'No record found';
-
-      document.getElementById(prefix + 'LastTime').textContent =
-        '-';
-
-      document.getElementById(prefix + 'LastMultiplier').textContent =
-        '-';
+      document.getElementById(prefix + 'Timer').textContent = '--:--:--';
+      document.getElementById(prefix + 'Elapsed').textContent = 'No record found';
+      document.getElementById(prefix + 'LastTime').textContent = '-';
+      document.getElementById(prefix + 'LastMultiplier').textContent = '-';
 
       return;
 
@@ -1842,15 +1661,10 @@ function updateBonusMonitor() {
 
     const elapsed = Date.now() - lastDate.getTime();
 
-    document.getElementById(prefix + 'Timer').textContent =
-      formatElapsed(elapsed);
-
-    document.getElementById(prefix + 'Elapsed').textContent =
-      'TIME SINCE LAST BONUS';
-
+    document.getElementById(prefix + 'Timer').textContent = formatElapsed(elapsed);
+    document.getElementById(prefix + 'Elapsed').textContent = 'TIME SINCE LAST BONUS';
     document.getElementById(prefix + 'LastTime').textContent =
       formatDate(last.adjusted_at || last.settled_at);
-
     document.getElementById(prefix + 'LastMultiplier').textContent =
       getBonusMultiplier(last, type);
 
@@ -1865,15 +1679,12 @@ async function loadBonusMonitor() {
 
   try {
 
-    const response = await fetch(
-      '/api/history?type=all&limit=200',
-      { cache: 'no-store' }
-    );
+    const response = await fetch('/api/history?type=all&limit=200', {
+      cache: 'no-store'
+    });
 
     if (!response.ok) {
-      throw new Error(
-        'Bonus monitor request failed: ' + response.status
-      );
+      throw new Error('Bonus monitor request failed: ' + response.status);
     }
 
     const data = await response.json();
@@ -1883,9 +1694,7 @@ async function loadBonusMonitor() {
     updateBonusMonitor();
 
   } catch (error) {
-
     console.error('Bonus Monitor Error:', error);
-
   }
 
 }
@@ -1895,9 +1704,7 @@ async function loadBonusMonitor() {
 
 function formatAnalysisHour(hour) {
 
-  const date = new Date(
-    Date.UTC(2020, 0, 1, Number(hour) - 8, 0, 0)
-  );
+  const date = new Date(Date.UTC(2020, 0, 1, Number(hour) - 8, 0, 0));
 
   return date.toLocaleTimeString('en-PH', {
     hour: 'numeric',
@@ -1917,9 +1724,7 @@ function renderAnalysisList(elementId, items, type) {
   if (!items || !items.length) {
 
     container.innerHTML = `
-      <div class="analysis-empty">
-        Not enough records yet.
-      </div>
+      <div class="analysis-empty">Not enough records yet.</div>
     `;
 
     return;
@@ -1935,9 +1740,7 @@ function renderAnalysisList(elementId, items, type) {
     return `
       <div class="analysis-item">
         <span>${label}</span>
-        <span class="analysis-count">
-          ${Number(item.count)} records
-        </span>
+        <span class="analysis-count">${Number(item.count)} records</span>
       </div>
     `;
 
@@ -1952,15 +1755,10 @@ async function loadAnalysis() {
 
   try {
 
-    const response = await fetch(
-      '/api/analysis',
-      { cache: 'no-store' }
-    );
+    const response = await fetch('/api/analysis', { cache: 'no-store' });
 
     if (!response.ok) {
-      throw new Error(
-        'Analysis request failed: ' + response.status
-      );
+      throw new Error('Analysis request failed: ' + response.status);
     }
 
     const data = await response.json();
@@ -1978,40 +1776,18 @@ async function loadAnalysis() {
           })
         : 'Waiting...';
 
-    renderAnalysisList(
-      'threeBestHours',
-      data.threeRolls?.bestHours,
-      'hour'
-    );
+    renderAnalysisList('threeBestHours', data.threeRolls?.bestHours, 'hour');
+    renderAnalysisList('threeBestDays', data.threeRolls?.bestDays, 'day');
+    renderAnalysisList('fiveBestHours', data.fiveRolls?.bestHours, 'hour');
+    renderAnalysisList('fiveBestDays', data.fiveRolls?.bestDays, 'day');
 
-    renderAnalysisList(
-      'threeBestDays',
-      data.threeRolls?.bestDays,
-      'day'
-    );
-
-    renderAnalysisList(
-      'fiveBestHours',
-      data.fiveRolls?.bestHours,
-      'hour'
-    );
-
-    renderAnalysisList(
-      'fiveBestDays',
-      data.fiveRolls?.bestDays,
-      'day'
-    );
-
-    if (data.error) {
-      console.error('Analysis warning:', data.error);
-    }
+    if (data.error) console.error('Analysis warning:', data.error);
 
   } catch (error) {
 
     console.error('Smart Analysis Error:', error);
 
-    document.getElementById('analysisLast').textContent =
-      'Unavailable';
+    document.getElementById('analysisLast').textContent = 'Unavailable';
 
     document.getElementById('threeBestHours').innerHTML =
       '<div class="analysis-empty">Unable to load analysis.</div>';
@@ -2038,9 +1814,7 @@ let intelligenceData = null;
 function formatMinutes(value) {
 
   if (value === null || value === undefined ||
-      !Number.isFinite(Number(value))) {
-    return '-';
-  }
+      !Number.isFinite(Number(value))) return '-';
 
   return Number(value).toFixed(1) + ' min';
 
@@ -2070,51 +1844,31 @@ function formatWindowDate(value) {
 function getWindowCountdown(start, end) {
 
   const now = Date.now();
-
   const startTime = new Date(start).getTime();
   const endTime = new Date(end).getTime();
 
-  if (!Number.isFinite(startTime) ||
-      !Number.isFinite(endTime)) {
-    return {
-      text: 'Time unavailable',
-      className: 'passed'
-    };
+  if (!Number.isFinite(startTime) || !Number.isFinite(endTime)) {
+    return { text: 'Time unavailable', className: 'passed' };
   }
 
   if (now > endTime) {
-    return {
-      text: 'Estimated window has passed',
-      className: 'passed'
-    };
+    return { text: 'Estimated window has passed', className: 'passed' };
   }
 
   if (now >= startTime && now <= endTime) {
-    return {
-      text: '● CURRENT ESTIMATED WINDOW',
-      className: 'active'
-    };
+    return { text: '● CURRENT ESTIMATED WINDOW', className: 'active' };
   }
 
   const remaining = startTime - now;
-
   const totalMinutes = Math.floor(remaining / 60000);
-
   const hours = Math.floor(totalMinutes / 60);
-
   const minutes = totalMinutes % 60;
 
   if (hours > 0) {
-    return {
-      text: `Starts in ${hours}h ${minutes}m`,
-      className: ''
-    };
+    return { text: `Starts in ${hours}h ${minutes}m`, className: '' };
   }
 
-  return {
-    text: `Starts in ${minutes} minutes`,
-    className: ''
-  };
+  return { text: `Starts in ${minutes} minutes`, className: '' };
 
 }
 
@@ -2139,8 +1893,8 @@ function renderEstimatedWindows(elementId, windows) {
 
   container.innerHTML = windows.map(window => {
 
-    const isCentral =
-      String(window.label || '').toLowerCase().includes('central');
+    const isCentral = String(window.label || '')
+      .toLowerCase().includes('central');
 
     const countdown = getWindowCountdown(
       window.windowStart,
@@ -2149,37 +1903,21 @@ function renderEstimatedWindows(elementId, windows) {
 
     return `
       <div class="window-item ${isCentral ? 'central' : ''}">
-
         <div class="window-top">
-          <span class="window-rank">
-            WINDOW ${escapeHTML(window.rank)}
-          </span>
-
-          <span class="window-label">
-            ${escapeHTML(window.label || 'ESTIMATED RANGE')}
-          </span>
+          <span class="window-rank">WINDOW ${escapeHTML(window.rank)}</span>
+          <span class="window-label">${escapeHTML(window.label || 'ESTIMATED RANGE')}</span>
         </div>
-
-        <div class="window-time">
-          ${escapeHTML(formatWindowDate(window.centerAt))}
-        </div>
-
+        <div class="window-time">${escapeHTML(formatWindowDate(window.centerAt))}</div>
         <div class="window-range">
-          Range:
-          ${escapeHTML(formatWindowDate(window.windowStart))}
-          –
-          ${escapeHTML(formatWindowDate(window.windowEnd))}
+          Range: ${escapeHTML(formatWindowDate(window.windowStart))}
+          – ${escapeHTML(formatWindowDate(window.windowEnd))}
         </div>
-
         <div class="window-range">
-          Estimated interval:
-          ${escapeHTML(formatMinutes(window.minutesFromLast))}
+          Estimated interval: ${escapeHTML(formatMinutes(window.minutesFromLast))}
         </div>
-
         <div class="window-countdown ${countdown.className}">
           ${escapeHTML(countdown.text)}
         </div>
-
       </div>
     `;
 
@@ -2194,15 +1932,8 @@ function updateIntelligenceCountdowns() {
 
   if (!intelligenceData) return;
 
-  renderEstimatedWindows(
-    'threeWindows',
-    intelligenceData.threeRolls?.estimatedWindows
-  );
-
-  renderEstimatedWindows(
-    'fiveWindows',
-    intelligenceData.fiveRolls?.estimatedWindows
-  );
+  renderEstimatedWindows('threeWindows', intelligenceData.threeRolls?.estimatedWindows);
+  renderEstimatedWindows('fiveWindows', intelligenceData.fiveRolls?.estimatedWindows);
 
 }
 
@@ -2217,15 +1948,10 @@ function renderIntelligenceType(type, data) {
 
   const confidence = data.confidence || 'Low';
 
-  const confidenceElement =
-    document.getElementById(prefix + 'Confidence');
+  const confidenceElement = document.getElementById(prefix + 'Confidence');
 
-  confidenceElement.textContent =
-    String(confidence).toUpperCase();
-
-  confidenceElement.className =
-    'confidence-badge confidence-' + confidence;
-
+  confidenceElement.textContent = String(confidence).toUpperCase();
+  confidenceElement.className = 'confidence-badge confidence-' + confidence;
 
   const centralWindow = Array.isArray(data.estimatedWindows)
     ? data.estimatedWindows.find(window =>
@@ -2245,7 +1971,6 @@ function renderIntelligenceType(type, data) {
         ' – ' +
         formatWindowDate(centralWindow.windowEnd)
       : 'Central estimate based on historical intervals';
-
 
   document.getElementById(prefix + 'TotalBonuses').textContent =
     Number(data.totalBonuses || 0).toLocaleString();
@@ -2280,12 +2005,7 @@ function renderIntelligenceType(type, data) {
       ? Number(data.coefficientOfVariation).toFixed(3)
       : '-';
 
-
-  renderEstimatedWindows(
-    prefix + 'Windows',
-    data.estimatedWindows
-  );
-
+  renderEstimatedWindows(prefix + 'Windows', data.estimatedWindows);
 
   document.getElementById(prefix + 'Reason').textContent =
     data.confidenceReason ||
@@ -2300,15 +2020,10 @@ async function loadIntelligence() {
 
   try {
 
-    const response = await fetch(
-      '/api/intelligence',
-      { cache: 'no-store' }
-    );
+    const response = await fetch('/api/intelligence', { cache: 'no-store' });
 
     if (!response.ok) {
-      throw new Error(
-        'Intelligence request failed: ' + response.status
-      );
+      throw new Error('Intelligence request failed: ' + response.status);
     }
 
     const data = await response.json();
@@ -2316,22 +2031,16 @@ async function loadIntelligence() {
     intelligenceData = data;
 
     renderIntelligenceType('three', data.threeRolls);
-
     renderIntelligenceType('five', data.fiveRolls);
 
-    if (data.error) {
-      console.error('Intelligence warning:', data.error);
-    }
+    if (data.error) console.error('Intelligence warning:', data.error);
 
   } catch (error) {
 
     console.error('Intelligence Error:', error);
 
-    document.getElementById('threeCentral').textContent =
-      'Unavailable';
-
-    document.getElementById('fiveCentral').textContent =
-      'Unavailable';
+    document.getElementById('threeCentral').textContent = 'Unavailable';
+    document.getElementById('fiveCentral').textContent = 'Unavailable';
 
     document.getElementById('threeWindows').innerHTML =
       '<div class="analysis-empty">Unable to load intelligence data.</div>';
@@ -2355,9 +2064,7 @@ async function loadIntelligence() {
 function performanceNumber(value, suffix = '') {
 
   if (value === null || value === undefined ||
-      !Number.isFinite(Number(value))) {
-    return '-';
-  }
+      !Number.isFinite(Number(value))) return '-';
 
   return Number(value).toFixed(1) + suffix;
 
@@ -2367,15 +2074,11 @@ function performanceNumber(value, suffix = '') {
 function performancePercent(value) {
 
   if (value === null || value === undefined ||
-      !Number.isFinite(Number(value))) {
-    return '-';
-  }
+      !Number.isFinite(Number(value))) return '-';
 
   let number = Number(value);
 
-  if (number >= 0 && number <= 1) {
-    number *= 100;
-  }
+  if (number >= 0 && number <= 1) number *= 100;
 
   return number.toFixed(1) + '%';
 
@@ -2414,11 +2117,9 @@ function renderPerformanceType(type, data) {
 function getPerformanceField(record, names) {
 
   for (const name of names) {
-
     if (record[name] !== undefined && record[name] !== null) {
       return record[name];
     }
-
   }
 
   return null;
@@ -2435,11 +2136,7 @@ function renderRecentPerformance(records) {
   if (!Array.isArray(records) || !records.length) {
 
     tbody.innerHTML = `
-      <tr>
-        <td colspan="5" class="empty">
-          No evaluated forecasts yet.
-        </td>
-      </tr>
+      <tr><td colspan="5" class="empty">No evaluated forecasts yet.</td></tr>
     `;
 
     return;
@@ -2450,11 +2147,7 @@ function renderRecentPerformance(records) {
 
     const rawType = String(
       getPerformanceField(record, [
-        'game_type',
-        'gameType',
-        'type',
-        'bonusType',
-        'forecastType'
+        'game_type', 'gameType', 'type', 'bonusType', 'forecastType'
       ]) || ''
     ).toLowerCase();
 
@@ -2465,41 +2158,28 @@ function renderRecentPerformance(records) {
         : '-';
 
     const forecast = getPerformanceField(record, [
-      'central_center_at',
-      'forecast_at',
-      'forecastAt',
-      'predictedAt',
-      'forecastTime'
+      'central_center_at', 'forecast_at', 'forecastAt',
+      'predictedAt', 'forecastTime'
     ]);
 
     const actual = getPerformanceField(record, [
-      'actual_bonus_at',
-      'actual_at',
-      'actualAt',
-      'actualTime'
+      'actual_bonus_at', 'actual_at', 'actualAt', 'actualTime'
     ]);
 
     const error = getPerformanceField(record, [
-      'error_minutes',
-      'errorMinutes',
-      'absoluteErrorMinutes'
+      'error_minutes', 'errorMinutes', 'absoluteErrorMinutes'
     ]);
 
     const status = String(
-      getPerformanceField(record, [
-        'status',
-        'result'
-      ]) || ''
+      getPerformanceField(record, ['status', 'result']) || ''
     ).toLowerCase();
 
     const centralHit = getPerformanceField(record, [
-      'central_hit',
-      'centralHit'
+      'central_hit', 'centralHit'
     ]);
 
     const candidateHit = getPerformanceField(record, [
-      'candidate_hit',
-      'candidateHit'
+      'candidate_hit', 'candidateHit'
     ]);
 
     let result = '<span class="performance-pending">PENDING</span>';
@@ -2507,21 +2187,13 @@ function renderRecentPerformance(records) {
     if (status === 'evaluated' || actual) {
 
       if (centralHit === true) {
-
         result = '<span class="performance-good">CENTRAL HIT</span>';
-
       } else if (candidateHit === true) {
-
         result = '<span class="performance-good">WINDOW HIT</span>';
-
       } else if (centralHit === false || candidateHit === false) {
-
         result = '<span style="color:#ef4444;font-weight:bold">MISSED</span>';
-
       } else {
-
         result = '<span class="performance-pending">EVALUATED</span>';
-
       }
 
     }
@@ -2547,30 +2219,21 @@ async function loadPerformance() {
 
   try {
 
-    const response = await fetch(
-      '/api/performance',
-      { cache: 'no-store' }
-    );
+    const response = await fetch('/api/performance', { cache: 'no-store' });
 
     if (!response.ok) {
-      throw new Error(
-        'Performance request failed: ' + response.status
-      );
+      throw new Error('Performance request failed: ' + response.status);
     }
 
     const data = await response.json();
 
     renderPerformanceType('three', data.threeRolls);
-
     renderPerformanceType('five', data.fiveRolls);
-
     renderRecentPerformance(data.recent);
 
     document.getElementById('performanceUpdated').textContent =
       'Last updated: ' +
-      (data.lastUpdated
-        ? formatDate(data.lastUpdated)
-        : 'Waiting for data');
+      (data.lastUpdated ? formatDate(data.lastUpdated) : 'Waiting for data');
 
   } catch (error) {
 
@@ -2589,13 +2252,10 @@ async function loadPerformance() {
 async function loadRecords() {
 
   const tbody = document.getElementById('records');
-
   const pagination = document.getElementById('pagination');
 
   tbody.innerHTML = `
-    <tr>
-      <td colspan="5" class="empty">Loading records...</td>
-    </tr>
+    <tr><td colspan="5" class="empty">Loading records...</td></tr>
   `;
 
   try {
@@ -2606,9 +2266,7 @@ async function loadRecords() {
     );
 
     if (!response.ok) {
-      throw new Error(
-        'Records request failed: ' + response.status
-      );
+      throw new Error('Records request failed: ' + response.status);
     }
 
     const data = await response.json();
@@ -2616,27 +2274,18 @@ async function loadRecords() {
     allRecords = data.records || [];
 
     updateCards(allRecords);
-
     renderRecords();
-
     renderHourlyStats(allRecords);
 
     loadBonusMonitor();
-
     loadAnalysis();
-
     loadIntelligence();
-
     loadPerformance();
 
   } catch (error) {
 
     tbody.innerHTML = `
-      <tr>
-        <td colspan="5" class="empty">
-          Unable to load records.
-        </td>
-      </tr>
+      <tr><td colspan="5" class="empty">Unable to load records.</td></tr>
     `;
 
     pagination.innerHTML = '';
@@ -2664,7 +2313,6 @@ document.querySelectorAll('[data-type]').forEach(button => {
     button.classList.add('active');
 
     currentType = button.dataset.type;
-
     currentPage = 1;
 
     loadRecords();
@@ -2674,9 +2322,9 @@ document.querySelectorAll('[data-type]').forEach(button => {
 });
 
 
-// ===================================
-// MONOPOLY BIG BALLER HLS LIVE PLAYER
-// ===================================
+// ============================================
+// IMPROVED MONOPOLY BIG BALLER HLS LIVE PLAYER
+// ============================================
 
 (function initBigBallerLivePlayer() {
 
@@ -2685,6 +2333,7 @@ document.querySelectorAll('[data-type]').forEach(button => {
   const quality = document.getElementById('liveQuality');
   const errorBox = document.getElementById('liveError');
 
+  // Master playlist: automatic quality selection
   const streamURL =
     'https://live124.egprom.com/app/44/monbbk1_mb_en_auto/playlist.m3u8';
 
@@ -2702,6 +2351,19 @@ document.querySelectorAll('[data-type]').forEach(button => {
     errorBox.textContent = message;
   }
 
+  function cleanupPlayer() {
+
+    if (hls) {
+      hls.destroy();
+      hls = null;
+    }
+
+    video.pause();
+    video.removeAttribute('src');
+    video.load();
+
+  }
+
   function scheduleRetry() {
 
     if (isRetrying) return;
@@ -2712,15 +2374,13 @@ document.querySelectorAll('[data-type]').forEach(button => {
 
     retryCount++;
 
-    const delay = Math.min(
-      5000 * retryCount,
-      30000
-    );
+    const delay = Math.min(5000 * retryCount, 30000);
+
+    updateStatus('● RECONNECTING', '#facc15');
 
     showError(
-      'Reconnecting in ' +
-      Math.round(delay / 1000) +
-      ' seconds...'
+      'Connection attempt ' + retryCount +
+      '. Retrying in ' + Math.round(delay / 1000) + ' seconds...'
     );
 
     retryTimer = setTimeout(() => {
@@ -2736,55 +2396,119 @@ document.querySelectorAll('[data-type]').forEach(button => {
   function startStream() {
 
     clearTimeout(retryTimer);
-
     isRetrying = false;
 
-    showError('');
+    cleanupPlayer();
 
     updateStatus('● CONNECTING', '#facc15');
 
     quality.textContent = 'Loading live stream...';
+    showError('');
 
-    if (hls) {
-      hls.destroy();
-      hls = null;
+    // Check HLS.js library
+    if (!window.Hls) {
+
+      updateStatus('● PLAYER LIBRARY ERROR', '#ef4444');
+
+      showError(
+        'HLS.js failed to load. Check your internet connection or CDN access.'
+      );
+
+      return;
+
     }
 
+    // HLS.js supported browsers
     if (Hls.isSupported()) {
 
       hls = new Hls({
 
         enableWorker: true,
-
         lowLatencyMode: true,
 
         liveSyncDurationCount: 3,
-
         maxLiveSyncPlaybackRate: 1.5,
 
-        manifestLoadingTimeOut: 15000,
+        manifestLoadingTimeOut: 20000,
+        levelLoadingTimeOut: 20000,
+        fragLoadingTimeOut: 30000,
 
-        levelLoadingTimeOut: 15000,
-
-        fragLoadingTimeOut: 20000
+        manifestLoadingMaxRetry: 2,
+        levelLoadingMaxRetry: 2,
+        fragLoadingMaxRetry: 2
 
       });
 
-      hls.loadSource(streamURL);
+      // Listen for errors BEFORE loading the source
+      hls.on(Hls.Events.ERROR, function(event, data) {
 
-      hls.attachMedia(video);
+        console.error('HLS ERROR DETAILS:', {
+          type: data.type,
+          details: data.details,
+          fatal: data.fatal,
+          response: data.response,
+          url: data.url
+        });
+
+        if (!data.fatal) return;
+
+        updateStatus('● STREAM ERROR', '#ef4444');
+
+        const details = data.details || 'Unknown stream error';
+
+        const httpStatus =
+          data.response && data.response.code
+            ? ' HTTP ' + data.response.code
+            : '';
+
+        if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+
+          showError('Video decoding error. Attempting media recovery...');
+
+          try {
+            hls.recoverMediaError();
+          } catch (error) {
+            console.error('Media recovery failed:', error);
+            scheduleRetry();
+          }
+
+          return;
+
+        }
+
+        if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
+
+          showError(
+            'Network/playlist error: ' + details + httpStatus +
+            '. Reconnecting...'
+          );
+
+          scheduleRetry();
+
+          return;
+
+        }
+
+        showError(
+          'Fatal player error: ' + details + httpStatus +
+          '. Reconnecting...'
+        );
+
+        scheduleRetry();
+
+      });
 
       hls.on(Hls.Events.MANIFEST_PARSED, function() {
 
-        updateStatus('● LIVE', '#22c55e');
+        updateStatus('● STREAM READY', '#22c55e');
 
         quality.textContent =
-          'Automatic quality selection enabled';
+          'Stream loaded. Starting playback...';
 
         video.play().catch(() => {
 
           quality.textContent =
-            'Press PLAY to start the live video.';
+            'Stream loaded. Press PLAY to start the live video.';
 
         });
 
@@ -2792,68 +2516,30 @@ document.querySelectorAll('[data-type]').forEach(button => {
 
       hls.on(Hls.Events.LEVEL_SWITCHED, function(event, data) {
 
+        if (!hls || !hls.levels[data.level]) return;
+
         const level = hls.levels[data.level];
 
-        if (level) {
-
-          const bandwidth = Math.round(
-            level.bitrate / 1000
-          );
-
-          quality.textContent =
-            'LIVE QUALITY: ' + bandwidth + ' kbps';
-
-        }
+        quality.textContent =
+          'LIVE QUALITY: ' +
+          Math.round(level.bitrate / 1000) +
+          ' kbps';
 
       });
 
-      hls.on(Hls.Events.ERROR, function(event, data) {
+      hls.loadSource(streamURL);
+      hls.attachMedia(video);
 
-        console.error('HLS Player Error:', data);
+    }
 
-        if (!data.fatal) return;
-
-        updateStatus('● STREAM ERROR', '#ef4444');
-
-        if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
-
-          showError(
-            'Network error. Attempting to reconnect...'
-          );
-
-          hls.startLoad();
-
-        } else if (
-          data.type === Hls.ErrorTypes.MEDIA_ERROR
-        ) {
-
-          showError(
-            'Recovering video playback...'
-          );
-
-          hls.recoverMediaError();
-
-        } else {
-
-          showError(
-            'Unable to play stream. Checking connection...'
-          );
-
-          scheduleRetry();
-
-        }
-
-      });
-
-    } else if (
-      video.canPlayType('application/vnd.apple.mpegurl')
-    ) {
+    // Native HLS playback fallback
+    else if (video.canPlayType('application/vnd.apple.mpegurl')) {
 
       video.src = streamURL;
 
       video.addEventListener('loadedmetadata', function() {
 
-        updateStatus('● LIVE', '#22c55e');
+        updateStatus('● STREAM READY', '#22c55e');
 
         quality.textContent = 'Native HLS playback';
 
@@ -2870,29 +2556,39 @@ document.querySelectorAll('[data-type]').forEach(button => {
 
         updateStatus('● STREAM ERROR', '#ef4444');
 
-        showError('Unable to load the live stream.');
+        showError(
+          'Native HLS playback failed. The stream may be unavailable or blocked.'
+        );
 
         scheduleRetry();
 
       }, { once: true });
 
-    } else {
+    }
+
+    // Unsupported browser
+    else {
 
       updateStatus('● NOT SUPPORTED', '#ef4444');
 
       showError(
-        'This browser does not support HLS playback.'
+        'Your browser does not support HLS playback. Try opening this website in Chrome.'
       );
 
     }
 
   }
 
+
+  // Video playback events
+
   video.addEventListener('playing', function() {
 
     retryCount = 0;
 
     updateStatus('● LIVE', '#22c55e');
+
+    quality.textContent = 'Live video playing';
 
     showError('');
 
@@ -2912,6 +2608,21 @@ document.querySelectorAll('[data-type]').forEach(button => {
 
   });
 
+  video.addEventListener('error', function() {
+
+    if (video.error) {
+
+      console.error('HTML VIDEO ERROR:', {
+        code: video.error.code,
+        message: video.error.message
+      });
+
+    }
+
+  });
+
+
+  // Start player
   startStream();
 
 })();
@@ -2925,27 +2636,21 @@ loadRecords();
 // AUTO REFRESH EVERY 30 SECONDS
 
 setInterval(() => {
-
   loadRecords();
-
 }, 30000);
 
 
 // BONUS TIMER UPDATES EVERY SECOND
 
 setInterval(() => {
-
   updateBonusMonitor();
-
 }, 1000);
 
 
 // INTELLIGENCE COUNTDOWNS UPDATE EVERY SECOND
 
 setInterval(() => {
-
   updateIntelligenceCountdowns();
-
 }, 1000);
 
 
@@ -2954,9 +2659,7 @@ setInterval(() => {
 setInterval(() => {
 
   loadAnalysis();
-
   loadIntelligence();
-
   loadPerformance();
 
 }, 60000);
