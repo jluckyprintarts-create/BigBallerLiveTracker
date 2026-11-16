@@ -732,16 +732,168 @@
       margin-top: 12px;
     }
 
+    /* BIG WIN MONITOR ADD-ON */
+
+    .bigwin-header-status {
+      color: #22c55e;
+      font-size: 9px;
+      font-weight: bold;
+    }
+
+    .bigwin-intro {
+      color: #94a3b8;
+      font-size: 10px;
+      line-height: 1.6;
+      margin-bottom: 12px;
+    }
+
+    .bigwin-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 9px;
+      margin-bottom: 12px;
+    }
+
+    .bigwin-card {
+      background: #172033;
+      border: 1px solid #334155;
+      border-radius: 9px;
+      padding: 12px;
+      min-width: 0;
+    }
+
+    .bigwin-card.primary {
+      border-top: 3px solid #eab308;
+    }
+
+    .bigwin-card.three {
+      border-left: 3px solid #3b82f6;
+    }
+
+    .bigwin-card.five {
+      border-left: 3px solid #a78bfa;
+    }
+
+    .bigwin-label {
+      color: #94a3b8;
+      font-size: 9px;
+      line-height: 1.4;
+    }
+
+    .bigwin-value {
+      color: #facc15;
+      font-size: 23px;
+      font-weight: bold;
+      margin-top: 7px;
+      overflow-wrap: anywhere;
+    }
+
+    .bigwin-sub {
+      color: #94a3b8;
+      font-size: 9px;
+      margin-top: 5px;
+    }
+
+    .bigwin-table-wrap {
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .bigwin-table {
+      width: 100%;
+      table-layout: fixed;
+      border-collapse: collapse;
+    }
+
+    .bigwin-table th,
+    .bigwin-table td {
+      padding: 8px 3px;
+      text-align: center;
+      font-size: 9px;
+      line-height: 1.4;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+      border-bottom: 1px solid #263449;
+    }
+
+    .bigwin-table th:nth-child(1),
+    .bigwin-table td:nth-child(1) { width: 22%; }
+
+    .bigwin-table th:nth-child(2),
+    .bigwin-table td:nth-child(2) { width: 20%; }
+
+    .bigwin-table th:nth-child(3),
+    .bigwin-table td:nth-child(3) { width: 20%; }
+
+    .bigwin-table th:nth-child(4),
+    .bigwin-table td:nth-child(4) { width: 38%; }
+
+    .bigwin-multiplier {
+      color: #facc15;
+      font-weight: bold;
+    }
+
+    .bigwin-hourly {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 7px;
+      margin-top: 8px;
+    }
+
+    .bigwin-hour-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 5px;
+      background: #172033;
+      border: 1px solid #263449;
+      border-radius: 7px;
+      padding: 9px;
+      font-size: 9px;
+    }
+
+    .bigwin-hour-label {
+      color: #94a3b8;
+    }
+
+    .bigwin-hour-value {
+      color: #facc15;
+      font-weight: bold;
+      text-align: right;
+    }
+
+    .bigwin-status {
+      color: #94a3b8;
+      font-size: 9px;
+      text-align: center;
+      line-height: 1.6;
+      margin-top: 12px;
+    }
+
+    .bigwin-empty {
+      color: #64748b;
+      font-size: 10px;
+      text-align: center;
+      padding: 15px 5px;
+    }
+
     @media (max-width: 350px) {
       .bonus-monitor,
       .analysis-grid,
       .intelligence-grid,
-      .performance-grid {
+      .performance-grid,
+      .bigwin-grid {
         grid-template-columns: 1fr;
       }
 
       .performance-table th,
       .performance-table td {
+        font-size: 8px;
+        padding: 6px 2px;
+      }
+
+      .bigwin-table th,
+      .bigwin-table td {
         font-size: 8px;
         padding: 6px 2px;
       }
@@ -768,6 +920,10 @@
       .performance-table td {
         font-size: 11px;
         padding: 10px 6px;
+      }
+
+      .bigwin-hourly {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
       }
     }
   </style>
@@ -865,6 +1021,97 @@
     <div class="card">
       <div class="card-title">5 ROLLS</div>
       <div class="card-value" id="fiveRolls">0</div>
+    </div>
+
+  </div>
+
+  <!-- BIG WIN MONITOR ADD-ON -->
+
+  <div class="section">
+
+    <div class="section-header">
+      <h2>🏆 BIG WIN MONITOR (100x+)</h2>
+      <span class="bigwin-header-status">● LIVE MONITORING</span>
+    </div>
+
+    <div class="bigwin-intro">
+      Tracks recorded official bonus multipliers of 100x or higher.
+      Only recorded qualifying results are included.
+    </div>
+
+    <div class="bigwin-grid">
+
+      <div class="bigwin-card primary">
+        <div class="bigwin-label">🏆 TOTAL BIG WINS</div>
+        <div class="bigwin-value" id="bigWinTotal">-</div>
+        <div class="bigwin-sub">Recorded results at 100x+</div>
+      </div>
+
+      <div class="bigwin-card primary">
+        <div class="bigwin-label">💎 HIGHEST MULTIPLIER</div>
+        <div class="bigwin-value" id="bigWinHighest">-</div>
+        <div class="bigwin-sub">Highest recorded Big Win</div>
+      </div>
+
+      <div class="bigwin-card three">
+        <div class="bigwin-label">🎲 THREE ROLLS BIG WINS</div>
+        <div class="bigwin-value" id="bigWinThree">-</div>
+        <div class="bigwin-sub">100x or higher</div>
+      </div>
+
+      <div class="bigwin-card five">
+        <div class="bigwin-label">🎲 FIVE ROLLS BIG WINS</div>
+        <div class="bigwin-value" id="bigWinFive">-</div>
+        <div class="bigwin-sub">100x or higher</div>
+      </div>
+
+      <div class="bigwin-card">
+        <div class="bigwin-label">📊 AVERAGE BIG WIN</div>
+        <div class="bigwin-value" id="bigWinAverage">-</div>
+        <div class="bigwin-sub">Average qualifying multiplier</div>
+      </div>
+
+      <div class="bigwin-card">
+        <div class="bigwin-label">🕒 LAST UPDATED</div>
+        <div class="bigwin-value" id="bigWinUpdated" style="font-size:15px">Loading...</div>
+        <div class="bigwin-sub">Philippine time</div>
+      </div>
+
+    </div>
+
+    <div class="window-heading">🔥 RECENT BIG WIN HISTORY</div>
+
+    <div class="bigwin-table-wrap">
+      <table class="bigwin-table">
+        <thead>
+          <tr>
+            <th>TYPE</th>
+            <th>MULTIPLIER</th>
+            <th>DEALER</th>
+            <th>SETTLED TIME</th>
+          </tr>
+        </thead>
+
+        <tbody id="bigWinRecent">
+          <tr>
+            <td colspan="4" class="bigwin-empty">Loading Big Win history...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="window-heading">🕒 BIG WINS BY HOUR (PHILIPPINE TIME)</div>
+
+    <div class="bigwin-hourly" id="bigWinHourly">
+      <div class="bigwin-empty">Loading hourly statistics...</div>
+    </div>
+
+    <div class="bigwin-status" id="bigWinStatus">
+      Waiting for Big Win data...
+    </div>
+
+    <div class="performance-note">
+      Historical Big Wins do not predict or guarantee future bonus results.
     </div>
 
   </div>
@@ -2279,6 +2526,185 @@ async function loadPerformance() {
 }
 
 
+// BIG WIN MONITOR ADD-ON
+
+function formatBigWinMultiplier(value) {
+
+  if (value === null || value === undefined ||
+      !Number.isFinite(Number(value))) {
+    return '-';
+  }
+
+  return Number(value).toLocaleString('en-US', {
+    maximumFractionDigits: 2
+  }) + 'x';
+
+}
+
+
+function formatBigWinHour(hour) {
+
+  const number = Number(hour);
+
+  if (!Number.isInteger(number) || number < 0 || number > 23) {
+    return '--:--';
+  }
+
+  const date = new Date(Date.UTC(2020, 0, 1, number, 0, 0));
+
+  return date.toLocaleTimeString('en-PH', {
+    hour: 'numeric',
+    hour12: true,
+    timeZone: 'UTC'
+  });
+
+}
+
+
+function renderBigWinRecent(records) {
+
+  const tbody = document.getElementById('bigWinRecent');
+
+  if (!Array.isArray(records) || !records.length) {
+
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="4" class="bigwin-empty">
+          No recorded Big Wins yet.
+        </td>
+      </tr>
+    `;
+
+    return;
+
+  }
+
+  tbody.innerHTML = records.map(record => {
+
+    const type = record.is_three_rolls
+      ? '3 Rolls'
+      : record.is_five_rolls
+        ? '5 Rolls'
+        : 'Other';
+
+    const dealer = record.dealer_name || '-';
+
+    return `
+      <tr>
+        <td>${escapeHTML(type)}</td>
+        <td class="bigwin-multiplier">
+          ${escapeHTML(formatBigWinMultiplier(record.big_win_multiplier))}
+        </td>
+        <td>${escapeHTML(dealer)}</td>
+        <td>${escapeHTML(formatDate(record.settled_at))}</td>
+      </tr>
+    `;
+
+  }).join('');
+
+}
+
+
+function renderBigWinHourly(hours) {
+
+  const container = document.getElementById('bigWinHourly');
+
+  if (!Array.isArray(hours) || !hours.length) {
+
+    container.innerHTML = `
+      <div class="bigwin-empty">
+        No hourly Big Win records yet.
+      </div>
+    `;
+
+    return;
+
+  }
+
+  container.innerHTML = hours.map(item => {
+
+    return `
+      <div class="bigwin-hour-item">
+        <span class="bigwin-hour-label">
+          ${escapeHTML(formatBigWinHour(item.hour))}
+        </span>
+        <span class="bigwin-hour-value">
+          ${Number(item.total_big_wins || 0)} wins
+          <br>
+          Max ${escapeHTML(formatBigWinMultiplier(item.highest_multiplier))}
+        </span>
+      </div>
+    `;
+
+  }).join('');
+
+}
+
+
+async function loadBigWins() {
+
+  try {
+
+    const response = await fetch('/api/bigwins?limit=100', {
+      cache: 'no-store'
+    });
+
+    if (!response.ok) {
+      throw new Error('Big Win request failed: ' + response.status);
+    }
+
+    const data = await response.json();
+
+    if (!data.success) {
+      throw new Error(data.error || 'Big Win API returned an error.');
+    }
+
+    const summary = data.summary || {};
+
+    document.getElementById('bigWinTotal').textContent =
+      Number(summary.totalBigWins || 0).toLocaleString();
+
+    document.getElementById('bigWinHighest').textContent =
+      formatBigWinMultiplier(summary.highestMultiplier);
+
+    document.getElementById('bigWinThree').textContent =
+      Number(summary.threeRollsBigWins || 0).toLocaleString();
+
+    document.getElementById('bigWinFive').textContent =
+      Number(summary.fiveRollsBigWins || 0).toLocaleString();
+
+    document.getElementById('bigWinAverage').textContent =
+      formatBigWinMultiplier(summary.averageMultiplier);
+
+    document.getElementById('bigWinUpdated').textContent =
+      data.lastUpdated
+        ? new Date(data.lastUpdated).toLocaleTimeString('en-PH', {
+            hour: 'numeric',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: true,
+            timeZone: 'Asia/Manila'
+          })
+        : 'Waiting...';
+
+    renderBigWinRecent(data.recent);
+    renderBigWinHourly(data.hourly);
+
+    document.getElementById('bigWinStatus').textContent =
+      '● Connected | Monitoring official recorded multipliers of 100x or higher';
+
+  } catch (error) {
+
+    console.error('Big Win Monitor Error:', error);
+
+    document.getElementById('bigWinStatus').textContent =
+      'Unable to load Big Win data. Check /api/bigwins.';
+
+  }
+
+}
+
+
 // LOAD RECORDS
 
 async function loadRecords() {
@@ -2313,6 +2739,7 @@ async function loadRecords() {
     loadAnalysis();
     loadIntelligence();
     loadPerformance();
+    loadBigWins();
 
   } catch (error) {
 
@@ -2387,6 +2814,15 @@ setInterval(() => {
   loadAnalysis();
   loadIntelligence();
   loadPerformance();
+
+}, 60000);
+
+
+// BIG WIN MONITOR REFRESH EVERY 60 SECONDS
+
+setInterval(() => {
+
+  loadBigWins();
 
 }, 60000);
 
