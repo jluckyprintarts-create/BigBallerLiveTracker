@@ -1353,6 +1353,30 @@ function buildBonusForecast(timestampValues) {
 
 }
 
+
+async function saveHistoricalForecasts(results) {
+
+  // Existing code mo rito
+
+}
+
+// DITO ILALAGAY ANG BAGONG FUNCTION
+async function saveLiveForecastSnapshot(gameType, forecast) {
+
+  // New code na ibinigay ko
+
+}
+
+// EXISTING FUNCTION — HUWAG GALAWIN
+async function runHistoricalForecastEvaluation() {
+
+  // Existing code mo rito
+
+}
+
+
+
+
 // ----------------------------------
 // HISTORICAL FORECAST EVALUATION
 // ----------------------------------
