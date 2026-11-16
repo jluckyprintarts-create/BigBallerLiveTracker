@@ -3540,5 +3540,270 @@ setInterval(() => {
 })();
 </script>
 
+<!-- DAILY TOTAL MULTIPLIER -->
+
+<style>
+  .daily-multiplier-section {
+    background: #111b2e;
+    border: 1px solid #b8860b;
+    border-radius: 9px;
+    padding: 10px;
+    margin-bottom: 18px;
+  }
+
+  .daily-multiplier-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 8px;
+  }
+
+  .daily-multiplier-title {
+    color: #ffd700;
+    font-size: 11px;
+    font-weight: bold;
+  }
+
+  .daily-multiplier-date {
+    color: #94a3b8;
+    font-size: 9px;
+  }
+
+  .daily-multiplier-total {
+    color: #ffd700;
+    font-size: 25px;
+    font-weight: bold;
+    margin: 5px 0;
+  }
+
+  .daily-multiplier-caption {
+    color: #94a3b8;
+    font-size: 9px;
+  }
+
+  .daily-history-title {
+    color: #cbd5e1;
+    font-size: 10px;
+    font-weight: bold;
+    margin-top: 12px;
+    margin-bottom: 7px;
+  }
+
+  .daily-history-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .daily-history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #172033;
+    border: 1px solid #263449;
+    border-radius: 6px;
+    padding: 7px 9px;
+    font-size: 10px;
+  }
+
+  .daily-history-item span:first-child {
+    color: #94a3b8;
+  }
+
+  .daily-history-item span:last-child {
+    color: #4ade80;
+    font-weight: bold;
+  }
+</style>
+
+<script>
+(function () {
+
+  'use strict';
+
+  const mainTab = document.getElementById('mainTab');
+  const container = mainTab || document.querySelector('.container');
+
+  if (!container) return;
+
+  const section = document.createElement('div');
+
+  section.className = 'daily-multiplier-section';
+
+  section.innerHTML = `
+    <div class="daily-multiplier-header">
+      <div class="daily-multiplier-title">
+        📊 DAILY TOTAL MULTIPLIER
+      </div>
+      <div class="daily-multiplier-date" id="dailyMultiplierDate">
+        Loading...
+      </div>
+    </div>
+
+    <div class="daily-multiplier-total" id="dailyMultiplierTotal">
+      0x
+    </div>
+
+    <div class="daily-multiplier-caption">
+      Total of recorded game multipliers today
+    </div>
+
+    <div class="daily-history-title">
+      📅 DAILY MULTIPLIER HISTORY
+    </div>
+
+    <div class="daily-history-list" id="dailyMultiplierHistory">
+      <div class="daily-multiplier-caption">
+        Loading history...
+      </div>
+    </div>
+  `;
+
+  // Ilagay sa MAIN DASHBOARD
+  container.prepend(section);
+
+  function getDailyKey(date) {
+
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Manila',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    }).formatToParts(date);
+
+    const values = {};
+
+    parts.forEach(part => {
+      values[part.type] = part.value;
+    });
+
+    return `${values.year}-${values.month}-${values.day}`;
+  }
+
+  function formatDailyDate(key) {
+
+    const date = new Date(key + 'T12:00:00+08:00');
+
+    return date.toLocaleDateString('en-PH', {
+      month: 'short',
+      day: 'numeric',
+      timeZone: 'Asia/Manila'
+    });
+
+  }
+
+  function formatTotal(value) {
+
+    return Number(value).toLocaleString('en-US', {
+      maximumFractionDigits: 2
+    }) + 'x';
+
+  }
+
+  async function loadDailyMultiplier() {
+
+    try {
+
+      const response = await fetch(
+        '/api/history?type=all&limit=5000',
+        { cache: 'no-store' }
+      );
+
+      if (!response.ok) {
+        throw new Error('Daily multiplier request failed');
+      }
+
+      const data = await response.json();
+
+      const records = Array.isArray(data.records)
+        ? data.records
+        : [];
+
+      const dailyTotals = {};
+
+      records.forEach(record => {
+
+        if (!record.settled_at) return;
+
+        const date = new Date(record.settled_at);
+
+        if (isNaN(date.getTime())) return;
+
+        const key = getDailyKey(date);
+
+        const multiplierText = getMultiplier(record);
+
+        const multiplier = Number(
+          String(multiplierText).replace(/x$/i, '')
+        );
+
+        if (!Number.isFinite(multiplier) || multiplier < 0) {
+          return;
+        }
+
+        dailyTotals[key] = (dailyTotals[key] || 0) + multiplier;
+
+      });
+
+      const today = getDailyKey(new Date());
+
+      document.getElementById('dailyMultiplierDate').textContent =
+        formatDailyDate(today);
+
+      document.getElementById('dailyMultiplierTotal').textContent =
+        formatTotal(dailyTotals[today] || 0);
+
+      // LAST 7 DAYS HISTORY
+
+      const history = [];
+
+      for (let i = 0; i < 7; i++) {
+
+        const date = new Date();
+
+        date.setDate(date.getDate() - i);
+
+        const key = getDailyKey(date);
+
+        history.push({
+          date: key,
+          total: dailyTotals[key] || 0
+        });
+
+      }
+
+      document.getElementById('dailyMultiplierHistory').innerHTML =
+        history.map(item => `
+          <div class="daily-history-item">
+            <span>${formatDailyDate(item.date)}</span>
+            <span>${formatTotal(item.total)}</span>
+          </div>
+        `).join('');
+
+    } catch (error) {
+
+      console.error('Daily Multiplier Error:', error);
+
+      document.getElementById('dailyMultiplierTotal').textContent =
+        'Unavailable';
+
+      document.getElementById('dailyMultiplierHistory').innerHTML =
+        '<div class="daily-multiplier-caption">Unable to load history.</div>';
+
+    }
+
+  }
+
+  // INITIAL LOAD
+  loadDailyMultiplier();
+
+  // AUTO REFRESH EVERY 60 SECONDS
+  setInterval(loadDailyMultiplier, 60000);
+
+})();
+</script>
+
+  
 </body>
 </html>
