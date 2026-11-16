@@ -432,9 +432,9 @@ function normalizeEvent(raw) {
     adjustment = 4;
   }
 
-  const adjustedAt = new Date(
-    settledAt.getTime() - adjustment * 60000
-  );
+  // PRESERVE OFFICIAL SETTLED TIMESTAMP
+
+const adjustedAt = new Date(settledAt);
 
 
   // HOST / DEALER NAME
