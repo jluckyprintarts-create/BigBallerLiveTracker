@@ -1476,9 +1476,8 @@ function evaluateHistoricalForecasts(
       error_minutes: roundNumber(absoluteError),
 
       signed_error_minutes: roundNumber(
-        forecastTimestamp.getTime() -
-        actualTimestamp.getTime()
-      ) / 60000,
+  (actualTimestamp.getTime() - forecastTimestamp.getTime()) / 60000
+),
 
       central_hit: centralHit,
 
@@ -1497,6 +1496,87 @@ function evaluateHistoricalForecasts(
   return results;
 
 }
+
+
+// ----------------------------------
+// SAVE HISTORICAL FORECAST EVALUATIONS
+// ----------------------------------
+
+async function saveHistoricalForecasts(results) {
+
+  if (!Array.isArray(results) || results.length === 0) {
+    return 0;
+  }
+
+  let saved = 0;
+
+  for (const item of results) {
+
+    await pool.query(
+      `
+      INSERT INTO forecast_evaluations (
+        game_type,
+        source,
+        forecast_origin_at,
+        forecast_at,
+        window_start,
+        window_end,
+        actual_bonus_at,
+        error_minutes,
+        signed_error_minutes,
+        central_hit,
+        candidate_hit,
+        status,
+        evaluated_at
+      )
+      VALUES (
+        $1, 'backtest', $2, $3, $4, $5,
+        $6, $7, $8, $9, $10, $11, NOW()
+      )
+      ON CONFLICT (
+        game_type,
+        source,
+        forecast_origin_at
+      )
+      DO UPDATE SET
+        forecast_at = EXCLUDED.forecast_at,
+        window_start = EXCLUDED.window_start,
+        window_end = EXCLUDED.window_end,
+        actual_bonus_at = EXCLUDED.actual_bonus_at,
+        error_minutes = EXCLUDED.error_minutes,
+        signed_error_minutes = EXCLUDED.signed_error_minutes,
+        central_hit = EXCLUDED.central_hit,
+        candidate_hit = EXCLUDED.candidate_hit,
+        status = EXCLUDED.status,
+        evaluated_at = NOW()
+      `,
+      [
+        item.game_type,
+        item.forecast_origin_at,
+        item.forecast_at,
+        item.window_start,
+        item.window_end,
+        item.actual_bonus_at,
+        item.error_minutes,
+        item.signed_error_minutes,
+        item.central_hit,
+        item.candidate_hit,
+        item.status
+      ]
+    );
+
+    saved++;
+  }
+
+  console.log(
+    `Historical forecasts saved: ${saved}`
+  );
+
+  return saved;
+}
+
+
+
 // ----------------------------------
 // RUN BONUS INTELLIGENCE ANALYSIS
 // ----------------------------------
