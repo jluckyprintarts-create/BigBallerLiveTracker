@@ -690,29 +690,19 @@
     }
 
     .performance-table th:nth-child(1),
-    .performance-table td:nth-child(1) {
-      width: 15%;
-    }
+    .performance-table td:nth-child(1) { width: 15%; }
 
     .performance-table th:nth-child(2),
-    .performance-table td:nth-child(2) {
-      width: 23%;
-    }
+    .performance-table td:nth-child(2) { width: 23%; }
 
     .performance-table th:nth-child(3),
-    .performance-table td:nth-child(3) {
-      width: 23%;
-    }
+    .performance-table td:nth-child(3) { width: 23%; }
 
     .performance-table th:nth-child(4),
-    .performance-table td:nth-child(4) {
-      width: 15%;
-    }
+    .performance-table td:nth-child(4) { width: 15%; }
 
     .performance-table th:nth-child(5),
-    .performance-table td:nth-child(5) {
-      width: 24%;
-    }
+    .performance-table td:nth-child(5) { width: 24%; }
 
     .performance-good {
       color: #22c55e;
@@ -762,17 +752,9 @@
       min-width: 0;
     }
 
-    .bigwin-card.primary {
-      border-top: 3px solid #eab308;
-    }
-
-    .bigwin-card.three {
-      border-left: 3px solid #3b82f6;
-    }
-
-    .bigwin-card.five {
-      border-left: 3px solid #a78bfa;
-    }
+    .bigwin-card.primary { border-top: 3px solid #eab308; }
+    .bigwin-card.three { border-left: 3px solid #3b82f6; }
+    .bigwin-card.five { border-left: 3px solid #a78bfa; }
 
     .bigwin-label {
       color: #94a3b8;
@@ -852,9 +834,7 @@
       font-size: 9px;
     }
 
-    .bigwin-hour-label {
-      color: #94a3b8;
-    }
+    .bigwin-hour-label { color: #94a3b8; }
 
     .bigwin-hour-value {
       color: #facc15;
@@ -877,13 +857,114 @@
       padding: 15px 5px;
     }
 
+    /* NEW: HISTORICAL BIG WIN HIGHLIGHT */
+
+    .bigwin-record-row {
+      background: rgba(34, 197, 94, 0.09);
+    }
+
+    .bigwin-record-badge {
+      display: inline-block;
+      padding: 4px 5px;
+      border-radius: 5px;
+      font-size: 9px;
+      font-weight: bold;
+      color: #bbf7d0;
+      background: #166534;
+      border: 1px solid #22c55e;
+    }
+
+    .bigwin-record-multiplier {
+      color: #4ade80 !important;
+      font-weight: bold;
+    }
+
+    /* NEW: BIG WIN INTELLIGENCE DASHBOARD */
+
+    .bigwin-intel-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 9px;
+    }
+
+    .bigwin-intel-card {
+      background: #172033;
+      border: 1px solid #334155;
+      border-radius: 9px;
+      padding: 11px;
+      min-width: 0;
+    }
+
+    .bigwin-intel-label {
+      color: #94a3b8;
+      font-size: 9px;
+      line-height: 1.5;
+    }
+
+    .bigwin-intel-value {
+      color: #4ade80;
+      font-size: 20px;
+      font-weight: bold;
+      margin-top: 6px;
+      overflow-wrap: anywhere;
+    }
+
+    .bigwin-intel-sub {
+      color: #94a3b8;
+      font-size: 9px;
+      margin-top: 5px;
+      line-height: 1.5;
+    }
+
+    .bigwin-intel-wide {
+      grid-column: 1 / -1;
+    }
+
+    .bigwin-day-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 7px;
+      margin-top: 9px;
+    }
+
+    .bigwin-day-item {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 7px;
+      padding: 8px;
+      font-size: 9px;
+      display: flex;
+      justify-content: space-between;
+      gap: 5px;
+    }
+
+    .bigwin-day-item span:first-child { color: #cbd5e1; }
+
+    .bigwin-day-item span:last-child {
+      color: #4ade80;
+      font-weight: bold;
+    }
+
+    .bigwin-intel-note {
+      color: #94a3b8;
+      font-size: 9px;
+      line-height: 1.6;
+      text-align: center;
+      margin-top: 12px;
+    }
+
     @media (max-width: 350px) {
       .bonus-monitor,
       .analysis-grid,
       .intelligence-grid,
       .performance-grid,
-      .bigwin-grid {
+      .bigwin-grid,
+      .bigwin-intel-grid {
         grid-template-columns: 1fr;
+      }
+
+      .bigwin-intel-wide {
+        grid-column: auto;
       }
 
       .performance-table th,
@@ -939,9 +1020,7 @@
       <div class="subtitle">LIVE RESULTS TRACKER</div>
     </div>
 
-    <button class="refresh-btn" onclick="loadRecords()">
-      ↻ Refresh
-    </button>
+    <button class="refresh-btn" onclick="loadRecords()">↻ Refresh</button>
   </header>
 
   <!-- OFFICIAL LIVE STREAM -->
@@ -968,20 +1047,11 @@
 
       <div style="font-size:48px;margin-bottom:12px">🎥</div>
 
-      <div style="
-        color:#facc15;
-        font-size:15px;
-        font-weight:bold;
-        margin-bottom:8px;
-      ">
+      <div style="color:#facc15;font-size:15px;font-weight:bold;margin-bottom:8px">
         MONOPOLY BIG BALLER
       </div>
 
-      <div style="
-        color:#94a3b8;
-        font-size:11px;
-        line-height:1.6;
-      ">
+      <div style="color:#94a3b8;font-size:11px;line-height:1.6">
         Watch the official live game stream.
         <br>
         Tap the button below to open the live broadcast.
@@ -1025,7 +1095,7 @@
 
   </div>
 
-  <!-- BIG WIN MONITOR ADD-ON -->
+  <!-- BIG WIN MONITOR -->
 
   <div class="section">
 
@@ -1091,7 +1161,6 @@
             <th>SETTLED TIME</th>
           </tr>
         </thead>
-
         <tbody id="bigWinRecent">
           <tr>
             <td colspan="4" class="bigwin-empty">Loading Big Win history...</td>
@@ -1112,6 +1181,91 @@
 
     <div class="performance-note">
       Historical Big Wins do not predict or guarantee future bonus results.
+    </div>
+
+  </div>
+
+  <!-- NEW BIG WIN INTELLIGENCE DASHBOARD -->
+
+  <div class="section">
+
+    <div class="section-header">
+      <h2>🧠 BIG WIN INTELLIGENCE DASHBOARD</h2>
+      <span class="bigwin-header-status">● HISTORICAL ANALYSIS</span>
+    </div>
+
+    <div class="bigwin-intro">
+      Statistical analysis of recorded 100x+ Big Wins.
+      Uses historical records only and does not predict random game outcomes.
+    </div>
+
+    <div class="bigwin-intel-grid">
+
+      <div class="bigwin-intel-card">
+        <div class="bigwin-intel-label">📅 BIG WINS - LAST 7 DAYS</div>
+        <div class="bigwin-intel-value" id="bw7Total">-</div>
+        <div class="bigwin-intel-sub" id="bw7Coverage">Waiting for data...</div>
+      </div>
+
+      <div class="bigwin-intel-card">
+        <div class="bigwin-intel-label">⏱️ TIME SINCE LAST BIG WIN</div>
+        <div class="bigwin-intel-value" id="bwElapsed">-</div>
+        <div class="bigwin-intel-sub">Based on latest recorded Big Win</div>
+      </div>
+
+      <div class="bigwin-intel-card">
+        <div class="bigwin-intel-label">📊 AVERAGE INTERVAL</div>
+        <div class="bigwin-intel-value" id="bwAverageInterval">-</div>
+        <div class="bigwin-intel-sub">Time between recorded Big Wins</div>
+      </div>
+
+      <div class="bigwin-intel-card">
+        <div class="bigwin-intel-label">📍 MEDIAN INTERVAL</div>
+        <div class="bigwin-intel-value" id="bwMedianInterval">-</div>
+        <div class="bigwin-intel-sub">Historical middle interval</div>
+      </div>
+
+      <div class="bigwin-intel-card">
+        <div class="bigwin-intel-label">🎲 THREE ROLLS - 7 DAYS</div>
+        <div class="bigwin-intel-value" id="bw7Three">-</div>
+        <div class="bigwin-intel-sub">Recorded Three Rolls Big Wins</div>
+      </div>
+
+      <div class="bigwin-intel-card">
+        <div class="bigwin-intel-label">🎲 FIVE ROLLS - 7 DAYS</div>
+        <div class="bigwin-intel-value" id="bw7Five">-</div>
+        <div class="bigwin-intel-sub">Recorded Five Rolls Big Wins</div>
+      </div>
+
+      <div class="bigwin-intel-card bigwin-intel-wide">
+        <div class="bigwin-intel-label">🕒 HISTORICAL INTERVAL REFERENCE</div>
+        <div class="bigwin-intel-value" id="bwNextReference">-</div>
+        <div class="bigwin-intel-sub" id="bwReferenceNote">
+          Requires at least two recorded Big Wins.
+        </div>
+      </div>
+
+      <div class="bigwin-intel-card bigwin-intel-wide">
+        <div class="bigwin-intel-label">🔥 BIG WIN FREQUENCY BY DAY - LAST 7 DAYS</div>
+        <div class="bigwin-day-list" id="bw7Days">
+          <div class="bigwin-empty">Waiting for data...</div>
+        </div>
+      </div>
+
+      <div class="bigwin-intel-card bigwin-intel-wide">
+        <div class="bigwin-intel-label">📈 HISTORICAL DATA SAMPLE</div>
+        <div class="bigwin-intel-value" id="bwSample">-</div>
+        <div class="bigwin-intel-sub" id="bwSampleNote">
+          Sample size describes available historical data, not winning probability.
+        </div>
+      </div>
+
+    </div>
+
+    <div class="bigwin-intel-note">
+      All statistics are calculated from returned Big Win records.
+      Historical intervals are references only, not predictions.
+      Past results do not affect future game outcomes.
     </div>
 
   </div>
@@ -1756,15 +1910,34 @@ function renderRecords() {
     const event = getEventType(record);
     const host = record.dealer_name || record.host_name || '-';
 
+    const multiplierText = getMultiplier(record);
+
+    const numericMultiplier = Number(
+      String(multiplierText).replace(/x$/i, '')
+    );
+
+    const isBigWin = numericMultiplier >= 100 &&
+      (record.is_three_rolls || record.is_five_rolls);
+
+    const bigWinLabel = record.is_three_rolls
+      ? 'BIG WIN 3 ROLLS'
+      : 'BIG WIN 5 ROLLS';
+
     return `
-      <tr>
+      <tr class="${isBigWin ? 'bigwin-record-row' : ''}">
         <td>
-          <span class="type-badge ${event.badge}">
-            ${escapeHTML(event.label)}
-          </span>
+          ${
+            isBigWin
+              ? `<span class="bigwin-record-badge">${bigWinLabel}</span>`
+              : `<span class="type-badge ${event.badge}">
+                  ${escapeHTML(event.label)}
+                </span>`
+          }
         </td>
         <td>${escapeHTML(host)}</td>
-        <td class="multiplier">${escapeHTML(getMultiplier(record))}</td>
+        <td class="${isBigWin ? 'bigwin-record-multiplier' : 'multiplier'}">
+          ${escapeHTML(multiplierText)}
+        </td>
         <td>${escapeHTML(formatDate(record.settled_at))}</td>
         <td>${escapeHTML(formatDate(record.adjusted_at))}</td>
       </tr>
@@ -2526,6 +2699,233 @@ async function loadPerformance() {
 }
 
 
+// NEW: BIG WIN INTELLIGENCE DASHBOARD
+
+function formatBigWinDuration(milliseconds) {
+
+  if (!Number.isFinite(milliseconds) || milliseconds < 0) {
+    return '-';
+  }
+
+  const totalMinutes = Math.floor(milliseconds / 60000);
+  const days = Math.floor(totalMinutes / 1440);
+  const hours = Math.floor((totalMinutes % 1440) / 60);
+  const minutes = totalMinutes % 60;
+
+  if (days > 0) return `${days}d ${hours}h`;
+  if (hours > 0) return `${hours}h ${minutes}m`;
+
+  return `${minutes}m`;
+
+}
+
+
+function getManilaDateKey(date) {
+
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Manila',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).formatToParts(date);
+
+  const values = {};
+
+  parts.forEach(part => {
+    values[part.type] = part.value;
+  });
+
+  return `${values.year}-${values.month}-${values.day}`;
+
+}
+
+
+function updateBigWinIntelligence(records) {
+
+  const now = Date.now();
+  const sevenDaysAgo = now - (7 * 24 * 60 * 60 * 1000);
+
+  const validRecords = (Array.isArray(records) ? records : [])
+    .map(record => ({
+      ...record,
+      timestamp: new Date(record.settled_at).getTime(),
+      multiplier: Number(record.big_win_multiplier)
+    }))
+    .filter(record =>
+      Number.isFinite(record.timestamp) &&
+      Number.isFinite(record.multiplier) &&
+      record.multiplier >= 100
+    )
+    .sort((a, b) => b.timestamp - a.timestamp);
+
+  const lastSevenDays = validRecords.filter(record =>
+    record.timestamp >= sevenDaysAgo && record.timestamp <= now
+  );
+
+  const threeCount = lastSevenDays.filter(
+    record => record.is_three_rolls
+  ).length;
+
+  const fiveCount = lastSevenDays.filter(
+    record => record.is_five_rolls
+  ).length;
+
+  document.getElementById('bw7Total').textContent =
+    lastSevenDays.length.toLocaleString();
+
+  document.getElementById('bw7Three').textContent =
+    threeCount.toLocaleString();
+
+  document.getElementById('bw7Five').textContent =
+    fiveCount.toLocaleString();
+
+  const oldest = validRecords.length
+    ? validRecords[validRecords.length - 1].timestamp
+    : null;
+
+  const coverageText = !oldest
+    ? 'No historical records available'
+    : oldest <= sevenDaysAgo
+      ? 'Returned history reaches beyond the 7-day window'
+      : 'Available history only; full 7-day coverage is not confirmed';
+
+  document.getElementById('bw7Coverage').textContent = coverageText;
+
+  // DAILY COUNTS
+
+  const dailyCounts = {};
+
+  for (let i = 6; i >= 0; i--) {
+
+    const date = new Date(now - (i * 86400000));
+    const key = getManilaDateKey(date);
+
+    dailyCounts[key] = 0;
+
+  }
+
+  lastSevenDays.forEach(record => {
+
+    const key = getManilaDateKey(new Date(record.timestamp));
+
+    if (dailyCounts[key] !== undefined) {
+      dailyCounts[key]++;
+    }
+
+  });
+
+  document.getElementById('bw7Days').innerHTML =
+    Object.entries(dailyCounts).map(([date, count]) => {
+
+      const displayDate = new Date(date + 'T12:00:00');
+
+      const label = displayDate.toLocaleDateString('en-PH', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        timeZone: 'Asia/Manila'
+      });
+
+      return `
+        <div class="bigwin-day-item">
+          <span>${escapeHTML(label)}</span>
+          <span>${count} wins</span>
+        </div>
+      `;
+
+    }).join('');
+
+  // LAST BIG WIN ELAPSED TIME
+
+  const latest = validRecords[0];
+
+  document.getElementById('bwElapsed').textContent =
+    latest
+      ? formatBigWinDuration(now - latest.timestamp)
+      : '-';
+
+  // INTERVAL CALCULATIONS
+
+  const intervals = [];
+
+  for (let i = 0; i < validRecords.length - 1; i++) {
+
+    const difference =
+      validRecords[i].timestamp - validRecords[i + 1].timestamp;
+
+    if (difference > 0) {
+      intervals.push(difference);
+    }
+
+  }
+
+  let average = null;
+  let median = null;
+
+  if (intervals.length) {
+
+    average = intervals.reduce((sum, value) => sum + value, 0) /
+      intervals.length;
+
+    const sorted = [...intervals].sort((a, b) => a - b);
+    const middle = Math.floor(sorted.length / 2);
+
+    median = sorted.length % 2
+      ? sorted[middle]
+      : (sorted[middle - 1] + sorted[middle]) / 2;
+
+  }
+
+  document.getElementById('bwAverageInterval').textContent =
+    average !== null ? formatBigWinDuration(average) : 'Not enough data';
+
+  document.getElementById('bwMedianInterval').textContent =
+    median !== null ? formatBigWinDuration(median) : 'Not enough data';
+
+  // HISTORICAL INTERVAL REFERENCE
+
+  if (latest && median !== null) {
+
+    const referenceDate = new Date(latest.timestamp + median);
+
+    document.getElementById('bwNextReference').textContent =
+      referenceDate.toLocaleString('en-PH', {
+        month: 'short',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+        timeZone: 'Asia/Manila'
+      });
+
+    document.getElementById('bwReferenceNote').textContent =
+      'Latest Big Win + historical median interval. Reference only, not a prediction.';
+
+  } else {
+
+    document.getElementById('bwNextReference').textContent =
+      'Not enough data';
+
+    document.getElementById('bwReferenceNote').textContent =
+      'At least two recorded Big Wins are needed to calculate a historical interval reference.';
+
+  }
+
+  // DATA SAMPLE
+
+  document.getElementById('bwSample').textContent =
+    `${validRecords.length} records`;
+
+  document.getElementById('bwSampleNote').textContent =
+    validRecords.length < 5
+      ? 'Limited sample. More historical records are needed for meaningful interval analysis.'
+      : validRecords.length < 20
+        ? 'Moderate historical sample. Estimates may vary considerably.'
+        : 'Larger historical sample available. This still does not indicate winning probability.';
+
+}
+
+
 // BIG WIN MONITOR ADD-ON
 
 function formatBigWinMultiplier(value) {
@@ -2645,7 +3045,7 @@ async function loadBigWins() {
 
   try {
 
-    const response = await fetch('/api/bigwins?limit=100', {
+    const response = await fetch('/api/bigwins?limit=1000', {
       cache: 'no-store'
     });
 
@@ -2689,6 +3089,10 @@ async function loadBigWins() {
 
     renderBigWinRecent(data.recent);
     renderBigWinHourly(data.hourly);
+
+    // NEW: UPDATE BIG WIN INTELLIGENCE
+
+    updateBigWinIntelligence(data.recent);
 
     document.getElementById('bigWinStatus').textContent =
       '● Connected | Monitoring official recorded multipliers of 100x or higher';
