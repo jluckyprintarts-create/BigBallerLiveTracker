@@ -568,7 +568,21 @@ async function saveEvent(event) {
 
   );
 
-  return Boolean(result.rows[0].inserted);
+    return Boolean(result.rows[0].inserted);
+
+  } catch (error) {
+
+    console.error('SAVE EVENT ERROR:', {
+      message: error.message,
+      code: error.code,
+      detail: error.detail,
+      eventId: event.eventId,
+      rawType: typeof event.raw
+    });
+
+    throw error;
+
+  }
 
 }
 // ----------------------------------
