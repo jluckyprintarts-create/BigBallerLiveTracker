@@ -813,10 +813,21 @@ async function pollUpstream() {
     const payload = await response.json();
 const rows = extractRows(payload);
 
-console.log(
-  'UPSTREAM SAMPLE:',
-  JSON.stringify(rows[0] || null, null, 2)
-);
+if (rows.length > 0) {
+  const sample = rows[0];
+  const data = sample?.data || {};
+  const result = data?.result || sample?.result || {};
+
+  console.log('BIG WIN FIELD CHECK:', {
+    topLevelKeys: Object.keys(sample || {}),
+    dataKeys: Object.keys(data),
+    resultKeys: Object.keys(result),
+    isBigWin: result.isBigWin ?? data.isBigWin ?? sample.isBigWin ?? null,
+    bigWin: result.bigWin ?? data.bigWin ?? sample.bigWin ?? null,
+    threeRollsTotalMultiplier: result.threeRollsTotalMultiplier ?? null,
+    fiveRollsTotalMultiplier: result.fiveRollsTotalMultiplier ?? null
+  });
+}
 
     lastFetchedCount = rows.length;
 
