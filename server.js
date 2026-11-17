@@ -425,7 +425,16 @@ function normalizeEvent(raw) {
     );
 
   }
-
+console.log('BONUS MULTIPLIER DEBUG:', JSON.stringify({
+  eventId,
+  isThreeRolls,
+  isFiveRolls,
+  bigWinMultiplier,
+  multiplierType: typeof bigWinMultiplier,
+  bonusRounds: result.bonusRounds,
+  threeRollsTotalMultiplier: result.threeRollsTotalMultiplier,
+  fiveRollsTotalMultiplier: result.fiveRollsTotalMultiplier
+}));
   // BIG WIN RULE: 100x AND ABOVE
 const isBigWin =
   typeof bigWinMultiplier === 'number' &&
