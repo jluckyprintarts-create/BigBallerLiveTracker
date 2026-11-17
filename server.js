@@ -2711,46 +2711,29 @@ app.get('/api/history', async (req, res) => {
 // ----------------------------------
 
 app.get('/api/stats', async (req, res) => {
-
+app.get('/api/stats', async (req, res) => {
   try {
 
+    // Check records with 100x or higher multiplier
     const bigWinCheck = await pool.query(`
-  SELECT
-    event_id,
-    settled_at,
-    is_three_rolls,
-    is_five_rolls,
-    big_win_multiplier,
-    is_big_win
-  FROM game_history
-  WHERE big_win_multiplier >= 100
-  ORDER BY settled_at DESC
-`);
-
-console.log(
-  'BIG WIN RECORD DETAILS:',
-  JSON.stringify(bigWinCheck.rows)
-);
       SELECT
-        COUNT(*)::int AS total_records,
-        COUNT(*) FILTER (
-          WHERE big_win_multiplier >= 100
-        )::int AS records_100x_or_higher,
-        COUNT(*) FILTER (
-          WHERE is_big_win = TRUE
-        )::int AS marked_big_wins,
-        COUNT(*) FILTER (
-          WHERE big_win_multiplier >= 100
-            AND is_big_win = FALSE
-        )::int AS unmarked_big_wins
+        event_id,
+        settled_at,
+        is_three_rolls,
+        is_five_rolls,
+        big_win_multiplier,
+        is_big_win
       FROM game_history
+      WHERE big_win_multiplier >= 100
+      ORDER BY settled_at DESC
     `);
 
     console.log(
-      'BIG WIN DATABASE CHECK:',
-      JSON.stringify(bigWinCheck.rows[0])
+      'BIG WIN RECORD DETAILS:',
+      JSON.stringify(bigWinCheck.rows)
     );
 
+    // Overall statistics
     const totals = await pool.query(`
       SELECT
         COUNT(*)::int AS total_records,
@@ -2766,6 +2749,7 @@ console.log(
       FROM game_history
     `);
 
+    // Hourly statistics in Philippine time
     const hourly = await pool.query(`
       SELECT
         EXTRACT(
@@ -2789,18 +2773,16 @@ console.log(
     res.json({
       totals: totals.rows[0],
       hourlyAsiaManila: hourly.rows,
-      note:
-        'Historical records do not predict future random outcomes.'
+      note: 'Historical records do not predict future random outcomes.'
     });
 
   } catch (error) {
+    console.error('STATS API ERROR:', error);
 
     res.status(500).json({
       error: error.message
     });
-
   }
-
 });
         
 
