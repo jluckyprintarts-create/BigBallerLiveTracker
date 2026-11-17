@@ -426,8 +426,11 @@ function normalizeEvent(raw) {
 
   }
 
-  // BIG WIN DISABLED
-  const isBigWin = false;
+  // BIG WIN RULE: 100x AND ABOVE
+const isBigWin =
+  typeof bigWinMultiplier === 'number' &&
+  Number.isFinite(bigWinMultiplier) &&
+  bigWinMultiplier >= 100;
 
   // TIME ADJUSTMENT
   let adjustment = 0;
