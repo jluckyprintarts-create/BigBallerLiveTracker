@@ -2713,117 +2713,80 @@ app.get('/api/history', async (req, res) => {
 app.get('/api/stats', async (req, res) => {
 
   try {
-const bigWinCheck = await pool.query(`
-  SELECT
-    COUNT(*)::int AS total_records,
-    COUNT(*) FILTER (
-      WHERE big_win_multiplier >= 100
-    )::int AS records_100x_or_higher,
-    COUNT(*) FILTER (
-      WHERE is_big_win = TRUE
-    )::int AS marked_big_wins,
-    COUNT(*) FILTER (
-      WHERE big_win_multiplier >= 100
-        AND is_big_win = FALSE
-    )::int AS unmarked_big_wins
-  FROM game_history
-`);
 
-console.log(
-  'BIG WIN DATABASE CHECK:',
-  JSON.stringify(bigWinCheck.rows[0])
-);
-    const totals = await pool.query(`
-
+    const bigWinCheck = await pool.query(`
       SELECT
-
         COUNT(*)::int AS total_records,
+        COUNT(*) FILTER (
+          WHERE big_win_multiplier >= 100
+        )::int AS records_100x_or_higher,
+        COUNT(*) FILTER (
+          WHERE is_big_win = TRUE
+        )::int AS marked_big_wins,
+        COUNT(*) FILTER (
+          WHERE big_win_multiplier >= 100
+            AND is_big_win = FALSE
+        )::int AS unmarked_big_wins
+      FROM game_history
+    `);
 
+    console.log(
+      'BIG WIN DATABASE CHECK:',
+      JSON.stringify(bigWinCheck.rows[0])
+    );
+
+    const totals = await pool.query(`
+      SELECT
+        COUNT(*)::int AS total_records,
         COUNT(*) FILTER (
           WHERE is_three_rolls
         )::int AS three_rolls,
-
         COUNT(*) FILTER (
           WHERE is_five_rolls
         )::int AS five_rolls,
-
         COUNT(*) FILTER (
           WHERE is_big_win
         )::int AS big_wins
-
       FROM game_history
-
     `);
-const bigWinCheck = await pool.query(`
-  SELECT
-    COUNT(*)::int AS total_records,
-    COUNT(*) FILTER (
-      WHERE big_win_multiplier >= 100
-    )::int AS records_100x_or_higher,
-    COUNT(*) FILTER (
-      WHERE is_big_win = TRUE
-    )::int AS marked_big_wins,
-    COUNT(*) FILTER (
-      WHERE big_win_multiplier >= 100
-        AND is_big_win = FALSE
-    )::int AS unmarked_big_wins
-  FROM game_history
-`);
 
-console.log('BIG WIN DATABASE CHECK:', bigWinCheck.rows[0]);
     const hourly = await pool.query(`
-
       SELECT
-
         EXTRACT(
           HOUR FROM settled_at AT TIME ZONE 'Asia/Manila'
         )::int AS hour,
-
         COUNT(*)::int AS total,
-
         COUNT(*) FILTER (
           WHERE is_three_rolls
         )::int AS three_rolls,
-
         COUNT(*) FILTER (
           WHERE is_five_rolls
         )::int AS five_rolls,
-
         COUNT(*) FILTER (
           WHERE is_big_win
         )::int AS big_wins
-
       FROM game_history
-
       GROUP BY hour
-
       ORDER BY hour
-
     `);
 
     res.json({
-
       totals: totals.rows[0],
-
       hourlyAsiaManila: hourly.rows,
-
       note:
         'Historical records do not predict future random outcomes.'
-
     });
 
   } catch (error) {
 
     res.status(500).json({
-
       error: error.message
-
     });
 
   }
 
 });
-
+        
 
 // ----------------------------------
 // FRONTEND
