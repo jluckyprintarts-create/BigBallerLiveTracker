@@ -2715,6 +2715,22 @@ app.get('/api/stats', async (req, res) => {
   try {
 
     const bigWinCheck = await pool.query(`
+  SELECT
+    event_id,
+    settled_at,
+    is_three_rolls,
+    is_five_rolls,
+    big_win_multiplier,
+    is_big_win
+  FROM game_history
+  WHERE big_win_multiplier >= 100
+  ORDER BY settled_at DESC
+`);
+
+console.log(
+  'BIG WIN RECORD DETAILS:',
+  JSON.stringify(bigWinCheck.rows)
+);
       SELECT
         COUNT(*)::int AS total_records,
         COUNT(*) FILTER (
