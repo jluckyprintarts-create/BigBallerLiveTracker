@@ -614,13 +614,19 @@ async function pollUpstream() {
 
     lastPollError = error.message;
 
-    console.error(
-      'MONITOR ERROR:',
-      lastPollError
-    );
+    console.error('MONITOR ERROR DETAILS:', {
+      message: error.message,
+      code: error.code || null,
+      detail: error.detail || null,
+      hint: error.hint || null,
+      where: error.where || null,
+      table: error.table || null,
+      column: error.column || null,
+      dataType: error.dataType || null,
+      constraint: error.constraint || null
+    });
 
   } finally {
-
     pollInProgress = false;
 
   }
