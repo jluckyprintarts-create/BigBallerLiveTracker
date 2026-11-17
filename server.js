@@ -815,6 +815,15 @@ const rows = extractRows(payload);
 
 if (rows.length > 0) {
   const sample = rows[0];
+
+  console.log(
+    'UPSTREAM RECORD STRUCTURE:',
+    JSON.stringify(sample, null, 2)
+  );
+}
+    
+if (rows.length > 0) {
+  const sample = rows[0];
   const data = sample?.data || {};
   const result = data?.result || sample?.result || {};
 
