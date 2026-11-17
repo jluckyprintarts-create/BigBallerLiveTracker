@@ -499,7 +499,33 @@ function normalizeEvent(raw) {
 
 }
 
+// ----------------------------------
+// SAFE JSON CLEANER
+// ----------------------------------
 
+function cleanJsonValue(value) {
+  if (typeof value === 'string') {
+    return value
+      .replace(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])/g, '\uFFFD')
+      .replace(/(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g, '\uFFFD');
+  }
+
+  if (Array.isArray(value)) {
+    return value.map(cleanJsonValue);
+  }
+
+  if (value && typeof value === 'object') {
+    const cleaned = {};
+
+    for (const [key, item] of Object.entries(value)) {
+      cleaned[key] = cleanJsonValue(item);
+    }
+
+    return cleaned;
+  }
+
+  return value;
+}
 // ----------------------------------
 // SAVE EVENT
 // ----------------------------------
