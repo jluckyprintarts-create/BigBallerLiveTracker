@@ -680,7 +680,15 @@ async function runHistoricalBackfill() {
 
       const payload = await response.json();
       const rows = extractRows(payload);
-
+console.log(
+  'BACKFILL DEBUG:',
+  JSON.stringify({
+    page,
+    count: rows.length,
+    firstEventId: rows[0]?.id ?? rows[0]?.data?.id ?? null,
+    firstDataId: rows[0]?.data?.id ?? null
+  })
+);
       pagesCompleted++;
 
       fetchedTotal += rows.length;
