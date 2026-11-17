@@ -815,6 +815,34 @@ const rows = extractRows(payload);
 
 if (rows.length > 0) {
   const sample = rows[0];
+  const matches = [];
+
+  function scanBigWinFields(obj, path = '') {
+    if (!obj || typeof obj !== 'object') return;
+
+    for (const [key, value] of Object.entries(obj)) {
+      const currentPath = path ? `${path}.${key}` : key;
+
+      if (/big.?win|jackpot/i.test(key)) {
+        matches.push({
+          path: currentPath,
+          value
+        });
+      }
+
+      if (value && typeof value === 'object') {
+        scanBigWinFields(value, currentPath);
+      }
+    }
+  }
+
+  scanBigWinFields(sample);
+
+  console.log(
+    'BIG WIN CLASSIFICATION SEARCH:',
+    JSON.stringify(matches, null, 2)
+  );
+}
 
   console.log(
     'UPSTREAM RECORD STRUCTURE:',
