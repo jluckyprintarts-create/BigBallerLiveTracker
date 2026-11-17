@@ -1949,7 +1949,160 @@ async function runBonusIntelligenceAnalysis() {
 
 }
 
+// ----------------------------------
+// AI PERFORMANCE MONITOR API
+// ----------------------------------
 
+app.get('/api/performance', async (req, res) => {
+
+  try {
+
+    const summary = await pool.query(`
+      SELECT
+        game_type,
+
+        COUNT(*) FILTER (
+          WHERE status <> 'pending'
+        )::int AS total_evaluated,
+
+        COUNT(*) FILTER (
+          WHERE status = 'pending'
+        )::int AS total_pending,
+
+        ROUND(
+          AVG(error_minutes) FILTER (
+            WHERE status <> 'pending'
+          ), 1
+        ) AS average_error_minutes,
+
+        ROUND(
+          AVG(signed_error_minutes) FILTER (
+            WHERE status <> 'pending'
+          ), 1
+        ) AS average_signed_error_minutes,
+
+        CASE
+          WHEN COUNT(*) FILTER (
+            WHERE status <> 'pending'
+          ) = 0 THEN NULL
+          ELSE ROUND(
+            100.0 * COUNT(*) FILTER (
+              WHERE status <> 'pending'
+              AND central_hit = TRUE
+            ) / COUNT(*) FILTER (
+              WHERE status <> 'pending'
+            ), 1
+          )
+        END AS central_hit_rate,
+
+        CASE
+          WHEN COUNT(*) FILTER (
+            WHERE status <> 'pending'
+          ) = 0 THEN NULL
+          ELSE ROUND(
+            100.0 * COUNT(*) FILTER (
+              WHERE status <> 'pending'
+              AND candidate_hit = TRUE
+            ) / COUNT(*) FILTER (
+              WHERE status <> 'pending'
+            ), 1
+          )
+        END AS candidate_hit_rate,
+
+        MAX(COALESCE(evaluated_at, created_at))
+          AS last_updated
+
+      FROM forecast_evaluations
+
+      WHERE source = 'live'
+
+      GROUP BY game_type
+    `);
+
+    const recent = await pool.query(`
+      SELECT
+        game_type,
+        forecast_at,
+        actual_bonus_at,
+        error_minutes,
+        signed_error_minutes,
+        central_hit,
+        candidate_hit,
+        status,
+        evaluated_at,
+        created_at
+
+      FROM forecast_evaluations
+
+      WHERE source = 'live'
+
+      ORDER BY created_at DESC
+
+      LIMIT 15
+    `);
+
+    const byType = new Map(
+      summary.rows.map(row => [row.game_type, row])
+    );
+
+    function performanceFor(gameType) {
+
+      const row = byType.get(gameType) || {};
+
+      return {
+        totalEvaluated: Number(row.total_evaluated || 0),
+        totalPending: Number(row.total_pending || 0),
+
+        averageErrorMinutes:
+          row.average_error_minutes == null
+            ? null
+            : Number(row.average_error_minutes),
+
+        averageSignedErrorMinutes:
+          row.average_signed_error_minutes == null
+            ? null
+            : Number(row.average_signed_error_minutes),
+
+        centralHitRate:
+          row.central_hit_rate == null
+            ? null
+            : Number(row.central_hit_rate),
+
+        candidateHitRate:
+          row.candidate_hit_rate == null
+            ? null
+            : Number(row.candidate_hit_rate)
+      };
+
+    }
+
+    const lastUpdated = summary.rows
+      .map(row => row.last_updated)
+      .filter(Boolean)
+      .sort((a, b) => new Date(b) - new Date(a))[0] || null;
+
+    res.json({
+      threeRolls: performanceFor('threeRolls'),
+      fiveRolls: performanceFor('fiveRolls'),
+      recent: recent.rows,
+      lastUpdated
+    });
+
+  } catch (error) {
+
+    console.error(
+      'PERFORMANCE API ERROR:',
+      error.message
+    );
+
+    res.status(500).json({
+      error: 'Unable to load performance data',
+      details: error.message
+    });
+
+  }
+
+});
 // ----------------------------------
 // ANALYSIS API
 // ----------------------------------
