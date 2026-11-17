@@ -1046,38 +1046,145 @@ async function runHistoricalBackfill() {
       'Historical backfill is running.'
     ) {
       backfillStatus.note =
-        `Backfill run completed. Next page: ${nextBackfillPage}.`;
+async function runHistoricalBackfill() {
+  if (backfillInProgress || pollInProgress) return;
+
+  backfillInProgress = true;
+
+  backfillStatus = {
+    ...backfillStatus,
+    running: true,
+    currentPage: 0,
+    pagesFetched: 0,
+    recordsFetched: 0,
+    recordsInserted: 0,
+    lastRunAt: new Date().toISOString(),
+    error: null,
+    note: 'Historical backfill is running.'
+  };
+
+  let insertedTotal = 0;
+  let fetchedTotal = 0;
+  let pagesCompleted = 0;
+  let page = nextBackfillPage;
+
+  try {
+    for (let count = 0; count < BACKFILL_MAX_PAGES; count++) {
+      backfillStatus.currentPage = page;
+
+      const pageUrl = new URL(UPSTREAM_URL);
+      pageUrl.searchParams.set('page', String(page));
+      pageUrl.searchParams.set('size', String(BACKFILL_PAGE_SIZE));
+
+      const response = await fetch(pageUrl.toString(), {
+        headers: {
+          Accept: 'application/json',
+          'User-Agent': 'Mozilla/5.0'
+        },
+        signal: AbortSignal.timeout(20000)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Backfill HTTP ${response.status} on page ${page}`);
+      }
+
+      const payload = await response.json();
+      const rows = extractRows(payload);
+
+      pagesCompleted++;
+      fetchedTotal += rows.length;
+
+      backfillStatus.pagesFetched = pagesCompleted;
+      backfillStatus.recordsFetched = fetchedTotal;
+
+      console.log('BACKFILL PAGE:', {
+        page,
+        fetched: rows.length,
+        firstRawId: rows[0]?.id ?? rows[0]?.data?.id ?? null
+      });
+
+      if (rows.length === 0) {
+        backfillStatus.note = `No records returned on page ${page}.`;
+        break;
+      }
+
+      let insertedThisPage = 0;
+      let skippedThisPage = 0;
+      let existingThisPage = 0;
+      let saveErrorThisPage = 0;
+
+      for (const raw of rows) {
+        try {
+          const event = normalizeEvent(raw);
+
+          if (!event) {
+            skippedThisPage++;
+            continue;
+          }
+
+          const wasInserted = await saveEvent(event);
+
+          if (wasInserted) {
+            insertedThisPage++;
+            insertedTotal++;
+          } else {
+            existingThisPage++;
+          }
+        } catch (error) {
+          saveErrorThisPage++;
+
+          console.error('BACKFILL EVENT ERROR:', {
+            page,
+            eventId: raw?.id ?? raw?.data?.id ?? null,
+            error: error.message
+          });
+        }
+      }
+
+      backfillStatus.recordsInserted = insertedTotal;
+
+      console.log('BACKFILL PAGE SUMMARY:', {
+        page,
+        fetched: rows.length,
+        inserted: insertedThisPage,
+        existingOrUpdated: existingThisPage,
+        skipped: skippedThisPage,
+        errors: saveErrorThisPage
+      });
+
+      // Do not advance if the API returned a partial page.
+      if (rows.length < BACKFILL_PAGE_SIZE) {
+        backfillStatus.note = `Partial page ${page} returned.`;
+        break;
+      }
+
+      nextBackfillPage = page + 1;
+
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      page++;
     }
 
-    console.log(
-      'BACKFILL COMPLETE:',
-      {
-        pages: pagesCompleted,
-        fetched: fetchedTotal,
-        inserted: insertedTotal,
-        nextPage: nextBackfillPage
-      }
-    );
+    backfillStatus.lastCompletedAt = new Date().toISOString();
 
+    if (backfillStatus.note === 'Historical backfill is running.') {
+      backfillStatus.note = `Backfill run completed. Next page: ${nextBackfillPage}.`;
+    }
+
+    console.log('BACKFILL COMPLETE:', {
+      pages: pagesCompleted,
+      fetched: fetchedTotal,
+      inserted: insertedTotal,
+      nextPage: nextBackfillPage
+    });
   } catch (error) {
-
     backfillStatus.error = error.message;
+    backfillStatus.note = 'Backfill stopped because of an error.';
 
-    backfillStatus.note =
-      'Backfill stopped because of an error.';
-
-    console.error(
-      'HISTORICAL BACKFILL ERROR:',
-      error.message
-    );
-
+    console.error('HISTORICAL BACKFILL ERROR:', error.message);
   } finally {
-
     backfillStatus.running = false;
     backfillInProgress = false;
-
   }
-
 }
 
 // ----------------------------------
