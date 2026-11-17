@@ -2771,10 +2771,11 @@ app.get('/api/stats', async (req, res) => {
     `);
 
     res.json({
-      totals: totals.rows[0],
-      hourlyAsiaManila: hourly.rows,
-      note: 'Historical records do not predict future random outcomes.'
-    });
+  totals: totals.rows[0],
+  hourlyAsiaManila: hourly.rows,
+  bigWinRecords: bigWinCheck.rows,
+  note: 'Historical records do not predict future random outcomes.'
+});
 
   } catch (error) {
     console.error('STATS API ERROR:', error);
