@@ -435,11 +435,12 @@ console.log('BONUS MULTIPLIER DEBUG:', JSON.stringify({
   threeRollsTotalMultiplier: result.threeRollsTotalMultiplier,
   fiveRollsTotalMultiplier: result.fiveRollsTotalMultiplier
 }));
-  // BIG WIN RULE: 100x AND ABOVE
+// BIG WIN RULE: 100x AND ABOVE
 const isBigWin =
-  typeof bigWinMultiplier === 'number' &&
-  Number.isFinite(bigWinMultiplier) &&
-  bigWinMultiplier >= 100;
+  (isThreeRolls || isFiveRolls) &&
+  bigWinMultiplier !== null &&
+  Number.isFinite(Number(bigWinMultiplier)) &&
+  Number(bigWinMultiplier) >= 100;
 
   // TIME ADJUSTMENT
   let adjustment = 0;
