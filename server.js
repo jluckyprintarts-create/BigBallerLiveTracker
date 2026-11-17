@@ -506,6 +506,8 @@ function normalizeEvent(raw) {
 
 async function saveEvent(event) {
 
+  const rawData = event.raw ?? {};
+
   const result = await pool.query(
 
     `INSERT INTO game_history
@@ -521,7 +523,7 @@ async function saveEvent(event) {
       raw_data
     )
 
-    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb)
 
     ON CONFLICT (event_id)
 
@@ -549,7 +551,6 @@ async function saveEvent(event) {
     RETURNING (xmax = 0) AS inserted`,
 
     [
-
       event.eventId,
       event.settledAt,
       event.adjustedAt,
@@ -558,8 +559,7 @@ async function saveEvent(event) {
       event.isBigWin,
       event.bigWinMultiplier,
       event.dealerName,
-      JSON.stringify(event.raw)
-
+      JSON.stringify(rawData)
     ]
 
   );
