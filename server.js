@@ -508,6 +508,10 @@ async function saveEvent(event) {
 
   const rawData = event.raw ?? {};
 
+  try {
+
+  const rawData = event.raw ?? {};
+
   const result = await pool.query(
 
     `INSERT INTO game_history
