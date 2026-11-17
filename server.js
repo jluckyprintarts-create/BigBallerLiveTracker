@@ -589,7 +589,7 @@ async function saveEvent(event) {
       event.isBigWin,
       event.bigWinMultiplier,
       event.dealerName,
-      JSON.stringify(rawData)
+      JSON.stringify(cleanJsonValue(rawData))
     ]
 
   );
