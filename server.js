@@ -531,73 +531,57 @@ function cleanJsonValue(value) {
 // ----------------------------------
 
 async function saveEvent(event) {
-
   const rawData = event.raw ?? {};
 
   try {
+    const result = await pool.query(
+      `INSERT INTO game_history
+      (
+        event_id,
+        settled_at,
+        adjusted_at,
+        is_three_rolls,
+        is_five_rolls,
+        is_big_win,
+        big_win_multiplier,
+        dealer_name,
+        raw_data
+      )
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb)
 
-  const rawData = event.raw ?? {};
+      ON CONFLICT (event_id)
+      DO UPDATE SET
+        settled_at = EXCLUDED.settled_at,
+        adjusted_at = EXCLUDED.adjusted_at,
+        is_three_rolls = EXCLUDED.is_three_rolls,
+        is_five_rolls = EXCLUDED.is_five_rolls,
+        is_big_win = EXCLUDED.is_big_win,
+        big_win_multiplier = EXCLUDED.big_win_multiplier,
+        dealer_name = COALESCE(
+          EXCLUDED.dealer_name,
+          game_history.dealer_name
+        ),
+        raw_data = EXCLUDED.raw_data
 
-  const result = await pool.query(
+      RETURNING (xmax = 0) AS inserted`,
+      [
+        event.eventId,
+        event.settledAt,
+        event.adjustedAt,
+        event.isThreeRolls,
+        event.isFiveRolls,
+        event.isBigWin,
+        event.bigWinMultiplier,
+        event.dealerName,
+        JSON.stringify(cleanJsonValue(rawData))
+      ]
+    );
 
-    `INSERT INTO game_history
-    (
-      event_id,
-      settled_at,
-      adjusted_at,
-      is_three_rolls,
-      is_five_rolls,
-      is_big_win,
-      big_win_multiplier,
-      dealer_name,
-      raw_data
-    )
+    const inserted = Boolean(result.rows[0].inserted);
 
-    VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb)
-
-    ON CONFLICT (event_id)
-
-    DO UPDATE SET
-
-      settled_at = EXCLUDED.settled_at,
-
-      adjusted_at = EXCLUDED.adjusted_at,
-
-      is_three_rolls = EXCLUDED.is_three_rolls,
-
-      is_five_rolls = EXCLUDED.is_five_rolls,
-
-      is_big_win = EXCLUDED.is_big_win,
-
-      big_win_multiplier = EXCLUDED.big_win_multiplier,
-
-      dealer_name = COALESCE(
-        EXCLUDED.dealer_name,
-        game_history.dealer_name
-      ),
-
-      raw_data = EXCLUDED.raw_data
-
-    RETURNING (xmax = 0) AS inserted`,
-
-    [
-      event.eventId,
-      event.settledAt,
-      event.adjustedAt,
-      event.isThreeRolls,
-      event.isFiveRolls,
-      event.isBigWin,
-      event.bigWinMultiplier,
-      event.dealerName,
-      JSON.stringify(cleanJsonValue(rawData))
-    ]
-
-  );
-
-    return Boolean(result.rows[0].inserted);
+    return inserted;
 
   } catch (error) {
-
     console.error('SAVE EVENT ERROR:', {
       message: error.message,
       code: error.code,
@@ -607,9 +591,7 @@ async function saveEvent(event) {
     });
 
     throw error;
-
   }
-
 }
 // ----------------------------------
 // AUTOMATIC HISTORICAL BACKFILL
