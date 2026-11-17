@@ -1085,66 +1085,7 @@ async function runHistoricalBackfill() {
       });
 
       if (!response.ok) {
-        throw new Error(`Backfill HTTP ${response.status} on page ${page}`);
-      }
 
-      const payload = await response.json();
-      const rows = extractRows(payload);
-
-      pagesCompleted++;
-      fetchedTotal += rows.length;
-
-      backfillStatus.pagesFetched = pagesCompleted;
-      backfillStatus.recordsFetched = fetchedTotal;
-
-      console.log('BACKFILL PAGE:', {
-        page,
-        fetched: rows.length,
-        firstRawId: rows[0]?.id ?? rows[0]?.data?.id ?? null
-      });
-
-      if (rows.length === 0) {
-        backfillStatus.note = `No records returned on page ${page}.`;
-        break;
-      }
-
-      let insertedThisPage = 0;
-      let skippedThisPage = 0;
-      let existingThisPage = 0;
-      let saveErrorThisPage = 0;
-
-      for (const raw of rows) {
-        try {
-          const event = normalizeEvent(raw);
-
-          if (!event) {
-            skippedThisPage++;
-            continue;
-          }
-
-          const wasInserted = await saveEvent(event);
-
-          if (wasInserted) {
-            insertedThisPage++;
-            insertedTotal++;
-          } else {
-            existingThisPage++;
-          }
-        } catch (error) {
-          saveErrorThisPage++;
-
-          console.error('BACKFILL EVENT ERROR:', {
-            page,
-            eventId: raw?.id ?? raw?.data?.id ?? null,
-            error: error.message
-          });
-        }
-      }
-
-      backfillStatus.recordsInserted = insertedTotal;
-
-      console.log('BACKFILL PAGE SUMMARY:', {
-        page,
         fetched: rows.length,
         inserted: insertedThisPage,
         existingOrUpdated: existingThisPage,
