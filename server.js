@@ -702,18 +702,35 @@ console.log(
 
       let insertedThisPage = 0;
 let skippedThisPage = 0;
+let existingThisPage = 0;
+let saveErrorThisPage = 0;
 
 for (const raw of rows) {
-  const event = normalizeEvent(raw);
+  try {
+    const event = normalizeEvent(raw);
 
-  if (!event) {
-    skippedThisPage++;
-    continue;
-  }
+    if (!event) {
+      skippedThisPage++;
+      continue;
+    }
 
-  if (await saveEvent(event)) {
-    insertedThisPage++;
-    insertedTotal++;
+    const wasInserted = await saveEvent(event);
+
+    if (wasInserted) {
+      insertedThisPage++;
+      insertedTotal++;
+    } else {
+      existingThisPage++;
+    }
+
+  } catch (error) {
+    saveErrorThisPage++;
+
+    console.error('BACKFILL EVENT ERROR:', {
+      page,
+      eventId: raw?.id ?? raw?.data?.id ?? null,
+      error: error.message
+    });
   }
 }
 
@@ -721,7 +738,9 @@ console.log('BACKFILL PAGE SUMMARY:', {
   page,
   fetched: rows.length,
   inserted: insertedThisPage,
-  skipped: skippedThisPage
+  existingOrUpdated: existingThisPage,
+  skipped: skippedThisPage,
+  errors: saveErrorThisPage
 });
       
 
