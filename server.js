@@ -2710,7 +2710,7 @@ app.get('/api/history', async (req, res) => {
 // STATISTICS
 // ----------------------------------
 
-app.get('/api/stats', async (req, res) => {
+
 app.get('/api/stats', async (req, res) => {
   try {
 
