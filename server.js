@@ -1,4 +1,3 @@
-
 // MONOPOLY BIG BALLER LIVE TRACKER
 // Node.js 18+
 
@@ -110,10 +109,6 @@ let intelligenceCache = {
 
 async function initializeDatabase() {
 
-  // ----------------------------------
-  // GAME HISTORY DATABASE
-  // ----------------------------------
-
   await pool.query(`
     CREATE TABLE IF NOT EXISTS game_history (
       id BIGSERIAL PRIMARY KEY,
@@ -134,11 +129,6 @@ async function initializeDatabase() {
     CREATE INDEX IF NOT EXISTS idx_game_history_settled
     ON game_history(settled_at DESC)
   `);
-
-
-  // ----------------------------------
-  // AI PERFORMANCE FORECAST DATABASE
-  // ----------------------------------
 
   await pool.query(`
     CREATE TABLE IF NOT EXISTS forecast_evaluations (
@@ -174,7 +164,7 @@ async function initializeDatabase() {
     )
   `);
 
-    await pool.query(`
+  await pool.query(`
     CREATE INDEX IF NOT EXISTS idx_forecast_created
     ON forecast_evaluations (
       created_at DESC
@@ -182,6 +172,7 @@ async function initializeDatabase() {
   `);
 
 }
+
 
 // ----------------------------------
 // HELPERS
@@ -351,9 +342,6 @@ function normalizeEvent(raw) {
     return null;
   }
 
-
-  // DETECT ROLL TYPES
-
   let isThreeRolls = Boolean(
     result.isThreeRolls ||
     data.isThreeRolls ||
@@ -366,11 +354,9 @@ function normalizeEvent(raw) {
     raw.isFiveRolls
   );
 
-
   const bonusRounds = Array.isArray(result.bonusRounds)
     ? result.bonusRounds
     : [];
-
 
   for (const round of bonusRounds) {
 
@@ -396,9 +382,6 @@ function normalizeEvent(raw) {
 
   }
 
-
-  // GET ACTUAL GAME MULTIPLIER
-
   let bigWinMultiplier = null;
 
   if (isThreeRolls) {
@@ -419,14 +402,10 @@ function normalizeEvent(raw) {
 
   }
 
-
   // BIG WIN DISABLED
-
   const isBigWin = false;
 
-
   // TIME ADJUSTMENT
-
   let adjustment = 0;
 
   if (isThreeRolls) {
@@ -441,9 +420,7 @@ function normalizeEvent(raw) {
     settledAt.getTime() - adjustment * 60000
   );
 
-
   // HOST / DEALER NAME
-
   const dealer =
     data.dealer ||
     raw.dealer ||
@@ -475,7 +452,6 @@ function normalizeEvent(raw) {
     typeof value === 'string' &&
     value.trim() !== ''
   ) || null;
-
 
   return {
 
@@ -664,8 +640,6 @@ async function runAutomaticAnalysis() {
 
   try {
 
-    // HOURLY ANALYSIS
-
     const hourly = await pool.query(`
 
       SELECT
@@ -694,9 +668,6 @@ async function runAutomaticAnalysis() {
       ORDER BY hour
 
     `);
-
-
-    // DAILY ANALYSIS
 
     const daily = await pool.query(`
 
@@ -727,9 +698,6 @@ async function runAutomaticAnalysis() {
 
     `);
 
-
-    // TOTAL RECORDS
-
     const totals = await pool.query(`
 
       SELECT
@@ -753,7 +721,6 @@ async function runAutomaticAnalysis() {
 
     `);
 
-
     const dayNames = [
       'Sunday',
       'Monday',
@@ -763,9 +730,6 @@ async function runAutomaticAnalysis() {
       'Friday',
       'Saturday'
     ];
-
-
-    // GET TOP HOURS
 
     function topHours(rows, type) {
 
@@ -786,9 +750,6 @@ async function runAutomaticAnalysis() {
         .slice(0, 5);
 
     }
-
-
-    // GET TOP DAYS
 
     function topDays(rows, type) {
 
@@ -811,9 +772,6 @@ async function runAutomaticAnalysis() {
         .slice(0, 7);
 
     }
-
-
-    // SAVE ANALYSIS RESULTS
 
     analysisCache = {
 
@@ -863,7 +821,6 @@ async function runAutomaticAnalysis() {
         'Historical frequency only. Not a prediction or guarantee of winning.'
 
     };
-
 
     console.log(
       'SMART ANALYSIS UPDATED:',
@@ -987,8 +944,6 @@ function estimateWithModel(values, model) {
 
   if (model === 'weighted') {
 
-    // Recent intervals receive more weight.
-    // The newest interval has weight 1.
     let weightedTotal = 0;
     let totalWeight = 0;
 
@@ -1033,8 +988,6 @@ function runIntervalBacktest(intervals) {
     const errors = [];
     const signedErrors = [];
 
-    // Each test only uses intervals that came before it.
-    // Start after five historical intervals are available.
     for (let index = 5; index < intervals.length; index++) {
 
       const training = intervals.slice(0, index);
@@ -1069,7 +1022,6 @@ function runIntervalBacktest(intervals) {
 
   }
 
-  // Do not select a model based on too few test cases.
   const eligible = models
     .filter(model => results[model].samples >= 5)
     .sort((a, b) =>
@@ -1093,14 +1045,22 @@ function runIntervalBacktest(intervals) {
 // BOOTSTRAP INTERVAL UNCERTAINTY
 // ----------------------------------
 
-function createBootstrapEstimates(intervals, model, simulations = 1500) {
+function createBootstrapEstimates(
+  intervals,
+  model,
+  simulations = 1500
+) {
 
   if (!intervals.length) return [];
 
   const sampleSize = Math.min(10, intervals.length);
   const estimates = [];
 
-  for (let simulation = 0; simulation < simulations; simulation++) {
+  for (
+    let simulation = 0;
+    simulation < simulations;
+    simulation++
+  ) {
 
     const sample = [];
 
@@ -1160,8 +1120,6 @@ function buildBonusForecast(timestampValues) {
       timestamps[index - 1].getTime()
     ) / 60000;
 
-    // Ignore zero or negative gaps caused by duplicate timestamps
-    // or inconsistent source ordering.
     if (minutes > 0 && Number.isFinite(minutes)) {
       intervals.push(minutes);
     }
@@ -1188,12 +1146,14 @@ function buildBonusForecast(timestampValues) {
 
   const backtest = runIntervalBacktest(intervals);
   const selectedModel = backtest.selectedModel;
+
   const estimatedInterval = estimateWithModel(
     intervals,
     selectedModel
   );
 
   result.selectedModel = selectedModel;
+
   result.estimatedIntervalMinutes =
     roundNumber(estimatedInterval);
 
@@ -1209,8 +1169,8 @@ function buildBonusForecast(timestampValues) {
 
   result.backtestSamples = backtest.selected.samples;
 
-  // Current elapsed time since the latest adjusted bonus timestamp.
   const lastTimestamp = timestamps[timestamps.length - 1];
+
   const currentGap = Math.max(
     0,
     (Date.now() - lastTimestamp.getTime()) / 60000
@@ -1218,7 +1178,6 @@ function buildBonusForecast(timestampValues) {
 
   result.currentGapMinutes = roundNumber(currentGap);
 
-  // Robust anomaly check using median absolute deviation.
   const absoluteDeviations = intervals.map(
     value => Math.abs(value - med)
   );
@@ -1243,9 +1202,8 @@ function buildBonusForecast(timestampValues) {
 
   }
 
-  // Confidence describes the stability of the interval estimate,
-  // NOT the probability that a bonus will happen.
   const mae = backtest.selected.maeMinutes;
+
   const relativeMae = (
     mae !== null && med > 0
   ) ? mae / med : null;
@@ -1260,6 +1218,7 @@ function buildBonusForecast(timestampValues) {
   ) {
 
     result.confidence = 'Higher';
+
     result.confidenceReason =
       'Large interval sample with relatively consistent gaps and measurable backtest error. This is not a chance-of-bonus percentage.';
 
@@ -1273,19 +1232,19 @@ function buildBonusForecast(timestampValues) {
   ) {
 
     result.confidence = 'Moderate';
+
     result.confidenceReason =
       'Some historical consistency is present, but timing uncertainty remains substantial. This is not a chance-of-bonus percentage.';
 
   } else {
 
     result.confidence = 'Low';
+
     result.confidenceReason =
       'Historical intervals are limited or variable, so estimated timing is uncertain. This is not a chance-of-bonus percentage.';
 
   }
 
-  // Generate five alternative timing windows from bootstrap
-  // resampling of observed intervals. This does not simulate game outcomes.
   const bootstrap = createBootstrapEstimates(
     intervals,
     selectedModel,
@@ -1304,9 +1263,8 @@ function buildBonusForecast(timestampValues) {
     { label: 'LATER RANGE', value: 0.90 }
   ];
 
-  // Window width reflects historical dispersion, with a small
-  // minimum so the UI does not display a false exact minute.
   const intervalSpread = mad > 0 ? mad : deviation;
+
   const halfWindow = Math.max(
     3,
     Math.min(20, intervalSpread * 0.25)
@@ -1354,29 +1312,6 @@ function buildBonusForecast(timestampValues) {
 }
 
 
-async function saveHistoricalForecasts(results) {
-
-  // Existing code mo rito
-
-}
-
-// DITO ILALAGAY ANG BAGONG FUNCTION
-async function saveLiveForecastSnapshot(gameType, forecast) {
-
-  // New code na ibinigay ko
-
-}
-
-// EXISTING FUNCTION — HUWAG GALAWIN
-async function runHistoricalForecastEvaluation() {
-
-  // Existing code mo rito
-
-}
-
-
-
-
 // ----------------------------------
 // HISTORICAL FORECAST EVALUATION
 // ----------------------------------
@@ -1399,8 +1334,6 @@ function evaluateHistoricalForecasts(
 
   for (let index = 6; index < dates.length; index++) {
 
-    // Historical training data only.
-    // Never include the actual result being evaluated.
     const training = dates.slice(0, index);
 
     const intervals = [];
@@ -1454,11 +1387,6 @@ function evaluateHistoricalForecasts(
 
     const absoluteError = Math.abs(actualMinutes);
 
-    const actualInterval = (
-      actualTimestamp.getTime() -
-      lastTimestamp.getTime()
-    ) / 60000;
-
     const intervalSpread = Math.max(
       3,
       Math.min(
@@ -1500,8 +1428,9 @@ function evaluateHistoricalForecasts(
       error_minutes: roundNumber(absoluteError),
 
       signed_error_minutes: roundNumber(
-  (actualTimestamp.getTime() - forecastTimestamp.getTime()) / 60000
-),
+        (actualTimestamp.getTime() -
+          forecastTimestamp.getTime()) / 60000
+      ),
 
       central_hit: centralHit,
 
@@ -1599,6 +1528,7 @@ async function saveHistoricalForecasts(results) {
   return saved;
 }
 
+
 // ----------------------------------
 // RUN HISTORICAL FORECAST EVALUATION
 // ----------------------------------
@@ -1607,7 +1537,6 @@ async function runHistoricalForecastEvaluation() {
 
   try {
 
-    // GET THREE ROLLS HISTORY
     const threeRollsResult = await pool.query(`
       SELECT adjusted_at
       FROM game_history
@@ -1616,7 +1545,6 @@ async function runHistoricalForecastEvaluation() {
       ORDER BY adjusted_at ASC
     `);
 
-    // GET FIVE ROLLS HISTORY
     const fiveRollsResult = await pool.query(`
       SELECT adjusted_at
       FROM game_history
@@ -1625,21 +1553,18 @@ async function runHistoricalForecastEvaluation() {
       ORDER BY adjusted_at ASC
     `);
 
-    // EVALUATE THREE ROLLS
     const threeRollsEvaluations =
       evaluateHistoricalForecasts(
         threeRollsResult.rows.map(row => row.adjusted_at),
         'threeRolls'
       );
 
-    // EVALUATE FIVE ROLLS
     const fiveRollsEvaluations =
       evaluateHistoricalForecasts(
         fiveRollsResult.rows.map(row => row.adjusted_at),
         'fiveRolls'
       );
 
-    // SAVE RESULTS
     const threeSaved =
       await saveHistoricalForecasts(
         threeRollsEvaluations
@@ -1666,7 +1591,9 @@ async function runHistoricalForecastEvaluation() {
     );
 
   }
+
 }
+
 
 // ----------------------------------
 // SAVE LIVE FORECAST
@@ -1687,7 +1614,6 @@ async function saveLiveForecast(
       return false;
     }
 
-    // Use the central estimate.
     const central = forecast.estimatedWindows.find(
       item => item.label === 'CENTRAL ESTIMATE'
     );
@@ -1696,7 +1622,7 @@ async function saveLiveForecast(
       return false;
     }
 
-    await pool.query(
+    const result = await pool.query(
       `
       INSERT INTO forecast_evaluations (
         game_type,
@@ -1722,6 +1648,7 @@ async function saveLiveForecast(
         forecast_origin_at
       )
       DO NOTHING
+      RETURNING id
       `,
       [
         gameType,
@@ -1732,7 +1659,7 @@ async function saveLiveForecast(
       ]
     );
 
-    return true;
+    return result.rowCount > 0;
 
   } catch (error) {
 
@@ -1746,6 +1673,181 @@ async function saveLiveForecast(
   }
 
 }
+
+
+// ----------------------------------
+// AUTOMATIC LIVE FORECAST EVALUATION
+// ----------------------------------
+
+async function evaluatePendingLiveForecasts() {
+
+  try {
+
+    const result = await pool.query(`
+
+      WITH pending AS (
+
+        SELECT
+
+          f.id,
+
+          f.game_type,
+
+          f.forecast_at,
+
+          f.window_start,
+
+          f.window_end,
+
+          next_bonus.actual_bonus_at
+
+        FROM forecast_evaluations f
+
+        CROSS JOIN LATERAL (
+
+          SELECT
+            gh.adjusted_at AS actual_bonus_at
+
+          FROM game_history gh
+
+          WHERE
+            gh.adjusted_at > f.forecast_origin_at
+
+            AND (
+
+              (
+                f.game_type = 'threeRolls'
+                AND gh.is_three_rolls = TRUE
+              )
+
+              OR
+
+              (
+                f.game_type = 'fiveRolls'
+                AND gh.is_five_rolls = TRUE
+              )
+
+            )
+
+          ORDER BY gh.adjusted_at ASC
+
+          LIMIT 1
+
+        ) next_bonus
+
+        WHERE
+          f.source = 'live'
+
+          AND f.status = 'pending'
+
+      )
+
+      UPDATE forecast_evaluations f
+
+      SET
+
+        actual_bonus_at = p.actual_bonus_at,
+
+        error_minutes = ROUND(
+          ABS(
+            EXTRACT(
+              EPOCH FROM (
+                p.actual_bonus_at - p.forecast_at
+              )
+            ) / 60
+          )::numeric,
+          1
+        ),
+
+        signed_error_minutes = ROUND(
+          (
+            EXTRACT(
+              EPOCH FROM (
+                p.actual_bonus_at - p.forecast_at
+              )
+            ) / 60
+          )::numeric,
+          1
+        ),
+
+        central_hit = (
+          ABS(
+            EXTRACT(
+              EPOCH FROM (
+                p.actual_bonus_at - p.forecast_at
+              )
+            ) / 60
+          ) <= 5
+        ),
+
+        candidate_hit = (
+          p.actual_bonus_at >= p.window_start
+          AND p.actual_bonus_at <= p.window_end
+        ),
+
+        status = CASE
+
+          WHEN ABS(
+            EXTRACT(
+              EPOCH FROM (
+                p.actual_bonus_at - p.forecast_at
+              )
+            ) / 60
+          ) <= 5
+
+          THEN 'central-hit'
+
+          WHEN (
+            p.actual_bonus_at >= p.window_start
+            AND p.actual_bonus_at <= p.window_end
+          )
+
+          THEN 'window-hit'
+
+          ELSE 'missed'
+
+        END,
+
+        evaluated_at = NOW()
+
+      FROM pending p
+
+      WHERE f.id = p.id
+
+      RETURNING f.id, f.game_type, f.status
+
+    `);
+
+    if (result.rowCount > 0) {
+
+      console.log(
+        'LIVE FORECASTS EVALUATED:',
+        result.rowCount
+      );
+
+      console.log(
+        'LIVE FORECAST RESULTS:',
+        result.rows
+      );
+
+    }
+
+    return result.rowCount;
+
+  } catch (error) {
+
+    console.error(
+      'LIVE FORECAST EVALUATION ERROR:',
+      error.message
+    );
+
+    return 0;
+
+  }
+
+}
+
+
 // ----------------------------------
 // RUN BONUS INTELLIGENCE ANALYSIS
 // ----------------------------------
@@ -1758,8 +1860,6 @@ async function runBonusIntelligenceAnalysis() {
 
   try {
 
-    // Read ALL stored bonus timestamps, not just the latest
-    // 200 records shown by the frontend.
     const result = await pool.query(`
 
       SELECT
@@ -1811,17 +1911,22 @@ async function runBonusIntelligenceAnalysis() {
         'Five candidate windows are calculated by resampling historical bonus intervals. They are not five guaranteed predictions. Past timing patterns do not change the game odds or reveal the game RNG.'
 
     };
+
+    // EVALUATE OLD LIVE FORECASTS FIRST
+    await evaluatePendingLiveForecasts();
+
     // SAVE LIVE THREE ROLLS FORECAST
-    await saveLiveForecastSnapshot(
+    await saveLiveForecast(
       'threeRolls',
       intelligenceCache.threeRolls
     );
 
     // SAVE LIVE FIVE ROLLS FORECAST
-    await saveLiveForecastSnapshot(
+    await saveLiveForecast(
       'fiveRolls',
       intelligenceCache.fiveRolls
     );
+
     console.log(
       'BONUS INTELLIGENCE UPDATED:',
       intelligenceCache.lastAnalysisAt
@@ -2212,11 +2317,11 @@ async function start() {
   await runAutomaticAnalysis();
 
   // FIRST BONUS INTELLIGENCE ANALYSIS
-await runBonusIntelligenceAnalysis();
+  await runBonusIntelligenceAnalysis();
 
-// FIRST HISTORICAL FORECAST EVALUATION
-runHistoricalForecastEvaluation();
-  
+  // FIRST HISTORICAL FORECAST EVALUATION
+  runHistoricalForecastEvaluation();
+
   // DATA COLLECTION
   setInterval(
     pollUpstream,
