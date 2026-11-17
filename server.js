@@ -723,18 +723,7 @@ console.log('BACKFILL PAGE SUMMARY:', {
   inserted: insertedThisPage,
   skipped: skippedThisPage
 });
-      for (const raw of rows) {
-
-        const event = normalizeEvent(raw);
-
-        if (!event) continue;
-
-        if (await saveEvent(event)) {
-          insertedThisPage++;
-          insertedTotal++;
-        }
-
-      }
+      
 
       backfillStatus.recordsInserted = insertedTotal;
 
