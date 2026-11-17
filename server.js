@@ -21,6 +21,28 @@ const POLL_INTERVAL_MS = Math.max(
 // SMART ANALYSIS: EVERY 5 MINUTES
 const ANALYSIS_INTERVAL_MS = 5 * 60 * 1000;
 
+// ----------------------------------
+// HISTORICAL BACKFILL SETTINGS
+// ----------------------------------
+
+const BACKFILL_PAGE_SIZE = 14;
+const BACKFILL_MAX_PAGES = 10;
+const BACKFILL_INTERVAL_MS = 15 * 60 * 1000;
+
+let backfillInProgress = false;
+
+let backfillStatus = {
+  running: false,
+  currentPage: 0,
+  pagesFetched: 0,
+  recordsFetched: 0,
+  recordsInserted: 0,
+  lastRunAt: null,
+  lastCompletedAt: null,
+  error: null,
+  note: 'Waiting for first backfill run.'
+};
+
 const UPSTREAM_URL =
   process.env.UPSTREAM_URL ||
   'https://api-cs.casino.org/svc-evolution-game-events/api/bigballer?page=0&size=14&sort=data.settledAt,desc&duration=6&isThreeRolls=true,false&isFiveRolls=true,false';
@@ -545,7 +567,167 @@ async function saveEvent(event) {
   return Boolean(result.rows[0].inserted);
 
 }
+// ----------------------------------
+// AUTOMATIC HISTORICAL BACKFILL
+// ----------------------------------
 
+async function runHistoricalBackfill() {
+
+  if (backfillInProgress || pollInProgress) {
+    return;
+  }
+
+  backfillInProgress = true;
+
+  backfillStatus = {
+    ...backfillStatus,
+    running: true,
+    currentPage: 0,
+    pagesFetched: 0,
+    recordsFetched: 0,
+    recordsInserted: 0,
+    lastRunAt: new Date().toISOString(),
+    error: null,
+    note: 'Historical backfill is running.'
+  };
+
+  let insertedTotal = 0;
+  let fetchedTotal = 0;
+  let pagesCompleted = 0;
+
+  try {
+
+    for (
+      let page = 1;
+      page <= BACKFILL_MAX_PAGES;
+      page++
+    ) {
+
+      backfillStatus.currentPage = page;
+
+      const pageUrl = new URL(UPSTREAM_URL);
+
+      pageUrl.searchParams.set(
+        'page',
+        String(page)
+      );
+
+      pageUrl.searchParams.set(
+        'size',
+        String(BACKFILL_PAGE_SIZE)
+      );
+
+      const response = await fetch(
+        pageUrl.toString(),
+        {
+          headers: {
+            Accept: 'application/json',
+            'User-Agent': 'Mozilla/5.0'
+          },
+          signal: AbortSignal.timeout(20000)
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `Backfill HTTP ${response.status} on page ${page}`
+        );
+      }
+
+      const payload = await response.json();
+      const rows = extractRows(payload);
+
+      pagesCompleted++;
+
+      fetchedTotal += rows.length;
+
+      backfillStatus.pagesFetched = pagesCompleted;
+      backfillStatus.recordsFetched = fetchedTotal;
+
+      console.log(
+        `BACKFILL page=${page}, records=${rows.length}`
+      );
+
+      if (rows.length === 0) {
+        backfillStatus.note =
+          'No records returned; backfill stopped.';
+        break;
+      }
+
+      let insertedThisPage = 0;
+
+      for (const raw of rows) {
+
+        const event = normalizeEvent(raw);
+
+        if (!event) continue;
+
+        if (await saveEvent(event)) {
+          insertedThisPage++;
+          insertedTotal++;
+        }
+
+      }
+
+      backfillStatus.recordsInserted = insertedTotal;
+
+      console.log(
+        `BACKFILL page=${page}, newRecords=${insertedThisPage}`
+      );
+
+      if (rows.length < BACKFILL_PAGE_SIZE) {
+
+        backfillStatus.note =
+          'A partial page was returned; backfill stopped.';
+
+        break;
+      }
+
+      // Avoid sending requests too rapidly.
+      await new Promise(resolve =>
+        setTimeout(resolve, 1000)
+      );
+
+    }
+
+    backfillStatus.lastCompletedAt =
+      new Date().toISOString();
+
+    backfillStatus.note =
+      backfillStatus.note ===
+      'Historical backfill is running.'
+        ? 'Backfill run completed. More historical pages may exist.'
+        : backfillStatus.note;
+
+    console.log(
+      'BACKFILL COMPLETE:',
+      {
+        pages: pagesCompleted,
+        fetched: fetchedTotal,
+        inserted: insertedTotal
+      }
+    );
+
+  } catch (error) {
+
+    backfillStatus.error = error.message;
+
+    backfillStatus.note =
+      'Backfill stopped because of an error.';
+
+    console.error(
+      'HISTORICAL BACKFILL ERROR:',
+      error.message
+    );
+
+  } finally {
+
+    backfillStatus.running = false;
+    backfillInProgress = false;
+
+  }
+
+}
 
 // ----------------------------------
 // LIVE MONITOR
@@ -2107,6 +2289,21 @@ app.get('/api/performance', async (req, res) => {
     });
 
   }
+
+});
+
+// ----------------------------------
+// HISTORICAL BACKFILL STATUS API
+// ----------------------------------
+
+app.get('/api/backfill/status', (req, res) => {
+
+  res.json({
+    ...backfillStatus,
+    maxPagesPerRun: BACKFILL_MAX_PAGES,
+    pageSize: BACKFILL_PAGE_SIZE,
+    intervalMs: BACKFILL_INTERVAL_MS
+  });
 
 });
 // ----------------------------------
