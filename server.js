@@ -2373,6 +2373,32 @@ app.get('/api/backfill/status', (req, res) => {
   });
 
 });
+
+app.get('/api/database/status', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT
+        COUNT(*)::int AS total_records,
+        COUNT(DISTINCT event_id)::int AS unique_event_ids,
+        MIN(settled_at) AS oldest_record,
+        MAX(settled_at) AS newest_record
+      FROM game_history
+    `);
+
+    res.json({
+      success: true,
+      database: result.rows[0]
+    });
+
+  } catch (error) {
+    console.error('DATABASE STATUS ERROR:', error.message);
+
+    res.status(500).json({
+      success: false,
+      error: 'Hindi makuha ang database statistics.'
+    });
+  }
+});
 // ----------------------------------
 // ANALYSIS API
 // ----------------------------------
