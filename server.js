@@ -705,59 +705,174 @@ console.log(
       let insertedThisPage = 0;
 let skippedThisPage = 0;
 let existingThisPage = 0;
-let saveErrorThisPage = 0;
+async function runHistoricalBackfill() {
 
-for (const raw of rows) {
-  try {
-    const event = normalizeEvent(raw);
-
-    if (!event) {
-      skippedThisPage++;
-      continue;
-    }
-
-    const wasInserted = await saveEvent(event);
-
-    if (wasInserted) {
-      insertedThisPage++;
-      insertedTotal++;
-    } else {
-      existingThisPage++;
-    }
-
-  } catch (error) {
-    saveErrorThisPage++;
-
-    console.error('BACKFILL EVENT ERROR:', {
-      page,
-      eventId: raw?.id ?? raw?.data?.id ?? null,
-      error: error.message
-    });
+  if (backfillInProgress || pollInProgress) {
+    return;
   }
-}
 
-console.log('BACKFILL PAGE SUMMARY:', {
-  page,
-  fetched: rows.length,
-  inserted: insertedThisPage,
-  existingOrUpdated: existingThisPage,
-  skipped: skippedThisPage,
-  errors: saveErrorThisPage
-});
-      
+  backfillInProgress = true;
+
+  backfillStatus = {
+    ...backfillStatus,
+    running: true,
+    currentPage: 0,
+    pagesFetched: 0,
+    recordsFetched: 0,
+    recordsInserted: 0,
+    lastRunAt: new Date().toISOString(),
+    error: null,
+    note: 'Historical backfill is running.'
+  };
+
+  let insertedTotal = 0;
+  let fetchedTotal = 0;
+  let pagesCompleted = 0;
+
+  // Resume from the next page saved in memory.
+  let page = nextBackfillPage;
+
+  try {
+
+    for (
+      let count = 0;
+      count < BACKFILL_MAX_PAGES;
+      count++
+    ) {
+
+      backfillStatus.currentPage = page;
+
+      const pageUrl = new URL(UPSTREAM_URL);
+
+      pageUrl.searchParams.set(
+        'page',
+        String(page)
+      );
+
+      pageUrl.searchParams.set(
+        'size',
+        String(BACKFILL_PAGE_SIZE)
+      );
+
+      const response = await fetch(
+        pageUrl.toString(),
+        {
+          headers: {
+            Accept: 'application/json',
+            'User-Agent': 'Mozilla/5.0'
+          },
+          signal: AbortSignal.timeout(20000)
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `Backfill HTTP ${response.status} on page ${page}`
+        );
+      }
+
+      const payload = await response.json();
+      const rows = extractRows(payload);
+
+      pagesCompleted++;
+      fetchedTotal += rows.length;
+
+      backfillStatus.pagesFetched = pagesCompleted;
+      backfillStatus.recordsFetched = fetchedTotal;
+
+      console.log(
+        'BACKFILL PAGE:',
+        JSON.stringify({
+          page,
+          fetched: rows.length,
+          firstRawId:
+            rows[0]?.id ??
+            rows[0]?.data?.id ??
+            null
+        })
+      );
+
+      if (rows.length === 0) {
+        backfillStatus.note =
+          `No records returned on page ${page}. Backfill reached the available history.`;
+
+        console.log(
+          'BACKFILL STOPPED: no records on page',
+          page
+        );
+
+        break;
+      }
+
+      let insertedThisPage = 0;
+      let skippedThisPage = 0;
+      let existingThisPage = 0;
+      let saveErrorThisPage = 0;
+
+      for (const raw of rows) {
+
+        try {
+
+          const event = normalizeEvent(raw);
+
+          if (!event) {
+            skippedThisPage++;
+            continue;
+          }
+
+          const wasInserted = await saveEvent(event);
+
+          if (wasInserted) {
+            insertedThisPage++;
+            insertedTotal++;
+          } else {
+            existingThisPage++;
+          }
+
+        } catch (error) {
+
+          saveErrorThisPage++;
+
+          console.error(
+            'BACKFILL EVENT ERROR:',
+            {
+              page,
+              eventId:
+                raw?.id ??
+                raw?.data?.id ??
+                null,
+              error: error.message
+            }
+          );
+
+        }
+
+      }
 
       backfillStatus.recordsInserted = insertedTotal;
 
       console.log(
-        `BACKFILL page=${page}, newRecords=${insertedThisPage}`
+        'BACKFILL PAGE SUMMARY:',
+        {
+          page,
+          fetched: rows.length,
+          inserted: insertedThisPage,
+          existingOrUpdated: existingThisPage,
+          skipped: skippedThisPage,
+          errors: saveErrorThisPage
+        }
       );
+
+      // Save the next page for the next run.
+      nextBackfillPage = page + 1;
 
       if (rows.length < BACKFILL_PAGE_SIZE) {
 
         backfillStatus.note =
-          'A partial page was returned; backfill stopped.';
+          `Partial page ${page} returned. Backfill reached the available history.`;
 
         break;
+
       }
 
       // Avoid sending requests too rapidly.
@@ -765,23 +880,28 @@ console.log('BACKFILL PAGE SUMMARY:', {
         setTimeout(resolve, 1000)
       );
 
+      page++;
+
     }
 
     backfillStatus.lastCompletedAt =
       new Date().toISOString();
 
-    backfillStatus.note =
+    if (
       backfillStatus.note ===
       'Historical backfill is running.'
-        ? 'Backfill run completed. More historical pages may exist.'
-        : backfillStatus.note;
+    ) {
+      backfillStatus.note =
+        `Backfill run completed. Next page: ${nextBackfillPage}.`;
+    }
 
     console.log(
       'BACKFILL COMPLETE:',
       {
         pages: pagesCompleted,
         fetched: fetchedTotal,
-        inserted: insertedTotal
+        inserted: insertedTotal,
+        nextPage: nextBackfillPage
       }
     );
 
