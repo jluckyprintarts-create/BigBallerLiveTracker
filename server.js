@@ -2684,6 +2684,18 @@ async function start() {
     POLL_INTERVAL_MS
   );
 
+  // ----------------------------------
+// AUTOMATIC HISTORICAL BACKFILL SCHEDULER
+// ----------------------------------
+
+setTimeout(() => {
+  runHistoricalBackfill();
+}, 5000);
+
+setInterval(() => {
+  runHistoricalBackfill();
+}, BACKFILL_INTERVAL_MS);
+
   // SMART ANALYSIS EVERY 5 MINUTES
   setInterval(
     runAutomaticAnalysis,
