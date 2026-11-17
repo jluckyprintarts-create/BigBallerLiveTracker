@@ -27,6 +27,8 @@ const ANALYSIS_INTERVAL_MS = 5 * 60 * 1000;
 
 const BACKFILL_PAGE_SIZE = 14;
 const BACKFILL_MAX_PAGES = 10;
+// Continue historical backfill from the next page.
+let nextBackfillPage = 1;
 const BACKFILL_INTERVAL_MS = 15 * 60 * 1000;
 
 let backfillInProgress = false;
