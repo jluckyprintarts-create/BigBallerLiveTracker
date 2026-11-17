@@ -781,97 +781,68 @@ async function runHistoricalBackfill() {
 // LIVE MONITOR
 // ----------------------------------
 
-async function pollUpstream() {
 
+
+    
+async function pollUpstream() {
   if (pollInProgress) return;
 
   pollInProgress = true;
-
   lastPollAt = new Date().toISOString();
 
   try {
-
     const response = await fetch(UPSTREAM_URL, {
-
       headers: {
         Accept: 'application/json',
         'User-Agent': 'Mozilla/5.0'
       },
-
       signal: AbortSignal.timeout(20000)
-
     });
 
     if (!response.ok) {
-
-      throw new Error(
-        `Upstream HTTP ${response.status}`
-      );
-
+      throw new Error(`Upstream HTTP ${response.status}`);
     }
 
     const payload = await response.json();
-const rows = extractRows(payload);
+    const rows = extractRows(payload);
 
-if (rows.length > 0) {
-  const sample = rows[0];
-  const matches = [];
+    // Search for possible official Big Win classification fields.
+    if (rows.length > 0) {
+      const sample = rows[0];
+      const matches = [];
 
-  function scanBigWinFields(obj, path = '') {
-    if (!obj || typeof obj !== 'object') return;
+      function scanBigWinFields(obj, path = '') {
+        if (!obj || typeof obj !== 'object') return;
 
-    for (const [key, value] of Object.entries(obj)) {
-      const currentPath = path ? `${path}.${key}` : key;
+        for (const [key, value] of Object.entries(obj)) {
+          const currentPath = path ? `${path}.${key}` : key;
 
-      if (/big.?win|jackpot/i.test(key)) {
-        matches.push({
-          path: currentPath,
-          value
-        });
+          if (/big.?win|jackpot/i.test(key)) {
+            matches.push({
+              path: currentPath,
+              value
+            });
+          }
+
+          if (value && typeof value === 'object') {
+            scanBigWinFields(value, currentPath);
+          }
+        }
       }
 
-      if (value && typeof value === 'object') {
-        scanBigWinFields(value, currentPath);
-      }
+      scanBigWinFields(sample);
+
+      console.log(
+        'BIG WIN CLASSIFICATION SEARCH:',
+        JSON.stringify(matches, null, 2)
+      );
     }
-  }
-
-  scanBigWinFields(sample);
-
-  console.log(
-    'BIG WIN CLASSIFICATION SEARCH:',
-    JSON.stringify(matches, null, 2)
-  );
-}
-
-  console.log(
-    'UPSTREAM RECORD STRUCTURE:',
-    JSON.stringify(sample, null, 2)
-  );
-}
-    
-if (rows.length > 0) {
-  const sample = rows[0];
-  const data = sample?.data || {};
-  const result = data?.result || sample?.result || {};
-
-  console.log('BIG WIN FIELD CHECK:', {
-    topLevelKeys: Object.keys(sample || {}),
-    dataKeys: Object.keys(data),
-    resultKeys: Object.keys(result),
-    isBigWin: result.isBigWin ?? data.isBigWin ?? sample.isBigWin ?? null,
-    bigWin: result.bigWin ?? data.bigWin ?? sample.bigWin ?? null,
-    threeRollsTotalMultiplier: result.threeRollsTotalMultiplier ?? null,
-    fiveRollsTotalMultiplier: result.fiveRollsTotalMultiplier ?? null
-  });
-}
 
     lastFetchedCount = rows.length;
 
     let saved = 0;
 
     for (const raw of rows) {
-
       const event = normalizeEvent(raw);
 
       if (!event) continue;
@@ -879,13 +850,10 @@ if (rows.length > 0) {
       if (await saveEvent(event)) {
         saved++;
       }
-
     }
 
     lastSavedCount = saved;
-
     lastSuccessAt = new Date().toISOString();
-
     lastPollError = null;
 
     console.log(
@@ -893,7 +861,6 @@ if (rows.length > 0) {
     );
 
   } catch (error) {
-
     lastPollError = error.message;
 
     console.error('MONITOR ERROR DETAILS:', {
@@ -910,12 +877,8 @@ if (rows.length > 0) {
 
   } finally {
     pollInProgress = false;
-
   }
-
 }
-
-
 // ----------------------------------
 // SMART GAME ANALYSIS
 // ----------------------------------
