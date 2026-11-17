@@ -719,7 +719,28 @@ console.log(
       }
 
       let insertedThisPage = 0;
+let skippedThisPage = 0;
 
+for (const raw of rows) {
+  const event = normalizeEvent(raw);
+
+  if (!event) {
+    skippedThisPage++;
+    continue;
+  }
+
+  if (await saveEvent(event)) {
+    insertedThisPage++;
+    insertedTotal++;
+  }
+}
+
+console.log('BACKFILL PAGE SUMMARY:', {
+  page,
+  fetched: rows.length,
+  inserted: insertedThisPage,
+  skipped: skippedThisPage
+});
       for (const raw of rows) {
 
         const event = normalizeEvent(raw);
