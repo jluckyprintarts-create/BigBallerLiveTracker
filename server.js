@@ -2364,6 +2364,45 @@ app.get('/api/backfill/status', (req, res) => {
 });
 
 app.get('/api/database/status', async (req, res) => {
+
+app.get('/api/database/check-event', async (req, res) => {
+  try {
+    const eventId = req.query.id;
+
+    if (!eventId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing event ID. Use ?id=EVENT_ID'
+      });
+    }
+
+    const result = await pool.query(
+      `SELECT
+         event_id,
+         settled_at,
+         created_at
+       FROM game_history
+       WHERE event_id = $1
+       LIMIT 1`,
+      [eventId]
+    );
+
+    res.json({
+      success: true,
+      exists: result.rows.length > 0,
+      record: result.rows[0] ?? null
+    });
+
+  } catch (error) {
+    console.error('EVENT CHECK ERROR:', error.message);
+
+    res.status(500).json({
+      success: false,
+      error: 'Database check failed.'
+    });
+  }
+});
+  
   try {
     const result = await pool.query(`
       SELECT
