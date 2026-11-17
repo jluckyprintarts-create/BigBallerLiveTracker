@@ -2713,7 +2713,26 @@ app.get('/api/history', async (req, res) => {
 app.get('/api/stats', async (req, res) => {
 
   try {
+const bigWinCheck = await pool.query(`
+  SELECT
+    COUNT(*)::int AS total_records,
+    COUNT(*) FILTER (
+      WHERE big_win_multiplier >= 100
+    )::int AS records_100x_or_higher,
+    COUNT(*) FILTER (
+      WHERE is_big_win = TRUE
+    )::int AS marked_big_wins,
+    COUNT(*) FILTER (
+      WHERE big_win_multiplier >= 100
+        AND is_big_win = FALSE
+    )::int AS unmarked_big_wins
+  FROM game_history
+`);
 
+console.log(
+  'BIG WIN DATABASE CHECK:',
+  JSON.stringify(bigWinCheck.rows[0])
+);
     const totals = await pool.query(`
 
       SELECT
