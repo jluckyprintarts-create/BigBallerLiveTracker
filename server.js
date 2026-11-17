@@ -679,7 +679,19 @@ async function runHistoricalBackfill() {
       }
 
       const payload = await response.json();
-      const rows = extractRows(payload);
+const rows = extractRows(payload);
+
+console.log(
+  'BACKFILL NORMALIZE CHECK:',
+  JSON.stringify({
+    page,
+    fetched: rows.length,
+    firstRawId: rows[0]?.id ?? null,
+    firstNormalized: rows[0]
+      ? normalizeEvent(rows[0])
+      : null
+  })
+);
 console.log(
   'BACKFILL DEBUG:',
   JSON.stringify({
