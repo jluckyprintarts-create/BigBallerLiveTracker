@@ -811,8 +811,12 @@ async function pollUpstream() {
     }
 
     const payload = await response.json();
+const rows = extractRows(payload);
 
-    const rows = extractRows(payload);
+console.log(
+  'UPSTREAM SAMPLE:',
+  JSON.stringify(rows[0] || null, null, 2)
+);
 
     lastFetchedCount = rows.length;
 
