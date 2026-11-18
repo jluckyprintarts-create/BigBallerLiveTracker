@@ -3174,4 +3174,16 @@ process.on('SIGTERM', async () => {
 // ----------------------------------
 
 async function pollUpstream() {
+  if (pollInProgress) return;
 
+  pollInProgress = true;
+  lastPollAt = new Date().toISOString();
+
+  try {
+    const response = await fetch(UPSTREAM_URL, {
+      headers: {
+        Accept: 'application/json',
+        'User-Agent': 'Mozilla/5.0'
+      },
+      signal: AbortSignal.timeout(20000)
+    });
