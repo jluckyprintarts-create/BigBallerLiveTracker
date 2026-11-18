@@ -2946,19 +2946,17 @@ const windows = [50, 100, 250, 500];
 
       generatedAt: new Date().toISOString(),
 
-      dataSummary: {
+            dataSummary: {
 
-        dataSummary: {
+        recordsAnalyzed: totalRecords,
 
-  recordsAnalyzed: totalRecords,
+        maximumRecordsAnalyzed: 5000,
 
-  maximumRecordsAnalyzed: 5000,
+        totalThreeRolls,
 
-  totalThreeRolls,
+        totalFiveRolls,
 
-  totalFiveRolls,
-
-  totalBigWins,
+        totalBigWins,
 
         uniqueEventIds: uniqueIds,
 
