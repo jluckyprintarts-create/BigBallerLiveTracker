@@ -2948,9 +2948,17 @@ const windows = [50, 100, 250, 500];
 
       dataSummary: {
 
-        recordsAnalyzed: totalRecords,
+        dataSummary: {
 
-        maximumRecordsAnalyzed: 5000,
+  recordsAnalyzed: totalRecords,
+
+  maximumRecordsAnalyzed: 5000,
+
+  totalThreeRolls,
+
+  totalFiveRolls,
+
+  totalBigWins,
 
         uniqueEventIds: uniqueIds,
 
