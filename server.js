@@ -2815,7 +2815,20 @@ app.get('/api/advanced-analysis', async (req, res) => {
 
     const totalRecords = records.length;
 
-    const windows = [50, 100, 250, 500];
+// ALL RECORDED HISTORICAL EVENTS
+const totalThreeRolls = records.filter(
+  row => row.is_three_rolls === true
+).length;
+
+const totalFiveRolls = records.filter(
+  row => row.is_five_rolls === true
+).length;
+
+const totalBigWins = records.filter(
+  row => row.is_big_win === true
+).length;
+
+const windows = [50, 100, 250, 500];
 
     function analyzeWindow(limit) {
 
