@@ -1772,22 +1772,22 @@ async function loadAdvanceAnalysis() {
       throw new Error(data.error || 'Analysis unavailable.');
     }
 
-    const summary = data.dataSummary || {};
+    // HISTORICAL TOTALS
+const summary = data.dataSummary || {};
 
-    document.getElementById('advTotalRecords').textContent =
-      Number(summary.recordsAnalyzed || 0).toLocaleString();
+document.getElementById('advTotalRecords').textContent =
+  Number(summary.recordsAnalyzed || 0).toLocaleString();
 
-    const windows = data.rollingWindows || [];
-    const latest = windows.find(item => item.actualGames > 0);
+document.getElementById('advThreeRolls').textContent =
+  Number(summary.totalThreeRolls || 0).toLocaleString();
 
-    document.getElementById('advThreeRolls').textContent =
-      latest ? latest.threeRolls : '0';
+document.getElementById('advFiveRolls').textContent =
+  Number(summary.totalFiveRolls || 0).toLocaleString();
 
-    document.getElementById('advFiveRolls').textContent =
-      latest ? latest.fiveRolls : '0';
+document.getElementById('advBigWins').textContent =
+  Number(summary.totalBigWins || 0).toLocaleString();
 
-    document.getElementById('advBigWins').textContent =
-      latest ? latest.bigWins : '0';
+const windows = data.rollingWindows || [];
 
     // ROLLING WINDOWS TABLE
     const rollingBody = document.getElementById('advRollingWindows');
