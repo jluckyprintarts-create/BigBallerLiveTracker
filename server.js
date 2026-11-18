@@ -2869,6 +2869,9 @@ async function start() {
 
   await initializeDatabase();
 
+  // REPAIR OLD BIG WIN RECORDS
+  await repairBigWinFlags();
+
   app.listen(PORT, () => {
 
     console.log(
