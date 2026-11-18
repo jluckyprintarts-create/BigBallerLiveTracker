@@ -1831,52 +1831,97 @@ const windows = data.rollingWindows || [];
       const distribution = bonusData.distribution || [];
 
       if (distribution.length && bonusData.validSamples > 0) {
-        distributionContainer.innerHTML = `
-          <div class="analysis-intro">
-            Valid recorded bonus multipliers:
-            <strong>${Number(bonusData.validSamples).toLocaleString()}</strong>
+  distributionContainer.innerHTML = `
+    <div style="
+      padding:14px;
+      margin-bottom:16px;
+      background:#172033;
+      border:1px solid #334155;
+      border-radius:10px;
+    ">
+      <div style="font-size:11px;color:#94a3b8;">
+        VALID RECORDED BONUS MULTIPLIERS
+      </div>
+
+      <div style="
+        font-size:26px;
+        font-weight:800;
+        color:#d4af37;
+        margin-top:5px;
+      ">
+        ${Number(bonusData.validSamples).toLocaleString()}
+      </div>
+
+      <div style="font-size:11px;color:#94a3b8;margin-top:4px;">
+        Historical observations only
+      </div>
+    </div>
+
+    ${distribution.map(item => {
+      const percentage = Number(item.percentage || 0);
+      const safePercentage = Math.max(
+        0,
+        Math.min(100, percentage)
+      );
+
+      return `
+        <div style="margin:16px 0;">
+          <div style="
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:10px;
+            margin-bottom:7px;
+            font-size:12px;
+          ">
+            <span style="color:#e2e8f0;">
+              ${item.range}
+            </span>
+
+            <strong style="color:#d4af37;white-space:nowrap;">
+              ${item.count} (${percentage.toFixed(2)}%)
+            </strong>
           </div>
 
-          ${distribution.map(item => {
-            const percentage = Number(item.percentage || 0);
-
-            return `
-              <div style="margin:12px 0;">
-                <div style="
-                  display:flex;
-                  justify-content:space-between;
-                  gap:8px;
-                  margin-bottom:5px;
-                  font-size:12px;
-                ">
-                  <span>${item.range}</span>
-                  <strong>${item.count} (${percentage}%)</strong>
-                </div>
-
-                <div style="
-                  height:8px;
-                  background:#263449;
-                  border-radius:6px;
-                  overflow:hidden;
-                ">
-                  <div style="
-                    width:${Math.max(0, Math.min(100, percentage))}%;
-                    height:100%;
-                    background:#d4af37;
-                    border-radius:6px;
-                  "></div>
-                </div>
-              </div>
-            `;
-          }).join('')}
-        `;
-      } else {
-        distributionContainer.innerHTML = `
-          <div class="analysis-empty">
-            No valid recorded bonus multiplier data available.
+          <div style="
+            height:10px;
+            background:#263449;
+            border-radius:8px;
+            overflow:hidden;
+          ">
+            <div style="
+              width:${safePercentage}%;
+              height:100%;
+              background:linear-gradient(90deg,#b8860b,#facc15);
+              border-radius:8px;
+              transition:width .4s ease;
+            "></div>
           </div>
-        `;
-      }
+        </div>
+      `;
+    }).join('')}
+
+    <div style="
+      padding:12px;
+      margin-top:18px;
+      background:#111827;
+      border-left:3px solid #d4af37;
+      border-radius:5px;
+      color:#94a3b8;
+      font-size:11px;
+      line-height:1.6;
+    ">
+      Percentages describe the recorded bonus multipliers in this sample.
+      They do not predict the next game outcome.
+    </div>
+  `;
+} else {
+  distributionContainer.innerHTML = `
+    <div class="analysis-empty">
+      No valid recorded bonus multiplier data available.
+    </div>
+  `;
+}
     }
 
     status.textContent =
