@@ -1649,6 +1649,90 @@ const advanceTab = document.createElement('div');
 advanceTab.className = 'tab-panel';
 advanceTab.id = 'advanceTab';
 
+// ADVANCE ANALYSIS PANEL
+advanceTab.innerHTML = `
+  <div class="section">
+    <div class="section-header">
+      <h2>🧠 ADVANCE ANALYSIS</h2>
+      <span class="analysis-status">● HISTORICAL ANALYSIS</span>
+    </div>
+
+    <div class="intelligence-intro">
+      Advanced statistical analysis based on recorded game history.
+      Historical patterns do not guarantee future results.
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-title">RECORDS ANALYZED</div>
+        <div class="card-value" id="advTotalRecords">-</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">THREE ROLLS</div>
+        <div class="card-value" id="advThreeRolls">-</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">FIVE ROLLS</div>
+        <div class="card-value" id="advFiveRolls">-</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">BIG WINS</div>
+        <div class="card-value" id="advBigWins">-</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <h2>📊 ROLLING WINDOW ANALYSIS</h2>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>RECENT GAMES</th>
+              <th>3 ROLLS</th>
+              <th>5 ROLLS</th>
+              <th>BIG WINS</th>
+            </tr>
+          </thead>
+          <tbody id="advRollingWindows">
+            <tr>
+              <td class="empty" colspan="4">
+                Waiting for analysis data...
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-header">
+        <h2>🎯 BONUS MULTIPLIER DISTRIBUTION</h2>
+      </div>
+
+      <div id="advMultiplierDistribution">
+        <div class="analysis-empty">
+          Waiting for multiplier data...
+        </div>
+      </div>
+    </div>
+
+    <div class="status" id="advAnalysisStatus">
+      Analysis has not loaded yet.
+    </div>
+
+    <div class="analysis-footer">
+      This dashboard describes recorded historical results only.
+      It cannot determine the next random outcome or guarantee a bonus.
+    </div>
+  </div>
+`;
+  
 header.after(nav);
 nav.after(mainTab);
 mainTab.after(rollsTab);
