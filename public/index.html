@@ -1877,6 +1877,73 @@ document.getElementById('advBigWins').textContent =
 
 const windows = data.rollingWindows || [];
 
+// ----------------------------------
+// HISTORICAL FREQUENCY SUMMARY
+// ----------------------------------
+
+const total = Number(summary.recordsAnalyzed || 0);
+const three = Number(summary.totalThreeRolls || 0);
+const five = Number(summary.totalFiveRolls || 0);
+const big = Number(summary.totalBigWins || 0);
+
+function advFormatPercent(count, denominator) {
+  if (!denominator) return 'N/A';
+
+  return (count / denominator * 100).toFixed(2) + '%';
+}
+
+document.getElementById('advThreeFrequency').textContent =
+  advFormatPercent(three, total);
+
+document.getElementById('advThreeFrequencyCount').textContent =
+  `${three.toLocaleString()} events / ${total.toLocaleString()} records`;
+
+document.getElementById('advFiveFrequency').textContent =
+  advFormatPercent(five, total);
+
+document.getElementById('advFiveFrequencyCount').textContent =
+  `${five.toLocaleString()} events / ${total.toLocaleString()} records`;
+
+document.getElementById('advBigWinFrequency').textContent =
+  advFormatPercent(big, total);
+
+document.getElementById('advBigWinFrequencyCount').textContent =
+  `${big.toLocaleString()} events / ${total.toLocaleString()} records`;
+
+// ----------------------------------
+// ANALYSIS DATA QUALITY
+// ----------------------------------
+
+document.getElementById('advQualityRecords').textContent =
+  total.toLocaleString();
+
+document.getElementById('advQualityUnique').textContent =
+  Number(summary.uniqueEventIds || 0).toLocaleString();
+
+document.getElementById('advQualityDuplicates').textContent =
+  Number(summary.duplicateIdsInSample || 0).toLocaleString();
+
+document.getElementById('advQualityMultipliers').textContent =
+  Number(data.bonusMultipliers?.validSamples || 0).toLocaleString();
+
+function advFormatDate(value) {
+  if (!value) return 'No date available';
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return 'Invalid date';
+  }
+
+  return date.toLocaleString();
+}
+
+document.getElementById('advQualityOldest').textContent =
+  advFormatDate(summary.oldestRecord);
+
+document.getElementById('advQualityNewest').textContent =
+  advFormatDate(summary.newestRecord);
+    
     // ROLLING WINDOWS TABLE
     const rollingBody = document.getElementById('advRollingWindows');
 
