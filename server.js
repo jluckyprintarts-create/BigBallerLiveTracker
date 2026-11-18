@@ -2785,7 +2785,214 @@ app.get('/api/stats', async (req, res) => {
   }
 });
         
+// ----------------------------------
+// ADVANCED RNG ANALYSIS API
+// ADDITIONAL MODULE — READ ONLY
+// ----------------------------------
 
+app.get('/api/advanced-analysis', async (req, res) => {
+
+  try {
+
+    const result = await pool.query(`
+      SELECT
+        event_id,
+        settled_at,
+        adjusted_at,
+        is_three_rolls,
+        is_five_rolls,
+        is_big_win,
+        big_win_multiplier
+
+      FROM game_history
+
+      ORDER BY settled_at DESC
+
+      LIMIT 5000
+    `);
+
+    const records = result.rows;
+
+    const totalRecords = records.length;
+
+    const windows = [50, 100, 250, 500];
+
+    function analyzeWindow(limit) {
+
+      const sample = records.slice(0, limit);
+
+      const count = sample.length;
+
+      const threeRolls = sample.filter(
+        row => row.is_three_rolls === true
+      ).length;
+
+      const fiveRolls = sample.filter(
+        row => row.is_five_rolls === true
+      ).length;
+
+      const bigWins = sample.filter(
+        row => row.is_big_win === true
+      ).length;
+
+      return {
+
+        requestedGames: limit,
+
+        actualGames: count,
+
+        threeRolls,
+
+        fiveRolls,
+
+        bigWins,
+
+        threeRollsRate: count
+          ? Number((threeRolls / count * 100).toFixed(2))
+          : null,
+
+        fiveRollsRate: count
+          ? Number((fiveRolls / count * 100).toFixed(2))
+          : null,
+
+        bigWinRate: count
+          ? Number((bigWins / count * 100).toFixed(2))
+          : null
+
+      };
+
+    }
+
+    const validBonusMultipliers = records
+      .filter(row =>
+        (row.is_three_rolls || row.is_five_rolls) &&
+        row.big_win_multiplier !== null &&
+        Number.isFinite(Number(row.big_win_multiplier)) &&
+        Number(row.big_win_multiplier) > 0
+      )
+      .map(row => Number(row.big_win_multiplier));
+
+    const multiplierRanges = [
+
+      { label: 'Below 10x', min: 0, max: 10 },
+
+      { label: '10x to below 25x', min: 10, max: 25 },
+
+      { label: '25x to below 50x', min: 25, max: 50 },
+
+      { label: '50x to below 100x', min: 50, max: 100 },
+
+      { label: '100x and above', min: 100, max: Infinity }
+
+    ];
+
+    const multiplierDistribution = multiplierRanges.map(range => {
+
+      const count = validBonusMultipliers.filter(value =>
+        value >= range.min &&
+        value < range.max
+      ).length;
+
+      return {
+
+        range: range.label,
+
+        count,
+
+        percentage: validBonusMultipliers.length
+          ? Number(
+              (
+                count /
+                validBonusMultipliers.length *
+                100
+              ).toFixed(2)
+            )
+          : null
+
+      };
+
+    });
+
+    const oldestRecord = records.length
+      ? records[records.length - 1].settled_at
+      : null;
+
+    const newestRecord = records.length
+      ? records[0].settled_at
+      : null;
+
+    const uniqueIds = new Set(
+      records.map(row => row.event_id)
+    ).size;
+
+    res.json({
+
+      success: true,
+
+      engine: 'Advanced RNG Analysis',
+
+      generatedAt: new Date().toISOString(),
+
+      dataSummary: {
+
+        recordsAnalyzed: totalRecords,
+
+        maximumRecordsAnalyzed: 5000,
+
+        uniqueEventIds: uniqueIds,
+
+        duplicateIdsInSample: totalRecords - uniqueIds,
+
+        oldestRecord,
+
+        newestRecord
+
+      },
+
+      rollingWindows: windows.map(analyzeWindow),
+
+      bonusMultipliers: {
+
+        validSamples: validBonusMultipliers.length,
+
+        distribution: multiplierDistribution,
+
+        note:
+          'Distribution describes recorded bonus multipliers only. It does not represent the full game RNG outcome distribution.'
+
+      },
+
+      interpretation: {
+
+        historicalOnly: true,
+
+        predictsNextResult: false,
+
+        note:
+          'Historical frequencies describe recorded observations. They do not establish future outcomes or guarantee bonus timing.'
+
+      }
+
+    });
+
+  } catch (error) {
+
+    console.error(
+      'ADVANCED RNG ANALYSIS ERROR:',
+      error.message
+    );
+
+    res.status(500).json({
+
+      success: false,
+
+      error: 'Unable to run advanced analysis.'
+
+    });
+
+  }
+
+});
 // ----------------------------------
 // FRONTEND
 // ----------------------------------
