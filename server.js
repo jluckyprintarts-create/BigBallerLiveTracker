@@ -794,6 +794,11 @@ async function runHistoricalBackfill() {
   }
 }
 
+// ----------------------------------
+// LIVE MONITOR
+// ----------------------------------
+
+async function pollUpstream() {
   if (pollInProgress) return;
 
   pollInProgress = true;
