@@ -8,6 +8,41 @@ let allRecords = [];
 let bonusRecords = [];
 
 
+async function checkApiConnection(path) {
+  try {
+    const response = await fetch(path, {
+      cache: 'no-store'
+    });
+
+    const contentType =
+      response.headers.get('content-type') || '';
+
+    console.log('API path:', path);
+    console.log('HTTP status:', response.status);
+    console.log('Content-Type:', contentType);
+
+    if (!response.ok) {
+      console.error('API request failed:', response.status);
+      return;
+    }
+
+    if (!contentType.includes('application/json')) {
+      console.error('Expected JSON response.');
+      return;
+    }
+
+    const data = await response.json();
+    console.log('API connection successful:', data);
+
+  } catch (error) {
+    console.error('API connection error:', error.message);
+  }
+}
+
+
+
+
+  
 // SAFE TEXT
 
 function escapeHTML(value) {
