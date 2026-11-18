@@ -892,6 +892,35 @@ async function pollUpstream() {
     pollInProgress = false;
   }
 }
+
+// ----------------------------------
+// BIG WIN REPAIR
+// ----------------------------------
+
+async function repairBigWinFlags() {
+  try {
+    const result = await pool.query(`
+      UPDATE game_history
+      SET is_big_win = TRUE
+      WHERE big_win_multiplier >= 100
+        AND (
+          is_three_rolls = TRUE
+          OR is_five_rolls = TRUE
+        )
+        AND is_big_win IS DISTINCT FROM TRUE
+      RETURNING event_id, big_win_multiplier;
+    `);
+
+    console.log(
+      'BIG WIN FLAGS REPAIRED:',
+      JSON.stringify(result.rows)
+    );
+
+  } catch (error) {
+    console.error('BIG WIN REPAIR ERROR:', error.message);
+  }
+}
+
 // ----------------------------------
 // SMART GAME ANALYSIS
 // ----------------------------------
