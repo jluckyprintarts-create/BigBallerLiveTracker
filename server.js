@@ -3173,22 +3173,3 @@ process.on('SIGTERM', async () => {
   await pool.end();
   process.exit(0);
 });
-
-// ----------------------------------
-// LIVE MONITOR
-// ----------------------------------
-
-async function pollUpstream() {
-  if (pollInProgress) return;
-
-  pollInProgress = true;
-  lastPollAt = new Date().toISOString();
-
-  try {
-    const response = await fetch(UPSTREAM_URL, {
-      headers: {
-        Accept: 'application/json',
-        'User-Agent': 'Mozilla/5.0'
-      },
-      signal: AbortSignal.timeout(20000)
-    });
