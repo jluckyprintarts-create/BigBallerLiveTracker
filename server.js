@@ -425,6 +425,7 @@ function normalizeEvent(raw) {
     );
 
   }
+
 console.log('BONUS MULTIPLIER DEBUG:', JSON.stringify({
   eventId,
   isThreeRolls,
@@ -435,6 +436,7 @@ console.log('BONUS MULTIPLIER DEBUG:', JSON.stringify({
   threeRollsTotalMultiplier: result.threeRollsTotalMultiplier,
   fiveRollsTotalMultiplier: result.fiveRollsTotalMultiplier
 }));
+
 // BIG WIN RULE: 100x AND ABOVE
 const isBigWin =
   (isThreeRolls || isFiveRolls) &&
@@ -541,6 +543,7 @@ function cleanJsonValue(value) {
 
   return value;
 }
+
 // ----------------------------------
 // SAVE EVENT
 // ----------------------------------
@@ -608,6 +611,7 @@ async function saveEvent(event) {
     throw error;
   }
 }
+
 // ----------------------------------
 // AUTOMATIC HISTORICAL BACKFILL
 // ----------------------------------
@@ -790,14 +794,6 @@ async function runHistoricalBackfill() {
   }
 }
 
-// ----------------------------------
-// LIVE MONITOR
-// ----------------------------------
-
-
-
-    
-async function pollUpstream() {
   if (pollInProgress) return;
 
   pollInProgress = true;
@@ -932,31 +928,33 @@ async function runAutomaticAnalysis() {
   analysisInProgress = true;
 
   try {
-const bigWinCheck = await pool.query(`
-  SELECT
-    COUNT(*)::int AS total_records,
-
-    COUNT(*) FILTER (
-      WHERE big_win_multiplier >= 100
-    )::int AS records_100x_or_higher,
-
-    COUNT(*) FILTER (
-      WHERE is_big_win = TRUE
-    )::int AS marked_big_wins,
-
-    COUNT(*) FILTER (
-      WHERE big_win_multiplier >= 100
-        AND is_big_win = FALSE
-    )::int AS unmarked_big_wins
-
-  FROM game_history
-`);
-
-console.log('BIG WIN DATABASE CHECK:', bigWinCheck.rows[0]);
-    const hourly = await pool.query(`
-
+    const bigWinCheck = await pool.query(`
       SELECT
+        COUNT(*)::int AS total_records,
 
+        COUNT(*) FILTER (
+          WHERE big_win_multiplier >= 100
+        )::int AS records_100x_or_higher,
+
+        COUNT(*) FILTER (
+          WHERE is_big_win = TRUE
+        )::int AS marked_big_wins,
+
+        COUNT(*) FILTER (
+          WHERE big_win_multiplier >= 100
+            AND is_big_win = FALSE
+        )::int AS unmarked_big_wins
+
+      FROM game_history
+    `);
+
+    console.log(
+      'BIG WIN DATABASE CHECK:',
+      bigWinCheck.rows[0]
+    );
+
+    const hourly = await pool.query(`
+      SELECT
         EXTRACT(
           HOUR FROM adjusted_at AT TIME ZONE 'Asia/Manila'
         )::int AS hour,
@@ -977,15 +975,11 @@ console.log('BIG WIN DATABASE CHECK:', bigWinCheck.rows[0]);
       )
 
       GROUP BY hour
-
       ORDER BY hour
-
     `);
 
     const daily = await pool.query(`
-
       SELECT
-
         EXTRACT(
           DOW FROM adjusted_at AT TIME ZONE 'Asia/Manila'
         )::int AS day_number,
@@ -1006,15 +1000,11 @@ console.log('BIG WIN DATABASE CHECK:', bigWinCheck.rows[0]);
       )
 
       GROUP BY day_number
-
       ORDER BY day_number
-
     `);
 
     const totals = await pool.query(`
-
       SELECT
-
         COUNT(*)::int AS total_records,
 
         COUNT(*) FILTER (
@@ -1031,7 +1021,6 @@ console.log('BIG WIN DATABASE CHECK:', bigWinCheck.rows[0]);
         is_three_rolls = TRUE
         OR is_five_rolls = TRUE
       )
-
     `);
 
     const dayNames = [
@@ -1045,53 +1034,31 @@ console.log('BIG WIN DATABASE CHECK:', bigWinCheck.rows[0]);
     ];
 
     function topHours(rows, type) {
-
       return rows
-
         .map(row => ({
-
           hour: Number(row.hour),
-
           count: Number(row[type])
-
         }))
-
         .filter(row => row.count > 0)
-
         .sort((a, b) => b.count - a.count)
-
         .slice(0, 5);
-
     }
 
     function topDays(rows, type) {
-
       return rows
-
         .map(row => ({
-
-          day: dayNames[
-            Number(row.day_number)
-          ],
-
+          day: dayNames[Number(row.day_number)],
           count: Number(row[type])
-
         }))
-
         .filter(row => row.count > 0)
-
         .sort((a, b) => b.count - a.count)
-
         .slice(0, 7);
-
     }
 
     analysisCache = {
-
       lastAnalysisAt: new Date().toISOString(),
 
       threeRolls: {
-
         bestHours: topHours(
           hourly.rows,
           'three_rolls'
@@ -1101,11 +1068,9 @@ console.log('BIG WIN DATABASE CHECK:', bigWinCheck.rows[0]);
           daily.rows,
           'three_rolls'
         )
-
       },
 
       fiveRolls: {
-
         bestHours: topHours(
           hourly.rows,
           'five_rolls'
@@ -1115,24 +1080,19 @@ console.log('BIG WIN DATABASE CHECK:', bigWinCheck.rows[0]);
           daily.rows,
           'five_rolls'
         )
-
       },
 
       totalRecords: totals.rows[0].total_records,
 
       totals: {
-
         threeRolls: totals.rows[0].three_rolls,
-
         fiveRolls: totals.rows[0].five_rolls
-
       },
 
       error: null,
 
       note:
         'Historical frequency only. Not a prediction or guarantee of winning.'
-
     };
 
     console.log(
@@ -1141,7 +1101,6 @@ console.log('BIG WIN DATABASE CHECK:', bigWinCheck.rows[0]);
     );
 
   } catch (error) {
-
     analysisCache.error = error.message;
 
     console.error(
@@ -1150,30 +1109,22 @@ console.log('BIG WIN DATABASE CHECK:', bigWinCheck.rows[0]);
     );
 
   } finally {
-
     analysisInProgress = false;
-
   }
-
 }
-
 
 // ----------------------------------
 // BONUS INTELLIGENCE MATH HELPERS
 // ----------------------------------
 
 function average(values) {
-
   if (!values.length) return null;
 
   return values.reduce((sum, value) => sum + value, 0) /
     values.length;
-
 }
 
-
 function median(values) {
-
   if (!values.length) return null;
 
   const sorted = [...values].sort((a, b) => a - b);
@@ -1184,12 +1135,9 @@ function median(values) {
   }
 
   return (sorted[middle - 1] + sorted[middle]) / 2;
-
 }
 
-
 function standardDeviation(values) {
-
   if (values.length < 2) return 0;
 
   const avg = average(values);
@@ -1199,12 +1147,9 @@ function standardDeviation(values) {
   );
 
   return Math.sqrt(variance);
-
 }
 
-
 function percentile(values, percent) {
-
   if (!values.length) return null;
 
   const sorted = [...values].sort((a, b) => a - b);
@@ -1220,27 +1165,21 @@ function percentile(values, percent) {
 
   return sorted[lower] +
     (sorted[upper] - sorted[lower]) * fraction;
-
 }
 
-
 function roundNumber(value, digits = 1) {
-
   if (!Number.isFinite(value)) return null;
 
   const factor = Math.pow(10, digits);
 
   return Math.round(value * factor) / factor;
-
 }
-
 
 // ----------------------------------
 // MODEL ESTIMATORS
 // ----------------------------------
 
 function estimateWithModel(values, model) {
-
   if (!values.length) return null;
 
   if (model === 'mean') {
@@ -1256,37 +1195,30 @@ function estimateWithModel(values, model) {
   }
 
   if (model === 'weighted') {
-
     let weightedTotal = 0;
     let totalWeight = 0;
 
     values.forEach((value, index) => {
-
       const age = values.length - 1 - index;
       const weight = Math.pow(0.85, age);
 
       weightedTotal += value * weight;
       totalWeight += weight;
-
     });
 
     return totalWeight
       ? weightedTotal / totalWeight
       : average(values);
-
   }
 
   return median(values);
-
 }
-
 
 // ----------------------------------
 // WALK-FORWARD BACKTEST
 // ----------------------------------
 
 function runIntervalBacktest(intervals) {
-
   const models = [
     'mean',
     'median',
@@ -1297,15 +1229,21 @@ function runIntervalBacktest(intervals) {
   const results = {};
 
   for (const model of models) {
-
     const errors = [];
     const signedErrors = [];
 
-    for (let index = 5; index < intervals.length; index++) {
-
+    for (
+      let index = 5;
+      index < intervals.length;
+      index++
+    ) {
       const training = intervals.slice(0, index);
       const actual = intervals[index];
-      const predicted = estimateWithModel(training, model);
+
+      const predicted = estimateWithModel(
+        training,
+        model
+      );
 
       if (
         !Number.isFinite(predicted) ||
@@ -1316,11 +1254,9 @@ function runIntervalBacktest(intervals) {
 
       errors.push(Math.abs(predicted - actual));
       signedErrors.push(predicted - actual);
-
     }
 
     results[model] = {
-
       maeMinutes: errors.length
         ? average(errors)
         : null,
@@ -1330,9 +1266,7 @@ function runIntervalBacktest(intervals) {
         : null,
 
       samples: errors.length
-
     };
-
   }
 
   const eligible = models
@@ -1348,11 +1282,12 @@ function runIntervalBacktest(intervals) {
   return {
     selectedModel,
     results,
-    selected: results[selectedModel]
+    baselineMaeMinutes:
+      results.median.maeMinutes,
+    baselineSamples:
+      results.median.samples
   };
-
 }
-
 
 // ----------------------------------
 // BOOTSTRAP INTERVAL UNCERTAINTY
@@ -1363,7 +1298,6 @@ function createBootstrapEstimates(
   model,
   simulations = 1500
 ) {
-
   if (!intervals.length) return [];
 
   const sampleSize = Math.min(10, intervals.length);
@@ -1374,17 +1308,14 @@ function createBootstrapEstimates(
     simulation < simulations;
     simulation++
   ) {
-
     const sample = [];
 
     for (let index = 0; index < sampleSize; index++) {
-
       const randomIndex = Math.floor(
         Math.random() * intervals.length
       );
 
       sample.push(intervals[randomIndex]);
-
     }
 
     const estimate = estimateWithModel(sample, model);
@@ -1392,11 +1323,9 @@ function createBootstrapEstimates(
     if (Number.isFinite(estimate) && estimate > 0) {
       estimates.push(estimate);
     }
-
   }
 
   return estimates;
-
 }
 
 
@@ -1405,7 +1334,6 @@ function createBootstrapEstimates(
 // ----------------------------------
 
 function buildBonusForecast(timestampValues) {
-
   const timestamps = timestampValues
     .map(value => getDate(value))
     .filter(Boolean)
@@ -1427,7 +1355,6 @@ function buildBonusForecast(timestampValues) {
   const intervals = [];
 
   for (let index = 1; index < timestamps.length; index++) {
-
     const minutes = (
       timestamps[index].getTime() -
       timestamps[index - 1].getTime()
@@ -1436,7 +1363,6 @@ function buildBonusForecast(timestampValues) {
     if (minutes > 0 && Number.isFinite(minutes)) {
       intervals.push(minutes);
     }
-
   }
 
   result.intervalCount = intervals.length;
@@ -1466,7 +1392,6 @@ function buildBonusForecast(timestampValues) {
   );
 
   result.selectedModel = selectedModel;
-
   result.estimatedIntervalMinutes =
     roundNumber(estimatedInterval);
 
@@ -1498,27 +1423,26 @@ function buildBonusForecast(timestampValues) {
   const mad = median(absoluteDeviations);
 
   if (intervals.length < 5) {
-
     result.anomaly = 'not-enough-data';
-
-  } else if (mad > 0 && currentGap > med + (3 * 1.4826 * mad)) {
-
+  } else if (
+    mad > 0 &&
+    currentGap > med + (3 * 1.4826 * mad)
+  ) {
     result.anomaly = 'unusually-long-gap';
-
-  } else if (mad === 0 && currentGap > med * 2) {
-
+  } else if (
+    mad === 0 &&
+    currentGap > med * 2
+  ) {
     result.anomaly = 'unusually-long-gap';
-
   } else {
-
     result.anomaly = 'within-historical-range';
-
   }
 
   const mae = backtest.selected.maeMinutes;
 
   const relativeMae = (
-    mae !== null && med > 0
+    mae !== null &&
+    med > 0
   ) ? mae / med : null;
 
   if (
@@ -1529,12 +1453,10 @@ function buildBonusForecast(timestampValues) {
     relativeMae !== null &&
     relativeMae <= 0.25
   ) {
-
     result.confidence = 'Higher';
 
     result.confidenceReason =
       'Large interval sample with relatively consistent gaps and measurable backtest error. This is not a chance-of-bonus percentage.';
-
   } else if (
     intervals.length >= 15 &&
     backtest.selected.samples >= 5 &&
@@ -1543,19 +1465,15 @@ function buildBonusForecast(timestampValues) {
     relativeMae !== null &&
     relativeMae <= 0.50
   ) {
-
     result.confidence = 'Moderate';
 
     result.confidenceReason =
       'Some historical consistency is present, but timing uncertainty remains substantial. This is not a chance-of-bonus percentage.';
-
   } else {
-
     result.confidence = 'Low';
 
     result.confidenceReason =
       'Historical intervals are limited or variable, so estimated timing is uncertain. This is not a chance-of-bonus percentage.';
-
   }
 
   const bootstrap = createBootstrapEstimates(
@@ -1564,7 +1482,10 @@ function buildBonusForecast(timestampValues) {
     1500
   );
 
-  if (!bootstrap.length || !Number.isFinite(estimatedInterval)) {
+  if (
+    !bootstrap.length ||
+    !Number.isFinite(estimatedInterval)
+  ) {
     return result;
   }
 
@@ -1584,14 +1505,14 @@ function buildBonusForecast(timestampValues) {
   );
 
   result.estimatedWindows = quantiles.map((item, index) => {
-
     const minutesFromLast = Math.max(
       1,
       percentile(bootstrap, item.value)
     );
 
     const centerDate = new Date(
-      lastTimestamp.getTime() + minutesFromLast * 60000
+      lastTimestamp.getTime() +
+      minutesFromLast * 60000
     );
 
     const startDate = new Date(
@@ -1603,25 +1524,16 @@ function buildBonusForecast(timestampValues) {
     );
 
     return {
-
       rank: index + 1,
-
       label: item.label,
-
       minutesFromLast: roundNumber(minutesFromLast),
-
       centerAt: centerDate.toISOString(),
-
       windowStart: startDate.toISOString(),
-
       windowEnd: endDate.toISOString()
-
     };
-
   });
 
   return result;
-
 }
 
 
@@ -1633,7 +1545,6 @@ function evaluateHistoricalForecasts(
   timestamps,
   gameType
 ) {
-
   const results = [];
 
   const dates = timestamps
@@ -1646,13 +1557,10 @@ function evaluateHistoricalForecasts(
   }
 
   for (let index = 6; index < dates.length; index++) {
-
     const training = dates.slice(0, index);
-
     const intervals = [];
 
     for (let i = 1; i < training.length; i++) {
-
       const minutes = (
         training[i].getTime() -
         training[i - 1].getTime()
@@ -1661,7 +1569,6 @@ function evaluateHistoricalForecasts(
       if (minutes > 0 && Number.isFinite(minutes)) {
         intervals.push(minutes);
       }
-
     }
 
     if (intervals.length < 5) {
@@ -1669,7 +1576,6 @@ function evaluateHistoricalForecasts(
     }
 
     const backtest = runIntervalBacktest(intervals);
-
     const model = backtest.selectedModel;
 
     const predictedMinutes = estimateWithModel(
@@ -1685,7 +1591,6 @@ function evaluateHistoricalForecasts(
     }
 
     const lastTimestamp = training[training.length - 1];
-
     const actualTimestamp = dates[index];
 
     const forecastTimestamp = new Date(
@@ -1725,19 +1630,12 @@ function evaluateHistoricalForecasts(
       actualTimestamp <= windowEnd;
 
     results.push({
-
       game_type: gameType,
-
       forecast_origin_at: lastTimestamp.toISOString(),
-
       forecast_at: forecastTimestamp.toISOString(),
-
       window_start: windowStart.toISOString(),
-
       window_end: windowEnd.toISOString(),
-
       actual_bonus_at: actualTimestamp.toISOString(),
-
       error_minutes: roundNumber(absoluteError),
 
       signed_error_minutes: roundNumber(
@@ -1746,7 +1644,6 @@ function evaluateHistoricalForecasts(
       ),
 
       central_hit: centralHit,
-
       candidate_hit: candidateHit,
 
       status: centralHit
@@ -1754,13 +1651,10 @@ function evaluateHistoricalForecasts(
         : candidateHit
           ? 'window-hit'
           : 'missed'
-
     });
-
   }
 
   return results;
-
 }
 
 
@@ -1769,7 +1663,6 @@ function evaluateHistoricalForecasts(
 // ----------------------------------
 
 async function saveHistoricalForecasts(results) {
-
   if (!Array.isArray(results) || results.length === 0) {
     return 0;
   }
@@ -1777,7 +1670,6 @@ async function saveHistoricalForecasts(results) {
   let saved = 0;
 
   for (const item of results) {
-
     await pool.query(
       `
       INSERT INTO forecast_evaluations (
@@ -1834,9 +1726,7 @@ async function saveHistoricalForecasts(results) {
     saved++;
   }
 
-  console.log(
-    `Historical forecasts saved: ${saved}`
-  );
+  console.log(`Historical forecasts saved: ${saved}`);
 
   return saved;
 }
@@ -1847,9 +1737,7 @@ async function saveHistoricalForecasts(results) {
 // ----------------------------------
 
 async function runHistoricalForecastEvaluation() {
-
   try {
-
     const threeRollsResult = await pool.query(`
       SELECT adjusted_at
       FROM game_history
@@ -1895,18 +1783,13 @@ async function runHistoricalForecastEvaluation() {
         fiveRolls: fiveSaved
       }
     );
-
   } catch (error) {
-
     console.error(
       'Historical forecast evaluation error:',
       error.message
     );
-
   }
-
 }
-
 
 // ----------------------------------
 // SAVE LIVE FORECAST
@@ -2001,17 +1884,11 @@ async function evaluatePendingLiveForecasts() {
       WITH pending AS (
 
         SELECT
-
           f.id,
-
           f.game_type,
-
           f.forecast_at,
-
           f.window_start,
-
           f.window_end,
-
           next_bonus.actual_bonus_at
 
         FROM forecast_evaluations f
@@ -2050,7 +1927,6 @@ async function evaluatePendingLiveForecasts() {
 
         WHERE
           f.source = 'live'
-
           AND f.status = 'pending'
 
       )
@@ -2058,7 +1934,6 @@ async function evaluatePendingLiveForecasts() {
       UPDATE forecast_evaluations f
 
       SET
-
         actual_bonus_at = p.actual_bonus_at,
 
         error_minutes = ROUND(
@@ -2225,16 +2100,16 @@ async function runBonusIntelligenceAnalysis() {
 
     };
 
-    // EVALUATE OLD LIVE FORECASTS FIRST
+    // Evaluate old live forecasts first.
     await evaluatePendingLiveForecasts();
 
-    // SAVE LIVE THREE ROLLS FORECAST
+    // Save live Three Rolls forecast.
     await saveLiveForecast(
       'threeRolls',
       intelligenceCache.threeRolls
     );
 
-    // SAVE LIVE FIVE ROLLS FORECAST
+    // Save live Five Rolls forecast.
     await saveLiveForecast(
       'fiveRolls',
       intelligenceCache.fiveRolls
@@ -2261,6 +2136,7 @@ async function runBonusIntelligenceAnalysis() {
   }
 
 }
+
 
 // ----------------------------------
 // AI PERFORMANCE MONITOR API
@@ -2289,6 +2165,15 @@ app.get('/api/performance', async (req, res) => {
         ) AS average_error_minutes,
 
         ROUND(
+          (
+            PERCENTILE_CONT(0.5)
+            WITHIN GROUP (ORDER BY error_minutes)
+            FILTER (WHERE status <> 'pending')
+          )::numeric,
+          1
+        ) AS median_absolute_error_minutes,
+
+        ROUND(
           AVG(signed_error_minutes) FILTER (
             WHERE status <> 'pending'
           ), 1
@@ -2298,13 +2183,15 @@ app.get('/api/performance', async (req, res) => {
           WHEN COUNT(*) FILTER (
             WHERE status <> 'pending'
           ) = 0 THEN NULL
+
           ELSE ROUND(
             100.0 * COUNT(*) FILTER (
               WHERE status <> 'pending'
               AND central_hit = TRUE
             ) / COUNT(*) FILTER (
               WHERE status <> 'pending'
-            ), 1
+            ),
+            1
           )
         END AS central_hit_rate,
 
@@ -2312,13 +2199,15 @@ app.get('/api/performance', async (req, res) => {
           WHEN COUNT(*) FILTER (
             WHERE status <> 'pending'
           ) = 0 THEN NULL
+
           ELSE ROUND(
             100.0 * COUNT(*) FILTER (
               WHERE status <> 'pending'
               AND candidate_hit = TRUE
             ) / COUNT(*) FILTER (
               WHERE status <> 'pending'
-            ), 1
+            ),
+            1
           )
         END AS candidate_hit_rate,
 
@@ -2354,17 +2243,120 @@ app.get('/api/performance', async (req, res) => {
       LIMIT 15
     `);
 
+    // Historical backtest metrics provide a reference baseline,
+    // not a guarantee.
+    const backtestSummary = await pool.query(`
+      SELECT
+        game_type,
+
+        COUNT(*) FILTER (
+          WHERE status <> 'pending'
+        )::int AS samples,
+
+        ROUND(
+          AVG(error_minutes) FILTER (
+            WHERE status <> 'pending'
+          ),
+          1
+        ) AS mae_minutes,
+
+        ROUND(
+          (
+            PERCENTILE_CONT(0.5)
+            WITHIN GROUP (ORDER BY error_minutes)
+            FILTER (WHERE status <> 'pending')
+          )::numeric,
+          1
+        ) AS median_absolute_error_minutes,
+
+        ROUND(
+          AVG(signed_error_minutes) FILTER (
+            WHERE status <> 'pending'
+          ),
+          1
+        ) AS signed_error_minutes,
+
+        ROUND(
+          100.0 * COUNT(*) FILTER (
+            WHERE status <> 'pending'
+            AND candidate_hit = TRUE
+          )
+          / NULLIF(
+            COUNT(*) FILTER (
+              WHERE status <> 'pending'
+            ),
+            0
+          ),
+          1
+        ) AS window_coverage_rate
+
+      FROM forecast_evaluations
+
+      WHERE source = 'backtest'
+
+      GROUP BY game_type
+    `);
+
     const byType = new Map(
-      summary.rows.map(row => [row.game_type, row])
+      summary.rows.map(row => [
+        row.game_type,
+        row
+      ])
     );
 
     function performanceFor(gameType) {
 
       const row = byType.get(gameType) || {};
 
+      const baseline =
+        backtestSummary.rows.find(
+          item => item.game_type === gameType
+        ) || {};
+
       return {
-        totalEvaluated: Number(row.total_evaluated || 0),
-        totalPending: Number(row.total_pending || 0),
+
+        totalEvaluated:
+          Number(row.total_evaluated || 0),
+
+        totalPending:
+          Number(row.total_pending || 0),
+
+        sampleCount:
+          Number(row.total_evaluated || 0),
+
+        medianAbsoluteErrorMinutes:
+          row.median_absolute_error_minutes == null
+            ? null
+            : Number(row.median_absolute_error_minutes),
+
+        baseline: {
+
+          sampleCount:
+            Number(baseline.samples || 0),
+
+          maeMinutes:
+            baseline.mae_minutes == null
+              ? null
+              : Number(baseline.mae_minutes),
+
+          medianAbsoluteErrorMinutes:
+            baseline.median_absolute_error_minutes == null
+              ? null
+              : Number(
+                  baseline.median_absolute_error_minutes
+                ),
+
+          signedErrorMinutes:
+            baseline.signed_error_minutes == null
+              ? null
+              : Number(baseline.signed_error_minutes),
+
+          windowCoverageRate:
+            baseline.window_coverage_rate == null
+              ? null
+              : Number(baseline.window_coverage_rate)
+
+        },
 
         averageErrorMinutes:
           row.average_error_minutes == null
@@ -2385,6 +2377,7 @@ app.get('/api/performance', async (req, res) => {
           row.candidate_hit_rate == null
             ? null
             : Number(row.candidate_hit_rate)
+
       };
 
     }
@@ -2392,13 +2385,23 @@ app.get('/api/performance', async (req, res) => {
     const lastUpdated = summary.rows
       .map(row => row.last_updated)
       .filter(Boolean)
-      .sort((a, b) => new Date(b) - new Date(a))[0] || null;
+      .sort(
+        (a, b) => new Date(b) - new Date(a)
+      )[0] || null;
 
     res.json({
-      threeRolls: performanceFor('threeRolls'),
-      fiveRolls: performanceFor('fiveRolls'),
-      recent: recent.rows,
+
+      threeRolls:
+        performanceFor('threeRolls'),
+
+      fiveRolls:
+        performanceFor('fiveRolls'),
+
+      recent:
+        recent.rows,
+
       lastUpdated
+
     });
 
   } catch (error) {
@@ -2409,8 +2412,11 @@ app.get('/api/performance', async (req, res) => {
     );
 
     res.status(500).json({
+
       error: 'Unable to load performance data',
+
       details: error.message
+
     });
 
   }
@@ -2418,19 +2424,307 @@ app.get('/api/performance', async (req, res) => {
 });
 
 // ----------------------------------
+// ROLLING STATISTICS API
+// ----------------------------------
+
+app.get('/api/rolling-stats', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      WITH bonus_events AS (
+        SELECT 'threeRolls'::text AS game_type, adjusted_at
+        FROM game_history
+        WHERE is_three_rolls = TRUE
+          AND adjusted_at IS NOT NULL
+
+        UNION ALL
+
+        SELECT 'fiveRolls'::text AS game_type, adjusted_at
+        FROM game_history
+        WHERE is_five_rolls = TRUE
+          AND adjusted_at IS NOT NULL
+      ),
+
+      numbered AS (
+        SELECT
+          game_type,
+          adjusted_at,
+
+          ROW_NUMBER() OVER (
+            PARTITION BY game_type
+            ORDER BY adjusted_at DESC
+          ) AS rn,
+
+          LAG(adjusted_at) OVER (
+            PARTITION BY game_type
+            ORDER BY adjusted_at DESC
+          ) AS next_newer_at
+
+        FROM bonus_events
+      ),
+
+      recent AS (
+        SELECT
+          game_type,
+          rn,
+          adjusted_at,
+
+          ABS(
+            EXTRACT(
+              EPOCH FROM (next_newer_at - adjusted_at)
+            ) / 60.0
+          ) AS interval_minutes
+
+        FROM numbered
+      )
+
+      SELECT
+        game_type,
+
+        COUNT(*) FILTER (
+          WHERE rn <= 50
+        )::int AS recent_50_samples,
+
+        ROUND(
+          AVG(interval_minutes) FILTER (
+            WHERE rn <= 50
+          ),
+          1
+        ) AS recent_50_average_interval_minutes,
+
+        ROUND(
+          (
+            PERCENTILE_CONT(0.5)
+            WITHIN GROUP (ORDER BY interval_minutes)
+            FILTER (WHERE rn <= 50)
+          )::numeric,
+          1
+        ) AS recent_50_median_interval_minutes,
+
+        COUNT(*) FILTER (
+          WHERE rn <= 100
+        )::int AS recent_100_samples,
+
+        ROUND(
+          AVG(interval_minutes) FILTER (
+            WHERE rn <= 100
+          ),
+          1
+        ) AS recent_100_average_interval_minutes,
+
+        ROUND(
+          (
+            PERCENTILE_CONT(0.5)
+            WITHIN GROUP (ORDER BY interval_minutes)
+            FILTER (WHERE rn <= 100)
+          )::numeric,
+          1
+        ) AS recent_100_median_interval_minutes,
+
+        COUNT(*) FILTER (
+          WHERE rn <= 250
+        )::int AS recent_250_samples,
+
+        ROUND(
+          AVG(interval_minutes) FILTER (
+            WHERE rn <= 250
+          ),
+          1
+        ) AS recent_250_average_interval_minutes,
+
+        ROUND(
+          (
+            PERCENTILE_CONT(0.5)
+            WITHIN GROUP (ORDER BY interval_minutes)
+            FILTER (WHERE rn <= 250)
+          )::numeric,
+          1
+        ) AS recent_250_median_interval_minutes,
+
+        COUNT(*)::int AS total_bonus_events,
+        MIN(adjusted_at) AS oldest_bonus_at,
+        MAX(adjusted_at) AS newest_bonus_at
+
+      FROM recent
+      GROUP BY game_type
+    `);
+
+    const daily = await pool.query(`
+      SELECT
+        (
+          adjusted_at AT TIME ZONE 'Asia/Manila'
+        )::date AS day,
+
+        COUNT(*) FILTER (
+          WHERE is_three_rolls = TRUE
+        )::int AS three_rolls,
+
+        COUNT(*) FILTER (
+          WHERE is_five_rolls = TRUE
+        )::int AS five_rolls,
+
+        COUNT(*) FILTER (
+          WHERE is_big_win = TRUE
+        )::int AS big_wins
+
+      FROM game_history
+
+      WHERE adjusted_at >= NOW() - INTERVAL '30 days'
+
+      GROUP BY day
+      ORDER BY day DESC
+    `);
+
+    const byType = Object.fromEntries(
+      result.rows.map(row => [
+        row.game_type,
+        row
+      ])
+    );
+
+    res.json({
+      threeRolls: byType.threeRolls || null,
+      fiveRolls: byType.fiveRolls || null,
+      dailyLast30Days: daily.rows,
+
+      note:
+        'Rolling values describe historical intervals and frequency only; they do not predict or guarantee future outcomes.'
+    });
+
+  } catch (error) {
+    console.error(
+      'ROLLING STATS API ERROR:',
+      error.message
+    );
+
+    res.status(500).json({
+      error: 'Unable to load rolling statistics.'
+    });
+  }
+});
+
+
+// ----------------------------------
+// DATA QUALITY MONITOR API
+// ----------------------------------
+
+app.get('/api/data-quality', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT
+        COUNT(*)::int AS total_records,
+
+        COUNT(DISTINCT event_id)::int
+          AS unique_event_ids,
+
+        (
+          COUNT(*) - COUNT(DISTINCT event_id)
+        )::int AS duplicate_event_ids,
+
+        COUNT(*) FILTER (
+          WHERE settled_at IS NULL
+        )::int AS missing_timestamps,
+
+        COUNT(*) FILTER (
+          WHERE event_id IS NULL
+             OR BTRIM(event_id) = ''
+        )::int AS missing_event_ids,
+
+        COUNT(*) FILTER (
+          WHERE COALESCE(is_three_rolls, FALSE) = FALSE
+            AND COALESCE(is_five_rolls, FALSE) = FALSE
+        )::int AS unclassified_events,
+
+        COUNT(*) FILTER (
+          WHERE big_win_multiplier IS NOT NULL
+            AND big_win_multiplier < 0
+        )::int AS invalid_negative_multipliers,
+
+        COUNT(*) FILTER (
+          WHERE is_big_win = TRUE
+            AND COALESCE(big_win_multiplier, 0) < 100
+        )::int AS inconsistent_big_win_flags,
+
+        MIN(settled_at) AS oldest_record,
+        MAX(settled_at) AS newest_record
+
+      FROM game_history
+    `);
+
+    const db = result.rows[0];
+
+    res.json({
+      checkedAt: new Date().toISOString(),
+
+      database: db,
+
+      polling: {
+        inProgress: pollInProgress,
+        lastPollAt,
+        lastSuccessAt,
+        lastPollError,
+        lastFetchedCount,
+        lastSavedCount,
+        intervalMs: POLL_INTERVAL_MS
+      },
+
+      backfill: {
+        ...backfillStatus,
+        nextPage: nextBackfillPage,
+        maxPagesPerRun: BACKFILL_MAX_PAGES,
+        pageSize: BACKFILL_PAGE_SIZE,
+        intervalMs: BACKFILL_INTERVAL_MS
+      },
+
+      dataQuality: {
+        duplicateEventIds:
+          Number(db.duplicate_event_ids || 0),
+
+        missingTimestamps:
+          Number(db.missing_timestamps || 0),
+
+        missingEventIds:
+          Number(db.missing_event_ids || 0),
+
+        unclassifiedEvents:
+          Number(db.unclassified_events || 0),
+
+        invalidNegativeMultipliers:
+          Number(db.invalid_negative_multipliers || 0),
+
+        inconsistentBigWinFlags:
+          Number(db.inconsistent_big_win_flags || 0)
+      },
+
+      note:
+        'Quality checks summarize stored records and recent collection status. Historical frequencies do not guarantee future outcomes.'
+    });
+
+  } catch (error) {
+    console.error(
+      'DATA QUALITY API ERROR:',
+      error.message
+    );
+
+    res.status(500).json({
+      error: 'Unable to load data quality status.'
+    });
+  }
+});
+
+
+// ----------------------------------
 // HISTORICAL BACKFILL STATUS API
 // ----------------------------------
 
 app.get('/api/backfill/status', (req, res) => {
-
   res.json({
     ...backfillStatus,
     maxPagesPerRun: BACKFILL_MAX_PAGES,
     pageSize: BACKFILL_PAGE_SIZE,
     intervalMs: BACKFILL_INTERVAL_MS
   });
-
 });
+
 
 // ----------------------------------
 // DATABASE STATUS API
@@ -2453,7 +2747,10 @@ app.get('/api/database/status', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('DATABASE STATUS ERROR:', error.message);
+    console.error(
+      'DATABASE STATUS ERROR:',
+      error.message
+    );
 
     res.status(500).json({
       success: false,
@@ -2461,6 +2758,7 @@ app.get('/api/database/status', async (req, res) => {
     });
   }
 });
+
 
 // ----------------------------------
 // DATABASE EVENT CHECK API
@@ -2478,10 +2776,12 @@ app.get('/api/database/check-event', async (req, res) => {
     }
 
     const result = await pool.query(
-      `SELECT event_id, settled_at, created_at
-       FROM game_history
-       WHERE event_id = $1
-       LIMIT 1`,
+      `
+      SELECT event_id, settled_at, created_at
+      FROM game_history
+      WHERE event_id = $1
+      LIMIT 1
+      `,
       [eventId]
     );
 
@@ -2492,7 +2792,10 @@ app.get('/api/database/check-event', async (req, res) => {
     });
 
   } catch (error) {
-    console.error('EVENT CHECK ERROR:', error.message);
+    console.error(
+      'EVENT CHECK ERROR:',
+      error.message
+    );
 
     res.status(500).json({
       success: false,
@@ -2500,14 +2803,14 @@ app.get('/api/database/check-event', async (req, res) => {
     });
   }
 });
+
+
 // ----------------------------------
 // ANALYSIS API
 // ----------------------------------
 
 app.get('/api/analysis', (req, res) => {
-
   res.json(analysisCache);
-
 });
 
 
@@ -2516,9 +2819,7 @@ app.get('/api/analysis', (req, res) => {
 // ----------------------------------
 
 app.get('/api/intelligence', (req, res) => {
-
   res.json(intelligenceCache);
-
 });
 
 
@@ -2527,23 +2828,17 @@ app.get('/api/intelligence', (req, res) => {
 // ----------------------------------
 
 app.get('/health', async (req, res) => {
-
   let database = 'ok';
 
   try {
-
     await pool.query('SELECT 1');
-
   } catch {
-
     database = 'error';
-
   }
 
   res.status(
     database === 'ok' ? 200 : 503
   ).json({
-
     status:
       database === 'ok'
         ? 'ok'
@@ -2552,26 +2847,19 @@ app.get('/health', async (req, res) => {
     database,
 
     lastPollAt,
-
     lastSuccessAt,
-
     lastPollError,
-
     lastFetchedCount,
-
     lastSavedCount,
 
     pollIntervalMs: POLL_INTERVAL_MS,
-
     analysisIntervalMs: ANALYSIS_INTERVAL_MS,
 
     lastAnalysisAt: analysisCache.lastAnalysisAt,
 
     lastIntelligenceAnalysisAt:
       intelligenceCache.lastAnalysisAt
-
   });
-
 });
 
 
@@ -2580,43 +2868,32 @@ app.get('/health', async (req, res) => {
 // ----------------------------------
 
 app.get('/api/bigballer', async (req, res) => {
-
   try {
-
     const limit = Math.min(
       500,
       Math.max(1, Number(req.query.limit) || 100)
     );
 
     const result = await pool.query(
-
-      `SELECT *
-       FROM game_history
-       ORDER BY settled_at DESC
-       LIMIT $1`,
-
+      `
+      SELECT *
+      FROM game_history
+      ORDER BY settled_at DESC
+      LIMIT $1
+      `,
       [limit]
-
     );
 
     res.json({
-
       count: result.rowCount,
-
       records: result.rows
-
     });
 
   } catch (error) {
-
     res.status(500).json({
-
       error: error.message
-
     });
-
   }
-
 });
 
 
@@ -2625,9 +2902,7 @@ app.get('/api/bigballer', async (req, res) => {
 // ----------------------------------
 
 app.get('/api/history', async (req, res) => {
-
   try {
-
     const limit = Math.min(
       1000,
       Math.max(1, Number(req.query.limit) || 200)
@@ -2639,20 +2914,17 @@ app.get('/api/history', async (req, res) => {
 
     let where = '';
 
-    if (['3', 'three', 'three_rolls'].includes(type)) {
-
+    if (
+      ['3', 'three', 'three_rolls'].includes(type)
+    ) {
       where = 'WHERE is_three_rolls = TRUE';
 
-    }
-
-    else if (['5', 'five', 'five_rolls'].includes(type)) {
-
+    } else if (
+      ['5', 'five', 'five_rolls'].includes(type)
+    ) {
       where = 'WHERE is_five_rolls = TRUE';
 
-    }
-
-    else if (type === 'all') {
-
+    } else if (type === 'all') {
       where = `
         WHERE (
           is_three_rolls = TRUE
@@ -2660,60 +2932,44 @@ app.get('/api/history', async (req, res) => {
         )
       `;
 
-    }
-
-    else {
-
+    } else {
       return res.status(400).json({
-
         error: 'Invalid type'
-
       });
-
     }
 
     const result = await pool.query(
-
-      `SELECT *
-       FROM game_history
-       ${where}
-       ORDER BY settled_at DESC
-       LIMIT $1`,
-
+      `
+      SELECT *
+      FROM game_history
+      ${where}
+      ORDER BY settled_at DESC
+      LIMIT $1
+      `,
       [limit]
-
     );
 
     res.json({
-
       count: result.rowCount,
-
       records: result.rows
-
     });
 
   } catch (error) {
-
     res.status(500).json({
-
       error: error.message
-
     });
-
   }
-
 });
 
 
 // ----------------------------------
-// STATISTICS
+// STATISTICS API
 // ----------------------------------
-
 
 app.get('/api/stats', async (req, res) => {
   try {
 
-    // Check records with 100x or higher multiplier
+    // Check records with 100x or higher multiplier.
     const bigWinCheck = await pool.query(`
       SELECT
         event_id,
@@ -2732,49 +2988,59 @@ app.get('/api/stats', async (req, res) => {
       JSON.stringify(bigWinCheck.rows)
     );
 
-    // Overall statistics
+    // Overall statistics.
     const totals = await pool.query(`
       SELECT
         COUNT(*)::int AS total_records,
+
         COUNT(*) FILTER (
           WHERE is_three_rolls
         )::int AS three_rolls,
+
         COUNT(*) FILTER (
           WHERE is_five_rolls
         )::int AS five_rolls,
+
         COUNT(*) FILTER (
           WHERE is_big_win
         )::int AS big_wins
+
       FROM game_history
     `);
 
-    // Hourly statistics in Philippine time
+    // Hourly statistics in Philippine time.
     const hourly = await pool.query(`
       SELECT
         EXTRACT(
           HOUR FROM settled_at AT TIME ZONE 'Asia/Manila'
         )::int AS hour,
+
         COUNT(*)::int AS total,
+
         COUNT(*) FILTER (
           WHERE is_three_rolls
         )::int AS three_rolls,
+
         COUNT(*) FILTER (
           WHERE is_five_rolls
         )::int AS five_rolls,
+
         COUNT(*) FILTER (
           WHERE is_big_win
         )::int AS big_wins
+
       FROM game_history
       GROUP BY hour
       ORDER BY hour
     `);
 
     res.json({
-  totals: totals.rows[0],
-  hourlyAsiaManila: hourly.rows,
-  bigWinRecords: bigWinCheck.rows,
-  note: 'Historical records do not predict future random outcomes.'
-});
+      totals: totals.rows[0],
+      hourlyAsiaManila: hourly.rows,
+      bigWinRecords: bigWinCheck.rows,
+      note:
+        'Historical records do not predict future random outcomes.'
+    });
 
   } catch (error) {
     console.error('STATS API ERROR:', error);
@@ -2784,7 +3050,7 @@ app.get('/api/stats', async (req, res) => {
     });
   }
 });
-        
+
 
 // ----------------------------------
 // FRONTEND
@@ -2797,7 +3063,6 @@ app.use(
 );
 
 app.get('*', (req, res, next) => {
-
   if (
     req.path.startsWith('/api/') ||
     req.path === '/health'
@@ -2806,27 +3071,19 @@ app.get('*', (req, res, next) => {
   }
 
   res.sendFile(
-
     path.join(
       __dirname,
       'public',
       'index.html'
     ),
-
     (error) => {
-
       if (error) {
-
         res.status(404).send(
           'Frontend file not found. Add public/index.html.'
         );
-
       }
-
     }
-
   );
-
 });
 
 
@@ -2835,14 +3092,12 @@ app.get('*', (req, res, next) => {
 // ----------------------------------
 
 async function start() {
-
   await initializeDatabase();
 
-  // REPAIR OLD BIG WIN RECORDS
+  // Repair old Big Win records.
   await repairBigWinFlags();
 
   app.listen(PORT, () => {
-
     console.log(
       `MONOPOLY TRACKER running on port ${PORT}`
     );
@@ -2858,68 +3113,65 @@ async function start() {
     console.log(
       `Bonus intelligence every ${ANALYSIS_INTERVAL_MS}ms`
     );
-
   });
 
   await pollUpstream();
 
-  // FIRST ANALYSIS ON STARTUP
+  // First analysis on startup.
   await runAutomaticAnalysis();
 
-  // FIRST BONUS INTELLIGENCE ANALYSIS
+  // First bonus intelligence analysis.
   await runBonusIntelligenceAnalysis();
 
-  // FIRST HISTORICAL FORECAST EVALUATION
+  // First historical forecast evaluation.
   runHistoricalForecastEvaluation();
 
-  // DATA COLLECTION
+  // Data collection.
   setInterval(
     pollUpstream,
     POLL_INTERVAL_MS
   );
 
-  // ----------------------------------
-// AUTOMATIC HISTORICAL BACKFILL SCHEDULER
-// ----------------------------------
+  // Automatic historical backfill scheduler.
+  setTimeout(() => {
+    runHistoricalBackfill();
+  }, 5000);
 
-setTimeout(() => {
-  runHistoricalBackfill();
-}, 5000);
+  setInterval(() => {
+    runHistoricalBackfill();
+  }, BACKFILL_INTERVAL_MS);
 
-setInterval(() => {
-  runHistoricalBackfill();
-}, BACKFILL_INTERVAL_MS);
-
-  // SMART ANALYSIS EVERY 5 MINUTES
+  // Smart analysis every five minutes.
   setInterval(
     runAutomaticAnalysis,
     ANALYSIS_INTERVAL_MS
   );
 
-  // BONUS INTELLIGENCE EVERY 5 MINUTES
+  // Bonus intelligence every five minutes.
   setInterval(
     runBonusIntelligenceAnalysis,
     ANALYSIS_INTERVAL_MS
   );
-
 }
 
 start().catch((error) => {
-
   console.error(
     'STARTUP ERROR:',
     error
   );
 
   process.exit(1);
-
 });
 
 
 process.on('SIGTERM', async () => {
-
   await pool.end();
-
   process.exit(0);
-
 });
+
+// ----------------------------------
+// LIVE MONITOR
+// ----------------------------------
+
+async function pollUpstream() {
+
