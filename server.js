@@ -2993,6 +2993,145 @@ app.get('/api/advanced-analysis', async (req, res) => {
   }
 
 });
+
+// ----------------------------------
+// ADVANCE ANALYSIS API
+// ----------------------------------
+
+app.get('/api/advanced-analysis', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT
+        event_id,
+        settled_at,
+        adjusted_at,
+        is_three_rolls,
+        is_five_rolls,
+        is_big_win,
+        big_win_multiplier
+      FROM game_history
+      ORDER BY settled_at DESC
+      LIMIT 5000
+    `);
+
+    const records = result.rows;
+
+    function analyzeWindow(limit) {
+      const sample = records.slice(0, limit);
+      const count = sample.length;
+
+      const threeRolls = sample.filter(
+        row => row.is_three_rolls === true
+      ).length;
+
+      const fiveRolls = sample.filter(
+        row => row.is_five_rolls === true
+      ).length;
+
+      const bigWins = sample.filter(
+        row => row.is_big_win === true
+      ).length;
+
+      return {
+        requestedGames: limit,
+        actualGames: count,
+        threeRolls,
+        fiveRolls,
+        bigWins,
+
+        threeRollsRate: count
+          ? Number((threeRolls / count * 100).toFixed(2))
+          : null,
+
+        fiveRollsRate: count
+          ? Number((fiveRolls / count * 100).toFixed(2))
+          : null,
+
+        bigWinRate: count
+          ? Number((bigWins / count * 100).toFixed(2))
+          : null
+      };
+    }
+
+    const validMultipliers = records
+      .filter(row =>
+        (row.is_three_rolls || row.is_five_rolls) &&
+        row.big_win_multiplier !== null &&
+        Number.isFinite(Number(row.big_win_multiplier)) &&
+        Number(row.big_win_multiplier) > 0
+      )
+      .map(row => Number(row.big_win_multiplier));
+
+    const ranges = [
+      { label: 'Below 10x', min: 0, max: 10 },
+      { label: '10x to below 25x', min: 10, max: 25 },
+      { label: '25x to below 50x', min: 25, max: 50 },
+      { label: '50x to below 100x', min: 50, max: 100 },
+      { label: '100x and above', min: 100, max: Infinity }
+    ];
+
+    const distribution = ranges.map(range => {
+      const count = validMultipliers.filter(value =>
+        value >= range.min && value < range.max
+      ).length;
+
+      return {
+        range: range.label,
+        count,
+        percentage: validMultipliers.length
+          ? Number(
+              (count / validMultipliers.length * 100).toFixed(2)
+            )
+          : null
+      };
+    });
+
+    res.json({
+      success: true,
+
+      engine: 'Advanced Historical Analysis',
+
+      generatedAt: new Date().toISOString(),
+
+      dataSummary: {
+        recordsAnalyzed: records.length,
+        maximumRecordsAnalyzed: 5000,
+        newestRecord: records.length
+          ? records[0].settled_at
+          : null,
+        oldestRecord: records.length
+          ? records[records.length - 1].settled_at
+          : null
+      },
+
+      rollingWindows: [50, 100, 250, 500]
+        .map(analyzeWindow),
+
+      bonusMultipliers: {
+        validSamples: validMultipliers.length,
+        distribution
+      },
+
+      interpretation: {
+        historicalOnly: true,
+        predictsNextResult: false,
+        note: 'Historical statistics only. Past results cannot reliably predict the next random outcome.'
+      }
+    });
+
+  } catch (error) {
+    console.error(
+      'ADVANCE ANALYSIS API ERROR:',
+      error.message
+    );
+
+    res.status(500).json({
+      success: false,
+      error: 'Unable to load advanced analysis.'
+    });
+  }
+});
+
 // ----------------------------------
 // FRONTEND
 // ----------------------------------
