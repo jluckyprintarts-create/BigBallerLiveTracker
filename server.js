@@ -2432,7 +2432,6 @@ app.get('/api/backfill/status', (req, res) => {
 
 });
 
-app.get('/api/database/status', async (req, res) => {
 // ----------------------------------
 // DATABASE STATUS API
 // ----------------------------------
