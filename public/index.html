@@ -1722,6 +1722,94 @@ advanceTab.innerHTML = `
       </div>
     </div>
 
+<!-- HISTORICAL FREQUENCY SUMMARY -->
+<div class="section">
+  <div class="section-header">
+    <h2>📊 HISTORICAL FREQUENCY SUMMARY</h2>
+  </div>
+
+  <div class="cards">
+
+    <div class="card">
+      <div class="card-title">THREE ROLLS FREQUENCY</div>
+      <div class="card-value" id="advThreeFrequency">-</div>
+      <div class="card-description" id="advThreeFrequencyCount">
+        Waiting for data...
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">FIVE ROLLS FREQUENCY</div>
+      <div class="card-value" id="advFiveFrequency">-</div>
+      <div class="card-description" id="advFiveFrequencyCount">
+        Waiting for data...
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">BIG WINS FREQUENCY</div>
+      <div class="card-value" id="advBigWinFrequency">-</div>
+      <div class="card-description" id="advBigWinFrequencyCount">
+        Waiting for data...
+      </div>
+    </div>
+
+  </div>
+
+  <div class="analysis-footer">
+    Percentages are calculated from the records analyzed.
+    Historical frequencies do not predict future random outcomes.
+  </div>
+</div>
+
+<!-- ANALYSIS DATA QUALITY -->
+<div class="section">
+  <div class="section-header">
+    <h2>🔍 ANALYSIS DATA QUALITY</h2>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <tbody>
+        <tr>
+          <td>Records Analyzed</td>
+          <td id="advQualityRecords">-</td>
+        </tr>
+
+        <tr>
+          <td>Unique Event IDs</td>
+          <td id="advQualityUnique">-</td>
+        </tr>
+
+        <tr>
+          <td>Duplicate IDs in Sample</td>
+          <td id="advQualityDuplicates">-</td>
+        </tr>
+
+        <tr>
+          <td>Valid Bonus Multiplier Samples</td>
+          <td id="advQualityMultipliers">-</td>
+        </tr>
+
+        <tr>
+          <td>Oldest Record</td>
+          <td id="advQualityOldest">-</td>
+        </tr>
+
+        <tr>
+          <td>Newest Record</td>
+          <td id="advQualityNewest">-</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="analysis-footer">
+    Data quality indicators describe the records returned by the API.
+    They do not independently verify the original game results.
+  </div>
+</div>
+
     <div class="status" id="advAnalysisStatus">
       Analysis has not loaded yet.
     </div>
