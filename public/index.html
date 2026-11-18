@@ -1631,10 +1631,28 @@ setInterval(() => {
   if(!header)return;
   const sections=Array.from(container.children).filter(el=>el!==header);
   const nav=document.createElement('div');nav.className='tab-nav';
-  nav.innerHTML='<button class="tab-btn active" type="button">🏠 MAIN<br>DASHBOARD</button><button class="tab-btn" type="button">🎲 3 &amp; 5 ROLLS<br>CENTER</button>';
-  const mainTab=document.createElement('div');mainTab.className='tab-panel active';mainTab.id='mainTab';
-  const rollsTab=document.createElement('div');rollsTab.className='tab-panel';rollsTab.id='rollsTab';
-  header.after(nav);nav.after(mainTab);mainTab.after(rollsTab);
+  // EXISTING TABS + NEW ADVANCE ANALYSIS TAB
+nav.innerHTML =
+  '<button class="tab-btn active" type="button">🏠 MAIN<br>DASHBOARD</button>' +
+  '<button class="tab-btn" type="button">🎲 3 &amp; 5 ROLLS<br>CENTER</button>' +
+  '<button class="tab-btn" type="button">🧠 ADVANCE<br>ANALYSIS</button>';
+
+const mainTab = document.createElement('div');
+mainTab.className = 'tab-panel active';
+mainTab.id = 'mainTab';
+
+const rollsTab = document.createElement('div');
+rollsTab.className = 'tab-panel';
+rollsTab.id = 'rollsTab';
+
+const advanceTab = document.createElement('div');
+advanceTab.className = 'tab-panel';
+advanceTab.id = 'advanceTab';
+
+header.after(nav);
+nav.after(mainTab);
+mainTab.after(rollsTab);
+rollsTab.after(advanceTab);
   sections.forEach(section=>{
     const heading=section.querySelector('h2');
     const title=heading?heading.textContent.toUpperCase():'';
@@ -1642,7 +1660,7 @@ setInterval(() => {
     else mainTab.appendChild(section);
   });
   const buttons=nav.querySelectorAll('.tab-btn');
-  const panels=[mainTab,rollsTab];
+  const panels = [mainTab, rollsTab, advanceTab];
   buttons.forEach((button,index)=>button.addEventListener('click',()=>{
     panels.forEach((panel,i)=>panel.classList.toggle('active',i===index));
     buttons.forEach((item,i)=>item.classList.toggle('active',i===index));
