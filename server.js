@@ -2418,6 +2418,326 @@ app.get('/api/performance', async (req, res) => {
 });
 
 // ----------------------------------
+// PREDICTION LAB API
+// Historical Walk-Forward Model Testing
+// ----------------------------------
+
+app.get('/api/prediction-lab', async (req, res) => {
+
+  try {
+
+    const MIN_TRAINING_INTERVALS = 5;
+    const MAX_RECORDS = 10000;
+
+    // Get historical event timestamps.
+    // This query only reads existing data.
+    async function getEventTimestamps(columnName) {
+
+      const allowedColumns = [
+        'is_three_rolls',
+        'is_five_rolls'
+      ];
+
+      if (!allowedColumns.includes(columnName)) {
+        throw new Error('Invalid game type');
+      }
+
+      const result = await pool.query(`
+        SELECT
+          COALESCE(adjusted_at, settled_at) AS event_time
+
+        FROM game_history
+
+        WHERE ${columnName} = TRUE
+          AND COALESCE(adjusted_at, settled_at) IS NOT NULL
+
+        ORDER BY COALESCE(adjusted_at, settled_at) ASC
+
+        LIMIT $1
+      `, [MAX_RECORDS]);
+
+      return result.rows
+        .map(row => new Date(row.event_time).getTime())
+        .filter(Number.isFinite)
+        .filter((value, index, array) =>
+          index === 0 || value > array[index - 1]
+        );
+
+    }
+
+    // Calculate the interval between consecutive events.
+    function calculateIntervals(timestamps) {
+
+      const intervals = [];
+
+      for (let i = 1; i < timestamps.length; i++) {
+
+        const minutes =
+          (timestamps[i] - timestamps[i - 1]) / 60000;
+
+        if (minutes > 0 && Number.isFinite(minutes)) {
+          intervals.push(minutes);
+        }
+
+      }
+
+      return intervals;
+
+    }
+
+    // Estimate the next interval using training data only.
+    function estimateInterval(values, model) {
+
+      if (!values.length) return null;
+
+      const sorted = [...values].sort((a, b) => a - b);
+
+      if (model === 'mean') {
+
+        return values.reduce((sum, value) => sum + value, 0)
+          / values.length;
+
+      }
+
+      if (model === 'median') {
+
+        const middle = Math.floor(sorted.length / 2);
+
+        return sorted.length % 2
+          ? sorted[middle]
+          : (sorted[middle - 1] + sorted[middle]) / 2;
+
+      }
+
+      if (model === 'recent10') {
+
+        const recent = values.slice(-10);
+
+        return recent.reduce((sum, value) => sum + value, 0)
+          / recent.length;
+
+      }
+
+      if (model === 'weighted') {
+
+        const recent = values.slice(-10);
+
+        let weightedTotal = 0;
+        let weightTotal = 0;
+
+        recent.forEach((value, index) => {
+
+          const weight = index + 1;
+
+          weightedTotal += value * weight;
+          weightTotal += weight;
+
+        });
+
+        return weightTotal > 0
+          ? weightedTotal / weightTotal
+          : null;
+
+      }
+
+      return null;
+
+    }
+
+    // Walk-forward test:
+    // Each prediction uses only intervals available before
+    // the interval being tested.
+    function evaluateModels(intervals) {
+
+      const modelNames = [
+        'mean',
+        'median',
+        'recent10',
+        'weighted'
+      ];
+
+      const results = {};
+
+      for (const model of modelNames) {
+
+        results[model] = {
+          model,
+          tests: 0,
+          totalAbsoluteError: 0,
+          totalSignedError: 0,
+          totalActualMinutes: 0
+        };
+
+      }
+
+      for (
+        let index = MIN_TRAINING_INTERVALS;
+        index < intervals.length;
+        index++
+      ) {
+
+        const training = intervals.slice(0, index);
+        const actual = intervals[index];
+
+        for (const model of modelNames) {
+
+          const estimate = estimateInterval(training, model);
+
+          if (
+            estimate === null ||
+            !Number.isFinite(estimate)
+          ) {
+            continue;
+          }
+
+          const signedError = estimate - actual;
+
+          results[model].tests++;
+          results[model].totalAbsoluteError +=
+            Math.abs(signedError);
+
+          results[model].totalSignedError += signedError;
+          results[model].totalActualMinutes += actual;
+
+        }
+
+      }
+
+      return modelNames.map(model => {
+
+        const row = results[model];
+        const count = row.tests;
+
+        return {
+          model: row.model,
+          tests: count,
+
+          meanAbsoluteErrorMinutes: count
+            ? Number(
+                (row.totalAbsoluteError / count).toFixed(2)
+              )
+            : null,
+
+          meanSignedErrorMinutes: count
+            ? Number(
+                (row.totalSignedError / count).toFixed(2)
+              )
+            : null,
+
+          averageActualIntervalMinutes: count
+            ? Number(
+                (row.totalActualMinutes / count).toFixed(2)
+              )
+            : null
+
+        };
+
+      });
+
+    }
+
+    // Analyze each event type independently.
+    async function analyzeGameType(columnName) {
+
+      const timestamps =
+        await getEventTimestamps(columnName);
+
+      const intervals =
+        calculateIntervals(timestamps);
+
+      const models =
+        evaluateModels(intervals);
+
+      const rankedModels = models
+        .filter(model =>
+          model.tests > 0 &&
+          model.meanAbsoluteErrorMinutes !== null
+        )
+        .sort((a, b) =>
+          a.meanAbsoluteErrorMinutes -
+          b.meanAbsoluteErrorMinutes
+        );
+
+      return {
+        totalEvents: timestamps.length,
+        totalIntervals: intervals.length,
+
+        latestEventAt: timestamps.length
+          ? new Date(timestamps[timestamps.length - 1]).toISOString()
+          : null,
+
+        models,
+
+        bestHistoricalModel: rankedModels.length
+          ? rankedModels[0].model
+          : null,
+
+        bestHistoricalMAEMinutes: rankedModels.length
+          ? rankedModels[0].meanAbsoluteErrorMinutes
+          : null,
+
+        status: intervals.length > MIN_TRAINING_INTERVALS
+          ? 'historical_test_available'
+          : 'insufficient_data'
+
+      };
+
+    }
+
+    const [
+      threeRolls,
+      fiveRolls
+    ] = await Promise.all([
+
+      analyzeGameType('is_three_rolls'),
+      analyzeGameType('is_five_rolls')
+
+    ]);
+
+    res.json({
+
+      status: 'ok',
+
+      title: 'PREDICTION LAB',
+
+      generatedAt: new Date().toISOString(),
+
+      methodology: 'Walk-forward historical interval testing',
+
+      models: [
+        'mean',
+        'median',
+        'recent10',
+        'weighted'
+      ],
+
+      threeRolls,
+      fiveRolls,
+
+      disclaimer:
+        'This endpoint tests historical event intervals only. ' +
+        'It does not predict or determine future RNG outcomes. ' +
+        'Past performance does not guarantee future results.'
+
+    });
+
+  } catch (error) {
+
+    console.error(
+      'PREDICTION LAB API ERROR:',
+      error.message
+    );
+
+    res.status(500).json({
+      status: 'error',
+      error: 'Unable to run Prediction Lab analysis'
+    });
+
+  }
+
+});
+
+// ----------------------------------
 // HISTORICAL BACKFILL STATUS API
 // ----------------------------------
 
