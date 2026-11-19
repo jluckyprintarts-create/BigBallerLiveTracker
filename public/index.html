@@ -1842,6 +1842,37 @@ advanceTab.innerHTML = `
   </div>
 </div>
 
+<!-- TIME-PERIOD COMPARISON -->
+<div class="section">
+  <div class="section-header">
+    <h2>📈 TIME-PERIOD COMPARISON</h2>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>EVENT TYPE</th>
+          <th>LAST 1 HOUR</th>
+          <th>LAST 6 HOURS</th>
+          <th>LAST 24 HOURS</th>
+        </tr>
+      </thead>
+
+      <tbody id="advTimeComparisonRows">
+        <tr>
+          <td colspan="4">Waiting for data...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="analysis-footer">
+    Compares historical event frequencies across time periods.
+    Differences do not predict future random outcomes.
+  </div>
+</div>
+
 <div class="status" id="advAnalysisStatus">
   Analysis has not loaded yet.
 </div>
