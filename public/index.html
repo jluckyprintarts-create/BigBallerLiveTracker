@@ -1920,7 +1920,12 @@ advanceTab.after(predictionTab);
     else mainTab.appendChild(section);
   });
   const buttons=nav.querySelectorAll('.tab-btn');
-  const panels = [mainTab, rollsTab, advanceTab];
+  const panels = [
+  mainTab,
+  rollsTab,
+  advanceTab,
+  predictionTab
+];
   buttons.forEach((button,index)=>button.addEventListener('click',()=>{
     panels.forEach((panel,i)=>panel.classList.toggle('active',i===index));
     buttons.forEach((item,i)=>item.classList.toggle('active',i===index));
