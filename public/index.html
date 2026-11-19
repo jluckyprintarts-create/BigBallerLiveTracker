@@ -1810,9 +1810,41 @@ advanceTab.innerHTML = `
   </div>
 </div>
 
-    <div class="status" id="advAnalysisStatus">
-      Analysis has not loaded yet.
-    </div>
+<!-- TIME-BASED HISTORICAL ANALYSIS -->
+<div class="section">
+  <div class="section-header">
+    <h2>⏱️ TIME-BASED HISTORICAL ANALYSIS</h2>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>TIME PERIOD</th>
+          <th>RECORDS</th>
+          <th>THREE ROLLS</th>
+          <th>FIVE ROLLS</th>
+          <th>BIG WINS</th>
+        </tr>
+      </thead>
+
+      <tbody id="advTimeBasedRows">
+        <tr>
+          <td colspan="5">Waiting for data...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="analysis-footer">
+    Historical event counts and percentages for each time period.
+    These statistics do not predict future random outcomes.
+  </div>
+</div>
+
+<div class="status" id="advAnalysisStatus">
+  Analysis has not loaded yet.
+</div>
 
     <div class="analysis-footer">
       This dashboard describes recorded historical results only.
