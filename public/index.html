@@ -1631,11 +1631,13 @@ setInterval(() => {
   if(!header)return;
   const sections=Array.from(container.children).filter(el=>el!==header);
   const nav=document.createElement('div');nav.className='tab-nav';
-  // EXISTING TABS + NEW ADVANCE ANALYSIS TAB
+  
+// EXISTING TABS + NEW PREDICTION LAB TAB
 nav.innerHTML =
   '<button class="tab-btn active" type="button">🏠 MAIN<br>DASHBOARD</button>' +
   '<button class="tab-btn" type="button">🎲 3 &amp; 5 ROLLS<br>CENTER</button>' +
-  '<button class="tab-btn" type="button">🧠 ADVANCE<br>ANALYSIS</button>';
+  '<button class="tab-btn" type="button">🧠 ADVANCE<br>ANALYSIS</button>' +
+  '<button class="tab-btn" type="button">🔬 PREDICTION<br>LAB</button>';
 
 const mainTab = document.createElement('div');
 mainTab.className = 'tab-panel active';
