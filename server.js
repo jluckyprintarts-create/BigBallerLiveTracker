@@ -3027,7 +3027,10 @@ function analyzeTimePeriod(period) {
 
       rollingWindows: windows.map(analyzeWindow),
 
-      bonusMultipliers: {
+// TIME-BASED HISTORICAL ANALYSIS
+timeBasedAnalysis: timePeriods.map(analyzeTimePeriod),
+
+bonusMultipliers: {
 
         validSamples: validBonusMultipliers.length,
 
