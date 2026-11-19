@@ -1910,6 +1910,43 @@ document.getElementById('advBigWins').textContent =
 const windows = data.rollingWindows || [];
 
 // ----------------------------------
+// TIME-BASED HISTORICAL ANALYSIS
+// ----------------------------------
+
+const timeBasedAnalysis = data.timeBasedAnalysis || [];
+
+const timeRows = document.getElementById('advTimeBasedRows');
+
+if (timeRows) {
+  if (timeBasedAnalysis.length === 0) {
+    timeRows.innerHTML = `
+      <tr>
+        <td colspan="5">No records available for these time periods.</td>
+      </tr>
+    `;
+  } else {
+    timeRows.innerHTML = timeBasedAnalysis.map(item => `
+      <tr>
+        <td>${item.period}</td>
+        <td>${Number(item.recordsAnalyzed || 0).toLocaleString()}</td>
+        <td>
+          ${Number(item.threeRolls || 0).toLocaleString()}
+          (${item.threeRollsRate == null ? 'N/A' : item.threeRollsRate + '%'})
+        </td>
+        <td>
+          ${Number(item.fiveRolls || 0).toLocaleString()}
+          (${item.fiveRollsRate == null ? 'N/A' : item.fiveRollsRate + '%'})
+        </td>
+        <td>
+          ${Number(item.bigWins || 0).toLocaleString()}
+          (${item.bigWinRate == null ? 'N/A' : item.bigWinRate + '%'})
+        </td>
+      </tr>
+    `).join('');
+  }
+}
+    
+// ----------------------------------
 // HISTORICAL FREQUENCY SUMMARY
 // ----------------------------------
 
