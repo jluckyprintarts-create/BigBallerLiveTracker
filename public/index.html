@@ -1890,6 +1890,29 @@ header.after(nav);
 nav.after(mainTab);
 mainTab.after(rollsTab);
 rollsTab.after(advanceTab);
+
+// NEW PREDICTION LAB PANEL
+const predictionTab = document.createElement('div');
+predictionTab.id = 'prediction-lab-panel';
+predictionTab.className = 'tab-panel';
+predictionTab.style.display = 'none';
+
+predictionTab.innerHTML = `
+  <section>
+    <h2>🔬 PREDICTION LAB</h2>
+    <p>
+      Historical model testing and interval analysis.
+      Historical results do not guarantee future RNG outcomes.
+    </p>
+
+    <div id="prediction-lab-content">
+      Loading Prediction Lab...
+    </div>
+  </section>
+`;
+
+advanceTab.after(predictionTab);
+  
   sections.forEach(section=>{
     const heading=section.querySelector('h2');
     const title=heading?heading.textContent.toUpperCase():'';
