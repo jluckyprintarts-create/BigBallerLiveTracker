@@ -1976,6 +1976,62 @@ if (timeRows) {
     `).join('');
   }
 }
+
+// ----------------------------------
+// TIME-PERIOD COMPARISON
+// ----------------------------------
+
+const comparisonRows = document.getElementById('advTimeComparisonRows');
+
+if (comparisonRows) {
+  const periods = {
+    'Last 1 Hour': null,
+    'Last 6 Hours': null,
+    'Last 24 Hours': null
+  };
+
+  timeBasedAnalysis.forEach(item => {
+    if (Object.prototype.hasOwnProperty.call(periods, item.period)) {
+      periods[item.period] = item;
+    }
+  });
+
+  function formatComparison(item, countKey, rateKey) {
+    if (!item) return 'N/A';
+
+    const count = Number(item[countKey] || 0);
+    const rate = item[rateKey];
+
+    return `${count.toLocaleString()} (${rate == null ? 'N/A' : rate + '%'})`;
+  }
+
+  const eventTypes = [
+    {
+      label: 'Three Rolls',
+      countKey: 'threeRolls',
+      rateKey: 'threeRollsRate'
+    },
+    {
+      label: 'Five Rolls',
+      countKey: 'fiveRolls',
+      rateKey: 'fiveRollsRate'
+    },
+    {
+      label: 'Big Wins',
+      countKey: 'bigWins',
+      rateKey: 'bigWinRate'
+    }
+  ];
+
+  comparisonRows.innerHTML = eventTypes.map(event => `
+    <tr>
+      <td>${event.label}</td>
+      <td>${formatComparison(periods['Last 1 Hour'], event.countKey, event.rateKey)}</td>
+      <td>${formatComparison(periods['Last 6 Hours'], event.countKey, event.rateKey)}</td>
+      <td>${formatComparison(periods['Last 24 Hours'], event.countKey, event.rateKey)}</td>
+    </tr>
+  `).join('');
+}
     
 // ----------------------------------
 // HISTORICAL FREQUENCY SUMMARY
