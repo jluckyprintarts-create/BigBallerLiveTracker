@@ -2830,6 +2830,63 @@ const totalBigWins = records.filter(
 
 const windows = [50, 100, 250, 500];
 
+// ----------------------------------
+// TIME-BASED HISTORICAL ANALYSIS
+// ----------------------------------
+
+const timePeriods = [
+  { label: 'Last 1 Hour', hours: 1 },
+  { label: 'Last 6 Hours', hours: 6 },
+  { label: 'Last 24 Hours', hours: 24 }
+];
+
+function analyzeTimePeriod(period) {
+  const cutoff = Date.now() - period.hours * 60 * 60 * 1000;
+
+  const sample = records.filter(row => {
+    const timestamp = new Date(
+      row.settled_at || row.adjusted_at
+    ).getTime();
+
+    return Number.isFinite(timestamp) && timestamp >= cutoff;
+  });
+
+  const count = sample.length;
+
+  const threeRolls = sample.filter(
+    row => row.is_three_rolls === true
+  ).length;
+
+  const fiveRolls = sample.filter(
+    row => row.is_five_rolls === true
+  ).length;
+
+  const bigWins = sample.filter(
+    row => row.is_big_win === true
+  ).length;
+
+  return {
+    period: period.label,
+    hours: period.hours,
+    recordsAnalyzed: count,
+
+    threeRolls,
+    threeRollsRate: count
+      ? Number((threeRolls / count * 100).toFixed(2))
+      : null,
+
+    fiveRolls,
+    fiveRollsRate: count
+      ? Number((fiveRolls / count * 100).toFixed(2))
+      : null,
+
+    bigWins,
+    bigWinRate: count
+      ? Number((bigWins / count * 100).toFixed(2))
+      : null
+  };
+}
+    
     function analyzeWindow(limit) {
 
       const sample = records.slice(0, limit);
