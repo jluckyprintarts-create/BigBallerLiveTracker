@@ -2286,6 +2286,246 @@ if (advanceButton) {
 
 // Load once when the page initializes.
 loadAdvanceAnalysis();
+
+// ----------------------------------
+// PREDICTION LAB DATA LOADER
+// ----------------------------------
+
+async function loadPredictionLab() {
+  const container = document.getElementById('prediction-lab-content');
+
+  if (!container) return;
+
+  container.innerHTML = '<p>Loading historical model tests...</p>';
+
+  try {
+    const response = await fetch('/api/prediction-lab', {
+      cache: 'no-store'
+    });
+
+    if (!response.ok) {
+      throw new Error(`API request failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (data.status !== 'ok') {
+      throw new Error(data.error || 'Prediction Lab unavailable.');
+    }
+
+    function escapeText(value) {
+      return String(value ?? '').replace(/[&<>"']/g, char => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      })[char]);
+    }
+
+    function formatMinutes(value) {
+      if (value == null || !Number.isFinite(Number(value))) {
+        return 'N/A';
+      }
+
+      return Number(value).toFixed(2) + ' min';
+    }
+
+    function renderGame(title, result) {
+      const models = Array.isArray(result.models) ? result.models : [];
+
+      const ranked = models
+        .filter(item =>
+          item.tests > 0 &&
+          item.meanAbsoluteErrorMinutes != null
+        )
+        .sort((a, b) =>
+          Number(a.meanAbsoluteErrorMinutes) -
+          Number(b.meanAbsoluteErrorMinutes)
+        );
+
+      const bestModel = ranked.length ? ranked[0].model : null;
+
+      const rows = models.map(item => {
+        const isBest =
+          bestModel !== null && item.model === bestModel;
+
+        const modelName = {
+          mean: 'Mean Average',
+          median: 'Median',
+          recent10: 'Recent 10 Average',
+          weighted: 'Weighted Average'
+        }[item.model] || item.model;
+
+        return `
+          <tr style="${isBest ? 'background:#1c2c35;' : ''}">
+            <td style="padding:10px;border-bottom:1px solid #263449;">
+              ${escapeText(modelName)}
+              ${isBest ? '<strong style="color:#4ade80;"> ★ Best historical MAE</strong>' : ''}
+            </td>
+            <td style="padding:10px;border-bottom:1px solid #263449;">
+              ${Number(item.tests || 0).toLocaleString()}
+            </td>
+            <td style="padding:10px;border-bottom:1px solid #263449;">
+              ${formatMinutes(item.meanAbsoluteErrorMinutes)}
+            </td>
+            <td style="padding:10px;border-bottom:1px solid #263449;">
+              ${formatMinutes(item.meanSignedErrorMinutes)}
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      return `
+        <section style="
+          margin:18px 0;
+          padding:14px;
+          background:#111b2e;
+          border:1px solid #263449;
+          border-radius:10px;
+        ">
+          <h3 style="margin-top:0;color:#d4af37;">
+            ${escapeText(title)}
+          </h3>
+
+          <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:15px;">
+            <div style="padding:12px;background:#172033;border-radius:8px;">
+              <div style="font-size:11px;color:#94a3b8;">RECORDED EVENTS</div>
+              <strong style="font-size:22px;color:#f8fafc;">
+                ${Number(result.totalEvents || 0).toLocaleString()}
+              </strong>
+            </div>
+
+            <div style="padding:12px;background:#172033;border-radius:8px;">
+              <div style="font-size:11px;color:#94a3b8;">TESTED INTERVALS</div>
+              <strong style="font-size:22px;color:#f8fafc;">
+                ${Number(result.totalIntervals || 0).toLocaleString()}
+              </strong>
+            </div>
+          </div>
+
+          <div style="overflow-x:auto;">
+            <table style="width:100%;border-collapse:collapse;text-align:left;font-size:12px;">
+              <thead>
+                <tr style="color:#94a3b8;">
+                  <th style="padding:10px;">MODEL</th>
+                  <th style="padding:10px;">TESTS</th>
+                  <th style="padding:10px;">MAE</th>
+                  <th style="padding:10px;">SIGNED ERROR</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows || `
+                  <tr>
+                    <td colspan="4" style="padding:12px;">
+                      Insufficient historical data for testing.
+                    </td>
+                  </tr>
+                `}
+              </tbody>
+            </table>
+          </div>
+
+          <div style="margin-top:14px;padding:12px;background:#172033;border-radius:8px;">
+            <div style="font-size:11px;color:#94a3b8;">
+              BEST HISTORICAL MODEL
+            </div>
+            <strong style="color:#4ade80;font-size:16px;">
+              ${bestModel ? escapeText({
+                mean: 'Mean Average',
+                median: 'Median',
+                recent10: 'Recent 10 Average',
+                weighted: 'Weighted Average'
+              }[bestModel] || bestModel) : 'Not enough data'}
+            </strong>
+
+            <div style="font-size:12px;color:#cbd5e1;margin-top:5px;">
+              Historical MAE:
+              ${formatMinutes(
+                ranked.length
+                  ? ranked[0].meanAbsoluteErrorMinutes
+                  : null
+              )}
+            </div>
+          </div>
+
+          <div style="font-size:11px;color:#94a3b8;margin-top:12px;">
+            Latest recorded event:
+            ${result.latestEventAt
+              ? escapeText(new Date(result.latestEventAt).toLocaleString())
+              : 'No recorded event'}
+          </div>
+        </section>
+      `;
+    }
+
+    container.innerHTML = `
+      <div style="
+        padding:14px;
+        background:#172033;
+        border:1px solid #334155;
+        border-radius:10px;
+        color:#cbd5e1;
+        font-size:12px;
+        line-height:1.7;
+      ">
+        <strong style="color:#d4af37;">WALK-FORWARD HISTORICAL TESTING</strong><br>
+        Each test estimates an interval using only earlier recorded intervals.
+        Lower MAE means lower average historical estimation error.
+        It does not establish the probability or timing of the next RNG event.
+      </div>
+
+      ${renderGame('🎲 THREE ROLLS MODEL COMPARISON', data.threeRolls || {})}
+
+      ${renderGame('🎲 FIVE ROLLS MODEL COMPARISON', data.fiveRolls || {})}
+
+      <div style="
+        padding:12px;
+        margin-top:15px;
+        background:#111827;
+        border-left:3px solid #d4af37;
+        border-radius:5px;
+        color:#94a3b8;
+        font-size:11px;
+        line-height:1.7;
+      ">
+        <strong style="color:#facc15;">IMPORTANT LIMITATION</strong><br>
+        This lab evaluates historical intervals only. It cannot determine
+        or reliably predict future random game outcomes. Past results do
+        not guarantee future results.
+      </div>
+
+      <div style="margin-top:12px;font-size:11px;color:#64748b;">
+        Analysis generated:
+        ${data.generatedAt
+          ? escapeText(new Date(data.generatedAt).toLocaleString())
+          : 'Unavailable'}
+      </div>
+    `;
+
+  } catch (error) {
+    console.error('PREDICTION LAB LOAD ERROR:', error);
+
+    container.innerHTML = `
+      <div style="
+        padding:14px;
+        background:#2b1720;
+        border:1px solid #7f1d1d;
+        border-radius:8px;
+        color:#fecaca;
+      ">
+        Unable to load Prediction Lab. Please check the API and try again.
+      </div>
+    `;
+  }
+}
+
+// Load Prediction Lab when its tab is opened.
+const predictionButton = nav.querySelectorAll('.tab-btn')[3];
+
+if (predictionButton) {
+  predictionButton.addEventListener('click', loadPredictionLab);
+}
     
     window.scrollTo({top:0,behavior:'smooth'});
   }));
