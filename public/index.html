@@ -2583,116 +2583,281 @@ async function loadModelReliability() {
     }
 
     function renderGame(title, game = {}) {
-      const models = Array.isArray(game.models)
-        ? game.models
-        : [];
+  const models = Array.isArray(game.models)
+    ? game.models
+    : [];
 
-      const comparisons = Array.isArray(game.baselineComparisons)
-        ? game.baselineComparisons
-        : [];
+  const comparisons = Array.isArray(game.baselineComparisons)
+    ? game.baselineComparisons
+    : [];
 
-      const bestModel = [...models]
-        .filter(model =>
-          Number.isFinite(model.overall?.maeMinutes)
-        )
-        .sort((a, b) =>
-          a.overall.maeMinutes - b.overall.maeMinutes
-        )[0];
+  const validation = Array.isArray(game.chronologicalValidation)
+    ? game.chronologicalValidation
+    : [];
 
-      const modelRows = models.map(model => {
-        const overallMAE = model.overall?.maeMinutes;
-        const rollingMAE = model.rollingMAE;
+  const bestModel = [...models]
+    .filter(model =>
+      Number.isFinite(model.overall?.maeMinutes)
+    )
+    .sort((a, b) =>
+      a.overall.maeMinutes - b.overall.maeMinutes
+    )[0];
 
-        const improvement = comparisons.find(
-          item => item.model === model.model
-        )?.improvementPercent;
+  // ----------------------------------
+  // OVERALL MODEL RESULTS
+  // ----------------------------------
 
-        return `
-          <tr>
-            <td>${model.model}</td>
-            <td>${
-              Number.isFinite(overallMAE)
-                ? overallMAE.toFixed(2)
-                : 'N/A'
-            }</td>
-            <td>${
-              Number.isFinite(rollingMAE)
-                ? rollingMAE.toFixed(2)
-                : 'N/A'
-            }</td>
-            <td>${
-              Number.isFinite(improvement)
-                ? improvement.toFixed(2) + '%'
-                : 'N/A'
-            }</td>
-            <td>${model.stability || 'N/A'}</td>
-          </tr>
-        `;
-      }).join('');
+  const modelRows = models.map(model => {
+    const overallMAE = model.overall?.maeMinutes;
+    const rollingMAE = model.rollingMAE;
+
+    const improvement = comparisons.find(
+      item => item.model === model.model
+    )?.improvementPercent;
+
+    return `
+      <tr>
+        <td>${model.model}</td>
+        <td>${
+          Number.isFinite(overallMAE)
+            ? overallMAE.toFixed(2)
+            : 'N/A'
+        }</td>
+        <td>${
+          Number.isFinite(rollingMAE)
+            ? rollingMAE.toFixed(2)
+            : 'N/A'
+        }</td>
+        <td>${
+          Number.isFinite(improvement)
+            ? improvement.toFixed(2) + '%'
+            : 'N/A'
+        }</td>
+        <td>${model.stability || 'N/A'}</td>
+      </tr>
+    `;
+  }).join('');
+
+  // ----------------------------------
+  // CHRONOLOGICAL VALIDATION RESULTS
+  // ----------------------------------
+
+  const validationRows = validation.flatMap(item => {
+    const periods = Array.isArray(item.periods)
+      ? item.periods
+      : [];
+
+    return periods.map(period => {
+      const improvement = period.improvementPercent;
+
+      let improvementColor = '#94a3b8';
+
+      if (Number.isFinite(improvement)) {
+        if (improvement > 0) {
+          improvementColor = '#4ade80';
+        } else if (improvement < 0) {
+          improvementColor = '#f87171';
+        }
+      }
 
       return `
-        <section style="
-          margin:16px 0;
-          padding:14px;
-          background:#111827;
-          border:1px solid #334155;
-          border-radius:12px;
-          overflow-x:auto;
-        ">
-          <h3>${title}</h3>
+        <tr>
+          <td>${item.model}</td>
+          <td>${period.period || 'N/A'}</td>
+          <td>${period.tests ?? 0}</td>
 
-          <p>Recorded events:
-            <strong>${game.totalEvents ?? 0}</strong>
-          </p>
+          <td>${
+            Number.isFinite(period.modelMAE)
+              ? period.modelMAE.toFixed(2)
+              : 'N/A'
+          }</td>
 
-          <p>Historical intervals:
-            <strong>${game.totalIntervals ?? 0}</strong>
-          </p>
+          <td>${
+            Number.isFinite(period.baselineMAE)
+              ? period.baselineMAE.toFixed(2)
+              : 'N/A'
+          }</td>
 
-          <p>Walk-forward tests:
-            <strong>${game.totalWalkForwardTests ?? 0}</strong>
-          </p>
-
-          <p style="color:#fbbf24;">
-            ⚠️ ${game.sampleSizeWarning || 'Historical sample limitations apply.'}
-          </p>
-
-          <p>Best historical MAE model:
-            <strong>${bestModel ? bestModel.model : 'Insufficient data'}</strong>
-            ${
-              bestModel
-                ? `(${bestModel.overall.maeMinutes.toFixed(2)} min)`
-                : ''
-            }
-          </p>
-
-          <table style="
-            width:100%;
-            min-width:540px;
-            border-collapse:collapse;
-            font-size:12px;
+          <td style="
+            color:${improvementColor};
+            font-weight:700;
           ">
-            <thead>
-              <tr>
-                <th>MODEL</th>
-                <th>OVERALL MAE</th>
-                <th>ROLLING MAE</th>
-                <th>VS BASELINE</th>
-                <th>STABILITY</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${modelRows || '<tr><td colspan="5">No results available</td></tr>'}
-            </tbody>
-          </table>
-
-          <p style="font-size:12px;color:#94a3b8;">
-            Baseline: previous interval carried forward.
-            Positive improvement means lower historical MAE than baseline;
-            negative improvement means higher historical MAE.
-          </p>
-        </section>
+            ${
+              Number.isFinite(improvement)
+                ? (improvement > 0 ? '+' : '') +
+                  improvement.toFixed(2) + '%'
+                : 'N/A'
+            }
+          </td>
+        </tr>
       `;
+    });
+  }).join('');
+
+  // ----------------------------------
+  // VALIDATION SUMMARY
+  // ----------------------------------
+
+  const validationSummary = validation.map(item => `
+    <p style="
+      margin:6px 0;
+      font-size:12px;
+      color:#cbd5e1;
+    ">
+      <strong>${item.model}</strong>:
+      better than baseline in
+      <strong>
+        ${item.periodsBetterThanBaseline ?? 0}
+        / ${item.totalPeriods ?? 0}
+      </strong>
+      historical periods.
+    </p>
+  `).join('');
+
+  return `
+    <section style="
+      margin:16px 0;
+      padding:14px;
+      background:#111827;
+      border:1px solid #334155;
+      border-radius:12px;
+      overflow-x:auto;
+    ">
+
+      <h3>${title}</h3>
+
+      <p>
+        Recorded events:
+        <strong>${game.totalEvents ?? 0}</strong>
+      </p>
+
+      <p>
+        Historical intervals:
+        <strong>${game.totalIntervals ?? 0}</strong>
+      </p>
+
+      <p>
+        Walk-forward tests:
+        <strong>${game.totalWalkForwardTests ?? 0}</strong>
+      </p>
+
+      <p style="color:#fbbf24;">
+        ⚠️ ${game.sampleSizeWarning ||
+          'Historical sample limitations apply.'}
+      </p>
+
+      <p>
+        Best historical MAE model:
+        <strong>
+          ${bestModel ? bestModel.model : 'Insufficient data'}
+        </strong>
+
+        ${
+          bestModel
+            ? `(${bestModel.overall.maeMinutes.toFixed(2)} min)`
+            : ''
+        }
+      </p>
+
+      <!-- OVERALL RESULTS -->
+
+      <h4 style="margin-top:20px;">
+        📊 OVERALL MODEL PERFORMANCE
+      </h4>
+
+      <table style="
+        width:100%;
+        min-width:540px;
+        border-collapse:collapse;
+        font-size:12px;
+      ">
+        <thead>
+          <tr>
+            <th>MODEL</th>
+            <th>OVERALL MAE</th>
+            <th>ROLLING MAE</th>
+            <th>VS BASELINE</th>
+            <th>STABILITY</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          ${
+            modelRows ||
+            '<tr><td colspan="5">No results available</td></tr>'
+          }
+        </tbody>
+      </table>
+
+      <p style="font-size:12px;color:#94a3b8;">
+        Baseline: previous interval carried forward.
+        Positive improvement means lower historical MAE;
+        negative improvement means higher historical MAE.
+      </p>
+
+      <!-- CHRONOLOGICAL VALIDATION -->
+
+      <h4 style="
+        margin-top:24px;
+        color:#60a5fa;
+      ">
+        🧪 CHRONOLOGICAL VALIDATION
+      </h4>
+
+      <p style="
+        font-size:12px;
+        color:#94a3b8;
+      ">
+        Historical model performance across Early, Middle,
+        and Recent test periods.
+      </p>
+
+      <table style="
+        width:100%;
+        min-width:540px;
+        border-collapse:collapse;
+        font-size:12px;
+      ">
+        <thead>
+          <tr>
+            <th>MODEL</th>
+            <th>PERIOD</th>
+            <th>TESTS</th>
+            <th>MODEL MAE</th>
+            <th>BASELINE MAE</th>
+            <th>IMPROVEMENT</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          ${
+            validationRows ||
+            '<tr><td colspan="6">No validation data available</td></tr>'
+          }
+        </tbody>
+      </table>
+
+      <h4 style="margin-top:18px;">
+        ⚖️ VALIDATION SUMMARY
+      </h4>
+
+      ${
+        validationSummary ||
+        '<p style="font-size:12px;">No validation summary available.</p>'
+      }
+
+      <p style="
+        font-size:12px;
+        color:#fbbf24;
+        margin-top:14px;
+      ">
+        ⚠️ These results measure historical estimation errors.
+        They do not establish future RNG probabilities,
+        predict the next event, or guarantee outcomes.
+      </p>
+
+    </section>
+  `;
     }
 
     content.innerHTML = `
