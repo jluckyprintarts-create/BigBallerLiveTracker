@@ -1912,6 +1912,37 @@ predictionTab.innerHTML = `
 `;
 
 advanceTab.after(predictionTab);
+
+// ----------------------------------
+// MODEL RELIABILITY PANEL
+// ----------------------------------
+
+const reliabilityTab = document.createElement('div');
+
+reliabilityTab.id = 'model-reliability-panel';
+reliabilityTab.className = 'tab-panel';
+
+reliabilityTab.innerHTML = `
+  <section>
+    <h2>📊 MODEL RELIABILITY ANALYSIS</h2>
+
+    <p>
+      Historical model performance, stability,
+      rolling error, and baseline comparison.
+    </p>
+
+    <p style="color:#fbbf24;font-size:13px;">
+      ⚠️ Historical performance does not guarantee
+      future results or predict future RNG outcomes.
+    </p>
+
+    <div id="model-reliability-content">
+      Loading Model Reliability Analysis...
+    </div>
+  </section>
+`;
+
+predictionTab.after(reliabilityTab);
   
   sections.forEach(section=>{
     const heading=section.querySelector('h2');
