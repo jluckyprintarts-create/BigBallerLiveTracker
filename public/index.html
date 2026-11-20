@@ -2733,6 +2733,11 @@ async function loadModelReliability() {
 if (index === 3) {
   loadPredictionLab();
 }
+
+// Load only when MODEL RELIABILITY tab is clicked.
+if (index === 4) {
+  loadModelReliability();
+}
     
     window.scrollTo({top:0,behavior:'smooth'});
   }));
