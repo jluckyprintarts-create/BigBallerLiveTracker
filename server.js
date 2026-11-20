@@ -2968,6 +2968,79 @@ app.get('/api/model-reliability', async (req, res) => {
 
       const totalTests = baselineErrors.length;
 
+// ----------------------------------
+// CHRONOLOGICAL VALIDATION
+// ----------------------------------
+
+const validationPeriods = [
+  { name: 'Early', start: 0, end: Math.floor(totalTests / 3) },
+  {
+    name: 'Middle',
+    start: Math.floor(totalTests / 3),
+    end: Math.floor((totalTests * 2) / 3)
+  },
+  {
+    name: 'Recent',
+    start: Math.floor((totalTests * 2) / 3),
+    end: totalTests
+  }
+];
+
+const chronologicalValidation = modelNames.map(model => {
+
+  const modelRows = errors[model];
+
+  const periods = validationPeriods.map(period => {
+
+    const modelPeriod = modelRows.slice(
+      period.start,
+      period.end
+    );
+
+    const baselinePeriod = baselineErrors.slice(
+      period.start,
+      period.end
+    );
+
+    const modelMAE = summarize(modelPeriod).maeMinutes;
+    const baselineMAE = summarize(baselinePeriod).maeMinutes;
+
+    let improvementPercent = null;
+
+    if (
+      modelMAE !== null &&
+      baselineMAE !== null &&
+      baselineMAE > 0
+    ) {
+      improvementPercent = Number((
+        (baselineMAE - modelMAE) /
+        baselineMAE * 100
+      ).toFixed(2));
+    }
+
+    return {
+      period: period.name,
+      tests: modelPeriod.length,
+      modelMAE,
+      baselineMAE,
+      improvementPercent
+    };
+  });
+
+  const periodsBetterThanBaseline = periods.filter(
+    period =>
+      period.improvementPercent !== null &&
+      period.improvementPercent > 0
+  ).length;
+
+  return {
+    model,
+    periods,
+    periodsBetterThanBaseline,
+    totalPeriods: periods.length
+  };
+});
+      
       return {
         totalIntervals: intervals.length,
         totalWalkForwardTests: totalTests,
