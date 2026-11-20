@@ -2552,6 +2552,183 @@ async function loadPredictionLab() {
   }
 }
 
+// ----------------------------------
+// MODEL RELIABILITY DATA LOADER
+// ----------------------------------
+
+async function loadModelReliability() {
+  const content = document.getElementById(
+    'model-reliability-content'
+  );
+
+  if (!content) return;
+
+  content.innerHTML = 'Loading Model Reliability Analysis...';
+
+  try {
+    const response = await fetch('/api/model-reliability', {
+      cache: 'no-store'
+    });
+
+    if (!response.ok) {
+      throw new Error(`API request failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    if (data.status !== 'ok') {
+      throw new Error(
+        data.error || 'Unable to load reliability analysis'
+      );
+    }
+
+    function renderGame(title, game = {}) {
+      const models = Array.isArray(game.models)
+        ? game.models
+        : [];
+
+      const comparisons = Array.isArray(game.baselineComparisons)
+        ? game.baselineComparisons
+        : [];
+
+      const bestModel = [...models]
+        .filter(model =>
+          Number.isFinite(model.overall?.maeMinutes)
+        )
+        .sort((a, b) =>
+          a.overall.maeMinutes - b.overall.maeMinutes
+        )[0];
+
+      const modelRows = models.map(model => {
+        const overallMAE = model.overall?.maeMinutes;
+        const rollingMAE = model.rollingMAE;
+
+        const improvement = comparisons.find(
+          item => item.model === model.model
+        )?.improvementPercent;
+
+        return `
+          <tr>
+            <td>${model.model}</td>
+            <td>${
+              Number.isFinite(overallMAE)
+                ? overallMAE.toFixed(2)
+                : 'N/A'
+            }</td>
+            <td>${
+              Number.isFinite(rollingMAE)
+                ? rollingMAE.toFixed(2)
+                : 'N/A'
+            }</td>
+            <td>${
+              Number.isFinite(improvement)
+                ? improvement.toFixed(2) + '%'
+                : 'N/A'
+            }</td>
+            <td>${model.stability || 'N/A'}</td>
+          </tr>
+        `;
+      }).join('');
+
+      return `
+        <section style="
+          margin:16px 0;
+          padding:14px;
+          background:#111827;
+          border:1px solid #334155;
+          border-radius:12px;
+          overflow-x:auto;
+        ">
+          <h3>${title}</h3>
+
+          <p>Recorded events:
+            <strong>${game.totalEvents ?? 0}</strong>
+          </p>
+
+          <p>Historical intervals:
+            <strong>${game.totalIntervals ?? 0}</strong>
+          </p>
+
+          <p>Walk-forward tests:
+            <strong>${game.totalWalkForwardTests ?? 0}</strong>
+          </p>
+
+          <p style="color:#fbbf24;">
+            ⚠️ ${game.sampleSizeWarning || 'Historical sample limitations apply.'}
+          </p>
+
+          <p>Best historical MAE model:
+            <strong>${bestModel ? bestModel.model : 'Insufficient data'}</strong>
+            ${
+              bestModel
+                ? `(${bestModel.overall.maeMinutes.toFixed(2)} min)`
+                : ''
+            }
+          </p>
+
+          <table style="
+            width:100%;
+            min-width:540px;
+            border-collapse:collapse;
+            font-size:12px;
+          ">
+            <thead>
+              <tr>
+                <th>MODEL</th>
+                <th>OVERALL MAE</th>
+                <th>ROLLING MAE</th>
+                <th>VS BASELINE</th>
+                <th>STABILITY</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${modelRows || '<tr><td colspan="5">No results available</td></tr>'}
+            </tbody>
+          </table>
+
+          <p style="font-size:12px;color:#94a3b8;">
+            Baseline: previous interval carried forward.
+            Positive improvement means lower historical MAE than baseline;
+            negative improvement means higher historical MAE.
+          </p>
+        </section>
+      `;
+    }
+
+    content.innerHTML = `
+      ${renderGame('🎲 THREE ROLLS RELIABILITY', data.threeRolls)}
+      ${renderGame('🎲 FIVE ROLLS RELIABILITY', data.fiveRolls)}
+
+      <p style="font-size:12px;color:#94a3b8;">
+        ${data.threeRolls?.disclaimer || ''}
+      </p>
+
+      <p style="font-size:12px;color:#94a3b8;">
+        Generated: ${
+          data.generatedAt
+            ? new Date(data.generatedAt).toLocaleString()
+            : 'N/A'
+        }
+      </p>
+    `;
+  } catch (error) {
+    console.error('MODEL RELIABILITY ERROR:', error);
+
+    content.innerHTML = `
+      <div style="
+        padding:12px;
+        border:1px solid #ef4444;
+        border-radius:8px;
+        color:#fca5a5;
+      ">
+        Unable to load Model Reliability Analysis.
+        <br>
+        ${error.message}
+      </div>
+    `;
+  }
+}
+    
 // Load only when PREDICTION LAB tab is clicked.
 if (index === 3) {
   loadPredictionLab();
