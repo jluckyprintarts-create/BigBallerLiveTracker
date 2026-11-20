@@ -3044,7 +3044,8 @@ const chronologicalValidation = modelNames.map(model => {
       return {
         totalIntervals: intervals.length,
         totalWalkForwardTests: totalTests,
-
+chronologicalValidation,
+        
         sampleSizeWarning: totalTests < 30
           ? 'Small historical test sample; results may be unstable.'
           : 'Historical sample available; future performance may differ.',
