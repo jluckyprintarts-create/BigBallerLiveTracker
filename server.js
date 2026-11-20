@@ -2738,6 +2738,327 @@ app.get('/api/prediction-lab', async (req, res) => {
 });
 
 // ----------------------------------
+// MODEL RELIABILITY ANALYSIS API
+// ----------------------------------
+
+app.get('/api/model-reliability', async (req, res) => {
+
+  try {
+
+    const MIN_TRAINING_INTERVALS = 5;
+    const MAX_RECORDS = 10000;
+    const WINDOW_SIZE = 30;
+
+    const allowedColumns = [
+      'is_three_rolls',
+      'is_five_rolls'
+    ];
+
+    function calculateIntervals(timestamps) {
+
+      const intervals = [];
+
+      for (let i = 1; i < timestamps.length; i++) {
+
+        const minutes =
+          (timestamps[i] - timestamps[i - 1]) / 60000;
+
+        if (minutes > 0 && Number.isFinite(minutes)) {
+          intervals.push(minutes);
+        }
+
+      }
+
+      return intervals;
+
+    }
+
+    function median(values) {
+
+      if (!values.length) return null;
+
+      const sorted = [...values].sort((a, b) => a - b);
+      const middle = Math.floor(sorted.length / 2);
+
+      return sorted.length % 2
+        ? sorted[middle]
+        : (sorted[middle - 1] + sorted[middle]) / 2;
+
+    }
+
+    function mean(values) {
+
+      if (!values.length) return null;
+
+      return values.reduce((sum, value) => sum + value, 0)
+        / values.length;
+
+    }
+
+    function evaluateReliability(intervals) {
+
+      const modelNames = [
+        'mean',
+        'median',
+        'recent10',
+        'weighted'
+      ];
+
+      const errors = {};
+
+      for (const model of modelNames) {
+        errors[model] = [];
+      }
+
+      const baselineErrors = [];
+
+      for (
+        let index = MIN_TRAINING_INTERVALS;
+        index < intervals.length;
+        index++
+      ) {
+
+        const training = intervals.slice(0, index);
+        const actual = intervals[index];
+
+        const estimates = {
+          mean: mean(training),
+          median: median(training),
+          recent10: mean(training.slice(-10)),
+          weighted: (() => {
+
+            const recent = training.slice(-10);
+
+            let total = 0;
+            let weights = 0;
+
+            recent.forEach((value, i) => {
+              const weight = i + 1;
+              total += value * weight;
+              weights += weight;
+            });
+
+            return weights ? total / weights : null;
+
+          })()
+        };
+
+        for (const model of modelNames) {
+
+          const estimate = estimates[model];
+
+          if (
+            estimate !== null &&
+            Number.isFinite(estimate)
+          ) {
+            errors[model].push({
+              actual,
+              error: estimate - actual,
+              absoluteError: Math.abs(estimate - actual)
+            });
+          }
+
+        }
+
+        // Baseline: use the immediately preceding interval.
+        const baselineEstimate = training[training.length - 1];
+
+        baselineErrors.push({
+          actual,
+          error: baselineEstimate - actual,
+          absoluteError: Math.abs(baselineEstimate - actual)
+        });
+
+      }
+
+      function summarize(rows) {
+
+        if (!rows.length) {
+          return {
+            tests: 0,
+            maeMinutes: null,
+            signedErrorMinutes: null
+          };
+        }
+
+        return {
+          tests: rows.length,
+
+          maeMinutes: Number(
+            mean(rows.map(row => row.absoluteError)).toFixed(2)
+          ),
+
+          signedErrorMinutes: Number(
+            mean(rows.map(row => row.error)).toFixed(2)
+          )
+        };
+
+      }
+
+      const modelResults = modelNames.map(model => {
+
+        const rows = errors[model];
+        const overall = summarize(rows);
+
+        const recentRows = rows.slice(-WINDOW_SIZE);
+        const rolling = summarize(recentRows);
+
+        const earlierRows = rows.slice(0, -WINDOW_SIZE);
+        const earlier = summarize(earlierRows);
+
+        let stability = 'Insufficient data';
+
+        if (
+          earlier.maeMinutes !== null &&
+          rolling.maeMinutes !== null
+        ) {
+
+          const change = rolling.maeMinutes - earlier.maeMinutes;
+
+          if (change < -1) {
+            stability = 'Recent MAE is lower';
+          } else if (change > 1) {
+            stability = 'Recent MAE is higher';
+          } else {
+            stability = 'Similar MAE';
+          }
+
+        }
+
+        return {
+          model,
+          overall,
+          rollingWindowSize: recentRows.length,
+          rollingMAE: rolling.maeMinutes,
+          earlierMAE: earlier.maeMinutes,
+          stability
+        };
+
+      });
+
+      const baseline = summarize(baselineErrors);
+
+      const comparisons = modelResults.map(result => {
+
+        let improvementPercent = null;
+
+        if (
+          baseline.maeMinutes !== null &&
+          baseline.maeMinutes > 0 &&
+          result.overall.maeMinutes !== null
+        ) {
+
+          improvementPercent = Number(
+            (
+              (baseline.maeMinutes - result.overall.maeMinutes) /
+              baseline.maeMinutes * 100
+            ).toFixed(2)
+          );
+
+        }
+
+        return {
+          model: result.model,
+          modelMAE: result.overall.maeMinutes,
+          baselineMAE: baseline.maeMinutes,
+          improvementPercent
+        };
+
+      });
+
+      const totalTests = baselineErrors.length;
+
+      return {
+        totalIntervals: intervals.length,
+        totalWalkForwardTests: totalTests,
+
+        sampleSizeWarning: totalTests < 30
+          ? 'Small historical test sample; results may be unstable.'
+          : 'Historical sample available; future performance may differ.',
+
+        rollingWindowSize: WINDOW_SIZE,
+
+        models: modelResults,
+
+        baseline: {
+          method: 'Previous interval carried forward',
+          ...baseline
+        },
+
+        baselineComparisons: comparisons,
+
+        disclaimer:
+          'Reliability metrics summarize historical estimation errors only. ' +
+          'They do not establish future RNG probabilities or guarantee outcomes.'
+      };
+
+    }
+
+    async function analyzeGameType(columnName) {
+
+      if (!allowedColumns.includes(columnName)) {
+        throw new Error('Invalid game type');
+      }
+
+      const result = await pool.query(`
+        SELECT
+          COALESCE(adjusted_at, settled_at) AS event_time
+        FROM game_history
+        WHERE ${columnName} = TRUE
+          AND COALESCE(adjusted_at, settled_at) IS NOT NULL
+        ORDER BY COALESCE(adjusted_at, settled_at) ASC
+        LIMIT $1
+      `, [MAX_RECORDS]);
+
+      const timestamps = result.rows
+        .map(row => new Date(row.event_time).getTime())
+        .filter(Number.isFinite)
+        .filter((value, index, array) =>
+          index === 0 || value > array[index - 1]
+        );
+
+      const intervals = calculateIntervals(timestamps);
+
+      return {
+        totalEvents: timestamps.length,
+        latestEventAt: timestamps.length
+          ? new Date(timestamps[timestamps.length - 1]).toISOString()
+          : null,
+        ...evaluateReliability(intervals)
+      };
+
+    }
+
+    const [threeRolls, fiveRolls] = await Promise.all([
+      analyzeGameType('is_three_rolls'),
+      analyzeGameType('is_five_rolls')
+    ]);
+
+    res.json({
+      status: 'ok',
+      title: 'MODEL RELIABILITY ANALYSIS',
+      generatedAt: new Date().toISOString(),
+      threeRolls,
+      fiveRolls
+    });
+
+  } catch (error) {
+
+    console.error(
+      'MODEL RELIABILITY API ERROR:',
+      error.message
+    );
+
+    res.status(500).json({
+      status: 'error',
+      error: 'Unable to run Model Reliability Analysis'
+    });
+
+  }
+
+});
+
+// ----------------------------------
 // HISTORICAL BACKFILL STATUS API
 // ----------------------------------
 
