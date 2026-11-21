@@ -3455,35 +3455,69 @@ app.get('/api/number-assistant', async (req, res) => {
       const data = raw.data || {};
       const gameResult = data.result || raw.result || {};
 
-      const bonusNumbers = Array.isArray(gameResult.bonusNumbers)
+      const bonusNumbers = Array.isArray(
+        gameResult.bonusNumbers
+      )
         ? gameResult.bonusNumbers
         : [];
 
+      // Avoid counting duplicate card entries
+      // as separate records in the same event.
+      const seenCards = new Set();
+
       for (const bonus of bonusNumbers) {
-        if (!bonus || !Array.isArray(bonus.numbers)) {
+        if (
+          !bonus ||
+          !Array.isArray(bonus.numbers)
+        ) {
           continue;
         }
 
-        const card = String(bonus.card || '').toLowerCase();
+        const card = String(
+          bonus.card || ''
+        ).toLowerCase();
 
-        let targetMap;
+        if (
+          card !== 'bonus3' &&
+          card !== 'bonus5'
+        ) {
+          continue;
+        }
+
+        if (seenCards.has(card)) {
+          continue;
+        }
+
+        seenCards.add(card);
+
+        const targetMap =
+          card === 'bonus3'
+            ? bonus3Counts
+            : bonus5Counts;
 
         if (card === 'bonus3') {
-          targetMap = bonus3Counts;
           bonus3Records++;
-        } else if (card === 'bonus5') {
-          targetMap = bonus5Counts;
-          bonus5Records++;
         } else {
-          continue;
+          bonus5Records++;
         }
+
+        // Count only valid numbers from 1 to 60.
+        // Each number counts at most once per card/event.
+        const seenNumbers = new Set();
 
         for (const number of bonus.numbers) {
           const n = Number(number);
 
-          if (!Number.isInteger(n) || n < 1) {
+          if (
+            !Number.isInteger(n) ||
+            n < 1 ||
+            n > 60 ||
+            seenNumbers.has(n)
+          ) {
             continue;
           }
+
+          seenNumbers.add(n);
 
           targetMap.set(
             n,
@@ -3493,58 +3527,96 @@ app.get('/api/number-assistant', async (req, res) => {
       }
     }
 
-    function rankNumbers(counts, totalRecords, topN) {
-      return [...counts.entries()]
-        .map(([number, appearances]) => ({
+    // ----------------------------------
+    // RANK ALL NUMBERS FROM 1 TO 60
+    // ----------------------------------
+
+    function rankNumbers(counts, totalRecords) {
+      const numbers = [];
+
+      for (let number = 1; number <= 60; number++) {
+        const appearances = counts.get(number) || 0;
+
+        numbers.push({
           number,
           appearances,
           frequencyPercent: totalRecords > 0
             ? Number(
-                (appearances / totalRecords * 100).toFixed(2)
+                (
+                  appearances /
+                  totalRecords *
+                  100
+                ).toFixed(2)
               )
             : 0
-        }))
-        .sort((a, b) =>
-          b.appearances - a.appearances ||
-          a.number - b.number
-        )
-        .slice(0, topN);
+        });
+      }
+
+      return numbers.sort((a, b) =>
+        b.appearances - a.appearances ||
+        a.number - b.number
+      );
     }
+
+    const bonus3AllNumbers = rankNumbers(
+      bonus3Counts,
+      bonus3Records
+    );
+
+    const bonus5AllNumbers = rankNumbers(
+      bonus5Counts,
+      bonus5Records
+    );
+
+    // ----------------------------------
+    // RESPONSE
+    // ----------------------------------
 
     res.json({
       success: true,
+
       recordsScanned: result.rows.length,
 
       bonus3: {
         recordsWithBonusNumbers: bonus3Records,
         uniqueNumbers: bonus3Counts.size,
-        top3: rankNumbers(
-          bonus3Counts,
-          bonus3Records,
-          3
-        )
+
+        top10: bonus3AllNumbers.slice(0, 10),
+
+        // Keep old property for compatibility.
+        top3: bonus3AllNumbers.slice(0, 3),
+
+        // All numbers 1-60, ranked by frequency.
+        allNumbers: bonus3AllNumbers
       },
 
       bonus5: {
         recordsWithBonusNumbers: bonus5Records,
         uniqueNumbers: bonus5Counts.size,
-        top4: rankNumbers(
-          bonus5Counts,
-          bonus5Records,
-          4
-        )
+
+        top10: bonus5AllNumbers.slice(0, 10),
+
+        // Keep old property for compatibility.
+        top4: bonus5AllNumbers.slice(0, 4),
+
+        // All numbers 1-60, ranked by frequency.
+        allNumbers: bonus5AllNumbers
       },
 
       note:
-        'Historical frequency only. Past appearances do not guarantee future results.'
+        'Historical frequency only. Past appearances do not guarantee future results or predict future RNG outcomes.'
     });
 
   } catch (error) {
-    console.error('NUMBER ASSISTANT API ERROR:', error);
+    console.error(
+      'NUMBER ASSISTANT API ERROR:',
+      error
+    );
 
     res.status(500).json({
       success: false,
-      error: 'Failed to analyze historical bonus numbers.'
+      error:
+        'Failed to analyze historical bonus numbers.'
     });
   }
 });
