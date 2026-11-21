@@ -2974,6 +2974,7 @@ async function loadModelReliability() {
 }
 
 // ----------------------------------
+// ----------------------------------
 // AI NUMBER ASSISTANT DATA LOADER
 // ----------------------------------
 
@@ -3007,33 +3008,46 @@ async function loadNumberAssistant() {
       );
     }
 
+    // ----------------------------------
+    // RESPONSIVE FREQUENCY TABLE
+    // ----------------------------------
+
     function renderNumberList(numbers) {
       if (!Array.isArray(numbers) || numbers.length === 0) {
         return '<p>No historical number data available.</p>';
       }
 
       return `
-        <div style="overflow-x:auto;">
+        <div style="width:100%;overflow-x:auto;">
           <table style="
             width:100%;
             border-collapse:collapse;
             font-size:12px;
+            text-align:center;
           ">
             <thead>
               <tr>
-                <th>Rank</th>
-                <th>Number</th>
-                <th>Appearances</th>
-                <th>Frequency</th>
+                <th style="padding:7px 3px;">Rank</th>
+                <th style="padding:7px 3px;">Number</th>
+                <th style="padding:7px 3px;">Appearances</th>
+                <th style="padding:7px 3px;">Frequency</th>
               </tr>
             </thead>
             <tbody>
               ${numbers.map((item, index) => `
                 <tr>
-                  <td>${index + 1}</td>
-                  <td><strong>${item.number}</strong></td>
-                  <td>${item.appearances}</td>
-                  <td>${item.frequencyPercent}%</td>
+                  <td style="padding:7px 3px;">
+                    ${index + 1}
+                  </td>
+                  <td style="padding:7px 3px;">
+                    <strong>${item.number}</strong>
+                  </td>
+                  <td style="padding:7px 3px;">
+                    ${item.appearances}
+                  </td>
+                  <td style="padding:7px 3px;">
+                    ${item.frequencyPercent}%
+                  </td>
                 </tr>
               `).join('')}
             </tbody>
@@ -3042,29 +3056,101 @@ async function loadNumberAssistant() {
       `;
     }
 
-    container.innerHTML = `
-      <p>
-        <strong>Records scanned:</strong>
-        ${data.recordsScanned ?? 0}
-      </p>
+    // ----------------------------------
+    // TOP 10 NUMBERS
+    // ----------------------------------
 
+    const bonus3Top10 = Array.isArray(data.bonus3?.top10)
+      ? data.bonus3.top10
+      : Array.isArray(data.bonus3?.top3)
+        ? data.bonus3.top3
+        : [];
+
+    const bonus5Top10 = Array.isArray(data.bonus5?.top10)
+      ? data.bonus5.top10
+      : Array.isArray(data.bonus5?.top4)
+        ? data.bonus5.top4
+        : [];
+
+    // ----------------------------------
+    // ALL NUMBERS 1-60
+    // ----------------------------------
+
+    const allBonus3 = Array.isArray(data.bonus3?.allNumbers)
+      ? data.bonus3.allNumbers
+      : Array.isArray(data.bonus3?.frequencies)
+        ? data.bonus3.frequencies
+        : [];
+
+    const allBonus5 = Array.isArray(data.bonus5?.allNumbers)
+      ? data.bonus5.allNumbers
+      : Array.isArray(data.bonus5?.frequencies)
+        ? data.bonus5.frequencies
+        : [];
+
+    // ----------------------------------
+    // RENDER DASHBOARD
+    // ----------------------------------
+
+    container.innerHTML = `
       <section class="card">
-        <h3>🎲 BONUS3 — TOP 3 NUMBERS</h3>
+        <h3>🎲 BONUS3 — TOP 10 NUMBERS</h3>
+
         <p>
           Records with Bonus3 data:
           ${data.bonus3?.recordsWithBonusNumbers ?? 0}
         </p>
-        ${renderNumberList(data.bonus3?.top3)}
+
+        ${renderNumberList(bonus3Top10)}
+
+        ${
+          allBonus3.length === 0
+            ? '<p class="small">The API does not yet provide the complete Bonus3 frequency list. We need to update the server endpoint to display all 60 numbers.</p>'
+            : ''
+        }
       </section>
 
       <section class="card">
-        <h3>🎯 BONUS5 — TOP 4 NUMBERS</h3>
+        <h3>🎯 BONUS5 — TOP 10 NUMBERS</h3>
+
         <p>
           Records with Bonus5 data:
           ${data.bonus5?.recordsWithBonusNumbers ?? 0}
         </p>
-        ${renderNumberList(data.bonus5?.top4)}
+
+        ${renderNumberList(bonus5Top10)}
+
+        ${
+          allBonus5.length === 0
+            ? '<p class="small">The API does not yet provide the complete Bonus5 frequency list. We need to update the server endpoint to display all 60 numbers.</p>'
+            : ''
+        }
       </section>
+
+      <section class="card">
+        <h3>📊 BONUS3 — ALL NUMBERS (1–60)</h3>
+        <p>Historical frequency of every number.</p>
+        ${renderNumberList(
+          [...allBonus3].sort(
+            (a, b) => Number(b.appearances) - Number(a.appearances)
+          )
+        )}
+      </section>
+
+      <section class="card">
+        <h3>📊 BONUS5 — ALL NUMBERS (1–60)</h3>
+        <p>Historical frequency of every number.</p>
+        ${renderNumberList(
+          [...allBonus5].sort(
+            (a, b) => Number(b.appearances) - Number(a.appearances)
+          )
+        )}
+      </section>
+
+      <p>
+        <strong>Records scanned:</strong>
+        ${data.recordsScanned ?? 0}
+      </p>
 
       <p class="small">
         Historical frequency only. Past appearances do not
