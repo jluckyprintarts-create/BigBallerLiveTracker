@@ -2971,6 +2971,117 @@ async function loadModelReliability() {
     `;
   }
 }
+
+// ----------------------------------
+// AI NUMBER ASSISTANT DATA LOADER
+// ----------------------------------
+
+async function loadNumberAssistant() {
+  const container = document.getElementById(
+    'number-assistant-content'
+  );
+
+  if (!container) return;
+
+  container.innerHTML =
+    '<p>Loading historical number analysis...</p>';
+
+  try {
+    const response = await fetch(
+      '/api/number-assistant?limit=5000',
+      { cache: 'no-store' }
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        `API request failed: ${response.status}`
+      );
+    }
+
+    const data = await response.json();
+
+    if (!data.success) {
+      throw new Error(
+        data.error || 'Unable to load number analysis.'
+      );
+    }
+
+    function renderNumberList(numbers) {
+      if (!Array.isArray(numbers) || numbers.length === 0) {
+        return '<p>No historical number data available.</p>';
+      }
+
+      return `
+        <div style="overflow-x:auto;">
+          <table style="
+            width:100%;
+            border-collapse:collapse;
+            font-size:12px;
+          ">
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Number</th>
+                <th>Appearances</th>
+                <th>Frequency</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${numbers.map((item, index) => `
+                <tr>
+                  <td>${index + 1}</td>
+                  <td><strong>${item.number}</strong></td>
+                  <td>${item.appearances}</td>
+                  <td>${item.frequencyPercent}%</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    container.innerHTML = `
+      <p>
+        <strong>Records scanned:</strong>
+        ${data.recordsScanned ?? 0}
+      </p>
+
+      <section class="card">
+        <h3>🎲 BONUS3 — TOP 3 NUMBERS</h3>
+        <p>
+          Records with Bonus3 data:
+          ${data.bonus3?.recordsWithBonusNumbers ?? 0}
+        </p>
+        ${renderNumberList(data.bonus3?.top3)}
+      </section>
+
+      <section class="card">
+        <h3>🎯 BONUS5 — TOP 4 NUMBERS</h3>
+        <p>
+          Records with Bonus5 data:
+          ${data.bonus5?.recordsWithBonusNumbers ?? 0}
+        </p>
+        ${renderNumberList(data.bonus5?.top4)}
+      </section>
+
+      <p class="small">
+        Historical frequency only. Past appearances do not
+        guarantee future results or predict the next RNG outcome.
+      </p>
+    `;
+
+  } catch (error) {
+    console.error('NUMBER ASSISTANT LOAD ERROR:', error);
+
+    container.innerHTML = `
+      <p>
+        Unable to load number analysis.
+        Please try again later.
+      </p>
+    `;
+  }
+}
     
 // Load only when PREDICTION LAB tab is clicked.
 if (index === 3) {
