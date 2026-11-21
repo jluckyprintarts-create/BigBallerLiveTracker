@@ -3419,7 +3419,135 @@ app.get('/api/history', async (req, res) => {
 
 });
 
+// ----------------------------------
+// AI NUMBER ASSISTANT API
+// Historical Bonus3 and Bonus5 frequency
+// ----------------------------------
 
+app.get('/api/number-assistant', async (req, res) => {
+  try {
+    const limit = Math.min(
+      10000,
+      Math.max(1, Number(req.query.limit) || 5000)
+    );
+
+    const result = await pool.query(
+      `
+      SELECT
+        event_id,
+        settled_at,
+        raw_data
+      FROM game_history
+      ORDER BY settled_at DESC
+      LIMIT $1
+      `,
+      [limit]
+    );
+
+    const bonus3Counts = new Map();
+    const bonus5Counts = new Map();
+
+    let bonus3Records = 0;
+    let bonus5Records = 0;
+
+    for (const record of result.rows) {
+      const raw = record.raw_data || {};
+      const data = raw.data || {};
+      const gameResult = data.result || raw.result || {};
+
+      const bonusNumbers = Array.isArray(gameResult.bonusNumbers)
+        ? gameResult.bonusNumbers
+        : [];
+
+      for (const bonus of bonusNumbers) {
+        if (!bonus || !Array.isArray(bonus.numbers)) {
+          continue;
+        }
+
+        const card = String(bonus.card || '').toLowerCase();
+
+        let targetMap;
+
+        if (card === 'bonus3') {
+          targetMap = bonus3Counts;
+          bonus3Records++;
+        } else if (card === 'bonus5') {
+          targetMap = bonus5Counts;
+          bonus5Records++;
+        } else {
+          continue;
+        }
+
+        for (const number of bonus.numbers) {
+          const n = Number(number);
+
+          if (!Number.isInteger(n) || n < 1) {
+            continue;
+          }
+
+          targetMap.set(
+            n,
+            (targetMap.get(n) || 0) + 1
+          );
+        }
+      }
+    }
+
+    function rankNumbers(counts, totalRecords, topN) {
+      return [...counts.entries()]
+        .map(([number, appearances]) => ({
+          number,
+          appearances,
+          frequencyPercent: totalRecords > 0
+            ? Number(
+                (appearances / totalRecords * 100).toFixed(2)
+              )
+            : 0
+        }))
+        .sort((a, b) =>
+          b.appearances - a.appearances ||
+          a.number - b.number
+        )
+        .slice(0, topN);
+    }
+
+    res.json({
+      success: true,
+      recordsScanned: result.rows.length,
+
+      bonus3: {
+        recordsWithBonusNumbers: bonus3Records,
+        uniqueNumbers: bonus3Counts.size,
+        top3: rankNumbers(
+          bonus3Counts,
+          bonus3Records,
+          3
+        )
+      },
+
+      bonus5: {
+        recordsWithBonusNumbers: bonus5Records,
+        uniqueNumbers: bonus5Counts.size,
+        top4: rankNumbers(
+          bonus5Counts,
+          bonus5Records,
+          4
+        )
+      },
+
+      note:
+        'Historical frequency only. Past appearances do not guarantee future results.'
+    });
+
+  } catch (error) {
+    console.error('NUMBER ASSISTANT API ERROR:', error);
+
+    res.status(500).json({
+      success: false,
+      error: 'Failed to analyze historical bonus numbers.'
+    });
+  }
+});
 // ----------------------------------
 // STATISTICS
 // ----------------------------------
