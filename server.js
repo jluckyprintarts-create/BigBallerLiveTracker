@@ -3344,9 +3344,9 @@ app.get('/api/history', async (req, res) => {
   try {
 
     const limit = Math.min(
-      1000,
-      Math.max(1, Number(req.query.limit) || 200)
-    );
+  10000,
+  Math.max(1, Number(req.query.limit) || 1000)
+);
 
     const type = String(
       req.query.type || 'all'
