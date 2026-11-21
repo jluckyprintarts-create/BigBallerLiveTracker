@@ -1691,7 +1691,8 @@ nav.innerHTML =
   '<button class="tab-btn" type="button">🎲 3 &amp; 5 ROLLS<br>CENTER</button>' +
   '<button class="tab-btn" type="button">🧠 ADVANCE<br>ANALYSIS</button>' +
   '<button class="tab-btn" type="button">🔬 PREDICTION<br>LAB</button>' +
-  '<button class="tab-btn" type="button">📊 MODEL<br>RELIABILITY</button>';
+    '<button class="tab-btn" type="button">📊 MODEL<br>RELIABILITY</button>' +
+  '<button class="tab-btn" type="button">🤖 AI NUMBER<br>ASSISTANT</button>';
   
 const mainTab = document.createElement('div');
 mainTab.className = 'tab-panel active';
@@ -1705,6 +1706,29 @@ const advanceTab = document.createElement('div');
 advanceTab.className = 'tab-panel';
 advanceTab.id = 'advanceTab';
 
+// ----------------------------------
+// AI NUMBER ASSISTANT TAB
+// ----------------------------------
+
+const numberAssistantTab = document.createElement('div');
+numberAssistantTab.className = 'tab-panel';
+numberAssistantTab.id = 'numberAssistantTab';
+
+numberAssistantTab.innerHTML = `
+  <section class="card">
+    <h2>🤖 AI NUMBER ASSISTANT</h2>
+    <p>
+      Historical Bonus3 and Bonus5 number frequency analysis.
+    </p>
+    <p class="small">
+      Historical frequency does not guarantee future results.
+    </p>
+    <div id="number-assistant-content">
+      Loading number analysis...
+    </div>
+  </section>
+`;
+  
 // ADVANCE ANALYSIS PANEL
 advanceTab.innerHTML = `
   <div class="section">
