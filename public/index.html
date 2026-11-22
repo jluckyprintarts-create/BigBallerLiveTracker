@@ -3425,5 +3425,54 @@ if (index === 5) {
   updatePHClock();
   setInterval(updatePHClock, 1000);
 })();
+
+  
+</script>
+
+  <script>
+(function () {
+  const onlineDisplay = document.getElementById('onlineNow');
+
+  if (!onlineDisplay) return;
+
+  // Create a stable ID for this browser
+  let visitorId = localStorage.getItem('bigBallerVisitorId');
+
+  if (!visitorId) {
+    visitorId = (
+      'v_' +
+      Date.now().toString(36) +
+      '_' +
+      Math.random().toString(36).slice(2) +
+      Math.random().toString(36).slice(2)
+    );
+
+    localStorage.setItem('bigBallerVisitorId', visitorId);
+  }
+
+  async function updateOnlineNow() {
+    try {
+      const response = await fetch(
+        '/api/online-now?id=' + encodeURIComponent(visitorId),
+        { cache: 'no-store' }
+      );
+
+      if (!response.ok) {
+        throw new Error('HTTP ' + response.status);
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        onlineDisplay.textContent = data.onlineNow;
+      }
+    } catch (error) {
+      console.error('Online visitor counter error:', error);
+    }
+  }
+
+  updateOnlineNow();
+  setInterval(updateOnlineNow, 30000);
+})();
 </script>
 </body></html>
