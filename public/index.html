@@ -1577,7 +1577,7 @@ async function loadRecords() {
   try {
 
     const response = await fetch(
-      `/api/history?type=${currentType}&limit=200`,
+      `/api/history?type=${currentType}&limit=10000`,
       { cache: 'no-store' }
     );
 
