@@ -4201,6 +4201,41 @@ app.get('/api/record-count', async (req, res) => {
 });
 
 // ----------------------------------
+// LIVE ONLINE VISITORS
+// ----------------------------------
+
+const onlineVisitors = new Map();
+
+app.get('/api/online-now', (req, res) => {
+  const now = Date.now();
+  const visitorId = String(req.query.id || '');
+
+  // Remove visitors inactive for more than 90 seconds
+  for (const [id, lastSeen] of onlineVisitors.entries()) {
+    if (now - lastSeen > 90000) {
+      onlineVisitors.delete(id);
+    }
+  }
+
+  // Register this browser heartbeat
+  if (
+    visitorId.length >= 16 &&
+    visitorId.length <= 100 &&
+    /^[a-zA-Z0-9_-]+$/.test(visitorId)
+  ) {
+    onlineVisitors.set(visitorId, now);
+  }
+
+  res.set('Cache-Control', 'no-store');
+
+  res.json({
+    success: true,
+    onlineNow: onlineVisitors.size
+  });
+});
+
+
+// ----------------------------------
 // START SERVER
 // ----------------------------------
 
