@@ -4169,6 +4169,36 @@ app.get('*', (req, res, next) => {
 
 });
 
+// ----------------------------------
+// DATABASE RECORD COUNT CHECK
+// ----------------------------------
+
+app.get('/api/record-count', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT
+        COUNT(*)::int AS total_records,
+        COUNT(*) FILTER (
+          WHERE is_three_rolls = TRUE
+        )::int AS three_rolls,
+        COUNT(*) FILTER (
+          WHERE is_five_rolls = TRUE
+        )::int AS five_rolls
+      FROM game_history
+    `);
+
+    res.json({
+      success: true,
+      ...result.rows[0]
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+});
 
 // ----------------------------------
 // START SERVER
