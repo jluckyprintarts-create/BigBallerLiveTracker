@@ -3513,5 +3513,135 @@ if ('serviceWorker' in navigator) {
   });
 }
 </script>
+
+<!-- APP UPDATE NOTIFICATION -->
+<style>
+  #app-update-box {
+    display: none;
+    position: fixed;
+    left: 16px;
+    right: 16px;
+    bottom: 20px;
+    z-index: 99999;
+    background: #111827;
+    color: #ffffff;
+    border: 1px solid #d4af37;
+    border-radius: 14px;
+    padding: 16px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    font-family: Arial, sans-serif;
+  }
+
+  #app-update-box button {
+    background: #d4af37;
+    color: #111827;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+
+  #app-update-box .update-close {
+    background: transparent;
+    color: white;
+    margin-left: 8px;
+  }
+</style>
+
+<div id="app-update-box" role="status">
+  <strong>🚀 NEW APP UPDATE</strong>
+
+  <p id="app-update-message">
+    May bagong version ng app na available.
+  </p>
+
+  <button id="app-update-now">UPDATE NOW</button>
+  <button id="app-update-later" class="update-close">
+    LATER
+  </button>
+</div>
+
+<script>
+(function () {
+  if (!('serviceWorker' in navigator)) return;
+
+  const box = document.getElementById('app-update-box');
+  const updateButton = document.getElementById('app-update-now');
+  const laterButton = document.getElementById('app-update-later');
+
+  let waitingWorker = null;
+
+  function showUpdate(worker) {
+    waitingWorker = worker;
+    box.style.display = 'block';
+  }
+
+  navigator.serviceWorker.register('/service-worker.js')
+    .then(function (registration) {
+      function checkWaitingWorker() {
+        if (registration.waiting &&
+            navigator.serviceWorker.controller) {
+          showUpdate(registration.waiting);
+        }
+      }
+
+      checkWaitingWorker();
+
+      registration.addEventListener('updatefound', function () {
+        const newWorker = registration.installing;
+
+        if (!newWorker) return;
+
+        newWorker.addEventListener('statechange', function () {
+          if (
+            newWorker.state === 'installed' &&
+            navigator.serviceWorker.controller
+          ) {
+            showUpdate(newWorker);
+          }
+        });
+      });
+
+      updateButton.addEventListener('click', function () {
+        if (waitingWorker) {
+          updateButton.disabled = true;
+          updateButton.textContent = 'UPDATING...';
+
+          waitingWorker.postMessage('SKIP_WAITING');
+        } else {
+          registration.update().catch(function (error) {
+            console.error('Update check failed:', error);
+          });
+        }
+      });
+
+      laterButton.addEventListener('click', function () {
+        box.style.display = 'none';
+      });
+
+      document.addEventListener('visibilitychange', function () {
+        if (document.visibilityState === 'visible') {
+          registration.update().catch(function () {});
+        }
+      });
+    })
+    .catch(function (error) {
+      console.error('Service Worker registration failed:', error);
+    });
+
+  let refreshing = false;
+
+  navigator.serviceWorker.addEventListener(
+    'controllerchange',
+    function () {
+      if (refreshing) return;
+
+      refreshing = true;
+      window.location.reload();
+    }
+  );
+})();
+</script>
   
 </body></html>
