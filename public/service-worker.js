@@ -2,7 +2,8 @@
 // BIG BALLER LIVE TRACKER - SERVICE WORKER
 // ========================================
 
-const CACHE_NAME = 'big-baller-tracker-v1';
+const APP_VERSION = '1.0.1';
+const CACHE_NAME = `big-baller-tracker-v${APP_VERSION}`;
 
 const APP_FILES = [
   '/',
