@@ -119,7 +119,21 @@
 }
 
   
-</style></head><body><div class="container"><header><div><h1>MONOPOLY BIG BALLER</h1><div class="subtitle">LIVE RESULTS TRACKER</div>
+</style>
+<!-- PWA SETTINGS -->
+<link rel="manifest" href="/manifest.json">
+
+<meta name="theme-color" content="#0b1120">
+
+<meta name="mobile-web-app-capable" content="yes">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+<meta name="apple-mobile-web-app-title" content="Big Baller">
+
+</head><body><div class="container"><header><div><h1>MONOPOLY BIG BALLER</h1><div class="subtitle">LIVE RESULTS TRACKER</div>
   <div class="ph-clock" aria-label="Philippines local time">
   <span>🇵🇭 PH TIME</span>
   <span class="ph-clock-time" id="phClockTime">--:--:-- --</span>
@@ -3479,4 +3493,25 @@ if (index === 5) {
   setInterval(updateOnlineNow, 30000);
 })();
 </script>
+<!-- REGISTER SERVICE WORKER -->
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(function (registration) {
+        console.log(
+          'Big Baller PWA registered:',
+          registration.scope
+        );
+      })
+      .catch(function (error) {
+        console.error(
+          'Service Worker registration failed:',
+          error
+        );
+      });
+  });
+}
+</script>
+  
 </body></html>
