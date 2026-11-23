@@ -17,8 +17,14 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => cache.addAll(APP_FILES))
-      .then(() => self.skipWaiting())
   );
+});
+
+// ACTIVATE UPDATE WHEN USER ACCEPTS
+self.addEventListener('message', event => {
+  if (event.data === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 // ACTIVATE
